@@ -9,8 +9,12 @@ Play.prototype = {
 	},
 	create: function() {
 		console.log('Play: create()');
+		//orangish brown
+		this.stage.backgroundColor = '#c1440e';
+		this.g = new Grid(32, 32);
+		this.g.draw();
 	},
 	update: function() {
-
+		//this.g.update();
 	}
 };
