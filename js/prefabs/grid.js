@@ -1,5 +1,3 @@
-var v1, v2;
-
 function Grid(w, h, lineW, lineC) {
 	this.w = w;
 	this.h = h;
@@ -18,9 +16,6 @@ function Grid(w, h, lineW, lineC) {
 
 	this.index1 = -1;
 	this.index2 = -1;
-
-	offsetx = 0;
-	offsety = 0;
 }
 
 //Draws the grid on screen 
@@ -43,10 +38,6 @@ Grid.prototype.update = function() {
 	this.upperLeftColumn = Math.ceil(game.camera.view.y / this.h);
 	this.offsetx = game.camera.view.x % this.w;
 	this.offsety = game.camera.view.y % this.h;
-
-	//vars for debugging
-	v1 = this.upperLeftRow;
-	v2 = this.upperLeftColumn;
 
 	if (this.index1 >= 0 && this.index2 >= 0) {
 		this.bmd.ctx.clearRect((this.w * this.index1) + 1, (this.h * this.index2) + 1, this.w - 2, this.h - 2);

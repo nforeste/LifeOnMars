@@ -36,8 +36,7 @@ Play.prototype = {
 		}
 	},
 	render: function() {
-		game.debug.text(game.input.activePointer.position, 2, 14, '#ffffff');
-		game.debug.cameraInfo(this.camera, 2, 64, '#ffffff');
-		game.debug.text('row: ' + v1 + ', col: ' + v2, 2, 180, '#ffffff');
+		//game.debug.text(game.input.activePointer.position, 2, 14, '#ffffff');
+		//game.debug.cameraInfo(this.camera, 2, 64, '#ffffff');
 	}
 };
