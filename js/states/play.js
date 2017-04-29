@@ -17,7 +17,7 @@ Play.prototype = {
 		this.g.makeGrid();
 	},
 	update: function() {
-		this.g.update();
+		//this.g.draw();
 
 
 		if (this.input.activePointer.withinGame) {

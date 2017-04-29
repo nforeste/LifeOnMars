@@ -41,7 +41,7 @@ Grid.prototype.makeGrid = function() {
 	}
 };
 
-Grid.prototype.update = function() {
+Grid.prototype.draw = function() {
 	this.upperLeftRow = Math.ceil(game.camera.view.x / this.w);
 	this.upperLeftColumn = Math.ceil(game.camera.view.y / this.h);
 	this.offsetx = game.camera.view.x % this.w;
