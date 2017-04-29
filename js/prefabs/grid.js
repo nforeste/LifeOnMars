@@ -1,10 +1,14 @@
-function Grid(w, h, lineW, lineC) {
+var xTiles, yTiles;
+
+function Grid(w, h, lineC) {
 	this.w = w;
 	this.h = h;
 
 	this.bmd = game.add.bitmapData(game.world.width, game.world.height);
-	this.bmd.ctx.lineWidth = lineW;
 	this.bmd.ctx.strokeStyle = lineC;
+
+	//lineWidth was going to be an argument, but it broke everything :/
+	this.bmd.ctx.lineWidth = 1;
 	this.sprite = game.add.sprite(0, 0, this.bmd);
 
 	//create a 2-Dimensional matrix to represent the grid
@@ -16,6 +20,10 @@ function Grid(w, h, lineW, lineC) {
 
 	this.index1 = -1;
 	this.index2 = -1;
+
+	//TESTING
+	xTiles = 3;
+	yTiles = 1;
 }
 
 //Draws the grid on screen 
@@ -39,11 +47,20 @@ Grid.prototype.update = function() {
 	this.offsetx = game.camera.view.x % this.w;
 	this.offsety = game.camera.view.y % this.h;
 
-	if (this.index1 >= 0 && this.index2 >= 0) {
-		this.bmd.ctx.clearRect((this.w * this.index1) + 1, (this.h * this.index2) + 1, this.w - 2, this.h - 2);
-	}
+	//Offset for the tile highlighting
+	var xStart = this.index1 - (xTiles > 2 ? Math.floor(xTiles / 2) : 0);
+	var yStart = this.index2 - (yTiles > 2 ? Math.floor(yTiles / 2) : 0);
+	//round them both up to 0 (min)
+	xStart = xStart < 0 ? 0 : xStart;
+	yStart = yStart < 0 ? 0 : yStart;
 
-	var lineW = this.bmd.ctx.lineWidth;
+	if (this.index1 >= 0 && this.index2 >= 0) {
+		for (let i = xStart; i < xStart + xTiles; i++) {
+			for (let j = yStart; j < yStart + yTiles; j++) {
+				this.bmd.ctx.clearRect((this.w * i) + 1, (this.h * j) + 1, this.w - 2, this.h - 2);
+			}
+		}
+	}
 
 	//For now. This will be tweaked to include when picking up an object, etc.
 	//Only draw rects when mouse is on the screen
@@ -53,7 +70,19 @@ Grid.prototype.update = function() {
 		//then subtract the offset so that the mouse position still correctly finds the index
 		this.index1 = Math.floor((game.input.x - (this.offsetx !== 0 ? this.w - this.offsetx : 0)) / this.w) + this.upperLeftRow;
 		this.index2 = Math.floor((game.input.y - (this.offsety !== 0 ? this.h - this.offsety : 0)) / this.h) + this.upperLeftColumn;
-		this.bmd.rect((this.w * this.index1) + lineW, (this.h * this.index2) + lineW, 
-			this.w - (lineW + 1), this.h - (lineW + 1), '#0000ff');
+
+		//update the grid offsets with the new index positions
+		xStart = this.index1 - (xTiles > 2 ? Math.floor(xTiles / 2) : 0);
+		yStart = this.index2 - (yTiles > 2 ? Math.floor(yTiles / 2) : 0);
+		//round them both up to 0 (min)
+		xStart = xStart < 0 ? 0 : xStart;
+		yStart = yStart < 0 ? 0 : yStart;
+
+		//draw all of the rectangles
+		for (let i = xStart; i < xStart + xTiles; i++) {
+			for (let j = yStart; j < yStart + yTiles; j++) {
+				this.bmd.rect((this.w * i) + 1, (this.h * j) + 1, this.w - 2, this.h - 2, '#66ff33');
+			}
+		}
 	}
 };

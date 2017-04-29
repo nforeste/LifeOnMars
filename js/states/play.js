@@ -13,7 +13,7 @@ Play.prototype = {
 
 		//orangish brown
 		this.stage.backgroundColor = '#c1440e';
-		this.g = new Grid(40, 40, 1, 'black');
+		this.g = new Grid(40, 40, 'black');
 		this.g.makeGrid();
 	},
 	update: function() {
@@ -38,5 +38,6 @@ Play.prototype = {
 	render: function() {
 		//game.debug.text(game.input.activePointer.position, 2, 14, '#ffffff');
 		//game.debug.cameraInfo(this.camera, 2, 64, '#ffffff');
+		game.debug.text('x tiles: '+xTiles+', y tiles: '+yTiles, 2, 14, '#ffffff');
 	}
 };
