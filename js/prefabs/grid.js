@@ -47,16 +47,9 @@ Grid.prototype.update = function() {
 	this.offsetx = game.camera.view.x % this.w;
 	this.offsety = game.camera.view.y % this.h;
 
-	//Offset for the tile highlighting
-	var xStart = this.index1 - (xTiles > 2 ? Math.floor(xTiles / 2) : 0);
-	var yStart = this.index2 - (yTiles > 2 ? Math.floor(yTiles / 2) : 0);
-	//round them both up to 0 (min)
-	xStart = xStart < 0 ? 0 : xStart;
-	yStart = yStart < 0 ? 0 : yStart;
-
 	if (this.index1 >= 0 && this.index2 >= 0) {
-		for (let i = xStart; i < xStart + xTiles; i++) {
-			for (let j = yStart; j < yStart + yTiles; j++) {
+		for (let i = this.xStart; i < this.xStart + xTiles; i++) {
+			for (let j = this.yStart; j < this.yStart + yTiles; j++) {
 				this.bmd.ctx.clearRect((this.w * i) + 1, (this.h * j) + 1, this.w - 2, this.h - 2);
 			}
 		}
@@ -72,15 +65,12 @@ Grid.prototype.update = function() {
 		this.index2 = Math.floor((game.input.y - (this.offsety !== 0 ? this.h - this.offsety : 0)) / this.h) + this.upperLeftColumn;
 
 		//update the grid offsets with the new index positions
-		xStart = this.index1 - (xTiles > 2 ? Math.floor(xTiles / 2) : 0);
-		yStart = this.index2 - (yTiles > 2 ? Math.floor(yTiles / 2) : 0);
-		//round them both up to 0 (min)
-		xStart = xStart < 0 ? 0 : xStart;
-		yStart = yStart < 0 ? 0 : yStart;
+		this.xStart = Math.max(this.index1 - (xTiles > 2 ? Math.floor(xTiles / 2) : 0), 0);
+		this.yStart = Math.max(this.index2 - (yTiles > 2 ? Math.floor(yTiles / 2) : 0), 0);
 
 		//draw all of the rectangles
-		for (let i = xStart; i < xStart + xTiles; i++) {
-			for (let j = yStart; j < yStart + yTiles; j++) {
+		for (let i = this.xStart; i < this.xStart + xTiles; i++) {
+			for (let j = this.yStart; j < this.yStart + yTiles; j++) {
 				this.bmd.rect((this.w * i) + 1, (this.h * j) + 1, this.w - 2, this.h - 2, '#66ff33');
 			}
 		}
