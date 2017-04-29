@@ -15,23 +15,24 @@ Play.prototype = {
 		this.stage.backgroundColor = '#c1440e';
 		this.g = new Grid(40, 40, 1, 'black');
 		this.g.makeGrid();
-
-		this.cursors = this.input.keyboard.createCursorKeys();
 	},
 	update: function() {
 		this.g.update();
 
-		if (this.cursors.down.isDown) {
-			this.camera.y += 5;
-		}
-		if (this.cursors.up.isDown) {
-			this.camera.y -= 5;
-		}
-		if (this.cursors.right.isDown) {
-			this.camera.x += 5;
-		}
-		if (this.cursors.left.isDown) {
-			this.camera.x -= 5;
+
+		if (this.input.activePointer.withinGame) {
+			if (this.input.x > this.camera.view.width - 50) {
+				this.camera.x += 5;
+			}
+			if (this.input.x < 50) {
+				this.camera.x -= 5;
+			}
+			if (this.input.y > this.camera.view.height - 50) {
+				this.camera.y += 5;
+			}
+			if (this.input.y < 50) {
+				this.camera.y -= 5;
+			}
 		}
 	},
 	render: function() {

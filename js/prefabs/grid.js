@@ -18,6 +18,9 @@ function Grid(w, h, lineW, lineC) {
 
 	this.index1 = -1;
 	this.index2 = -1;
+
+	offsetx = 0;
+	offsety = 0;
 }
 
 //Draws the grid on screen 
@@ -36,10 +39,10 @@ Grid.prototype.makeGrid = function() {
 };
 
 Grid.prototype.update = function() {
-	//Either use tileSprite, OR bigger bitmapData with camera scrolling
-	//camera scrolling is probably better option in my opinion
 	this.upperLeftRow = Math.ceil(game.camera.view.x / this.w);
 	this.upperLeftColumn = Math.ceil(game.camera.view.y / this.h);
+	this.offsetx = game.camera.view.x % this.w;
+	this.offsety = game.camera.view.y % this.h;
 
 	//vars for debugging
 	v1 = this.upperLeftRow;
@@ -49,12 +52,17 @@ Grid.prototype.update = function() {
 		this.bmd.ctx.clearRect((this.w * this.index1) + 1, (this.h * this.index2) + 1, this.w - 2, this.h - 2);
 	}
 
+	var lineW = this.bmd.ctx.lineWidth;
+
 	//For now. This will be tweaked to include when picking up an object, etc.
 	//Only draw rects when mouse is on the screen
 	if (game.input.activePointer.withinGame) {
-		this.index1 = Math.floor(game.input.x / this.w) + this.upperLeftRow;
-		this.index2 = Math.floor(game.input.y / this.h) + this.upperLeftColumn;
-		this.bmd.rect((this.w * this.index1) + 1, (this.h * this.index2) + 1, 
-			this.w - 2, this.h - 2, '#0000ff');
+		//If the camera is scrolled so that it doesn't line up with the grid
+		//i.e. it ends in the middle of one row (cutting it off)
+		//then subtract the offset so that the mouse position still correctly finds the index
+		this.index1 = Math.floor((game.input.x - (this.offsetx !== 0 ? this.w - this.offsetx : 0)) / this.w) + this.upperLeftRow;
+		this.index2 = Math.floor((game.input.y - (this.offsety !== 0 ? this.h - this.offsety : 0)) / this.h) + this.upperLeftColumn;
+		this.bmd.rect((this.w * this.index1) + lineW, (this.h * this.index2) + lineW, 
+			this.w - (lineW + 1), this.h - (lineW + 1), '#0000ff');
 	}
 };
