@@ -17,7 +17,8 @@ Play.prototype = {
         this.g.makeGrid();
     },
     update: function() {
-        this.g.draw(4, 3);
+        //grid.draw(xTiles, yTiles, opacity);
+        this.g.draw(1, 1, .75);
 
 
         if (this.input.activePointer.withinGame) {

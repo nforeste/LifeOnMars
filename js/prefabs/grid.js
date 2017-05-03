@@ -40,11 +40,14 @@ Grid.prototype.makeGrid = function() {
     }
 };
 
-Grid.prototype.draw = function(xTiles, yTiles) {
+Grid.prototype.draw = function(xTiles, yTiles, opacity) {
     this.upperLeftRow = Math.ceil(game.camera.view.x / this.w);
     this.upperLeftColumn = Math.ceil(game.camera.view.y / this.h);
     this.offsetx = game.camera.view.x % this.w;
     this.offsety = game.camera.view.y % this.h;
+
+    //change the opacity of the overlay
+    this.bmdOverlay.ctx.globalAlpha = opacity;
 
     if (this.index1 >= 0 && this.index2 >= 0) {
         for (let i = this.xStart; i < this.xStart + xTiles; i++) {
