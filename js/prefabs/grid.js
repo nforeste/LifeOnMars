@@ -1,3 +1,5 @@
+"use strict";
+
 function Grid(w, h, lineC) {
     this.w = w;
     this.h = h;

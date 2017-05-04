@@ -1,8 +1,10 @@
+'use strict';
+
 /*
 Play is the state containing the main game loop
 */
 
-function Play() {};
+function Play() {}
 Play.prototype = {
     preload: function() {
         console.log('Play: preload()');
@@ -18,7 +20,7 @@ Play.prototype = {
     },
     update: function() {
         //grid.draw(xTiles, yTiles, opacity);
-        this.g.draw(1, 1, .75);
+        this.g.draw(1, 1, 0.75);
 
 
         if (this.input.activePointer.withinGame) {
