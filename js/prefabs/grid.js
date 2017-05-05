@@ -1,6 +1,7 @@
-"use strict";
+'use strict';
 
-function Grid(w, h, lineC) {
+function Grid(game, w, h, lineC) {
+    this.game = game;
     this.w = w;
     this.h = h;
 
@@ -29,24 +30,26 @@ function Grid(w, h, lineC) {
 
 //Draws the grid on screen 
 Grid.prototype.makeGrid = function() {
-    for (let i = 0; i < game.world.width; i += this.w) {
+    for (let i = 0; i < this.game.world.width; i += this.w) {
         this.bmdGrid.ctx.moveTo(i, 0);
-        this.bmdGrid.ctx.lineTo(i, game.world.height);
+        this.bmdGrid.ctx.lineTo(i, this.game.world.height);
         this.bmdGrid.ctx.stroke();
     }
 
-    for (let i = 0; i < game.world.height; i += this.h) {
+    for (let i = 0; i < this.game.world.height; i += this.h) {
         this.bmdGrid.ctx.moveTo(0, i);
-        this.bmdGrid.ctx.lineTo(game.world.width, i);
+        this.bmdGrid.ctx.lineTo(this.game.world.width, i);
         this.bmdGrid.ctx.stroke();
     }
 };
 
 Grid.prototype.draw = function(xTiles, yTiles, opacity) {
-    this.upperLeftRow = Math.ceil(game.camera.view.x / this.w);
-    this.upperLeftColumn = Math.ceil(game.camera.view.y / this.h);
-    this.offsetx = game.camera.view.x % this.w;
-    this.offsety = game.camera.view.y % this.h;
+    var curW = this.w * this.game.worldScale;
+    var curH = this.h * this.game.worldScale;
+    this.upperLeftRow = Math.ceil(this.game.camera.view.x / curW);
+    this.upperLeftColumn = Math.ceil(this.game.camera.view.y / curH);
+    this.offsetx = this.game.camera.view.x % curW;
+    this.offsety = this.game.camera.view.y % curH;
 
     //change the opacity of the overlay
     this.bmdOverlay.ctx.globalAlpha = opacity;
@@ -61,16 +64,20 @@ Grid.prototype.draw = function(xTiles, yTiles, opacity) {
 
     //For now. This will be tweaked to include when picking up an object, etc.
     //Only draw rects when mouse is on the screen
-    if (game.input.activePointer.withinGame) {
+    if (this.game.input.activePointer.withinGame) {
         //If the camera is scrolled so that it doesn't line up with the grid
         //i.e. it ends in the middle of one row (cutting it off)
         //then subtract the offset so that the mouse position still correctly finds the index
-        this.index1 = Math.floor((game.input.x - (this.offsetx !== 0 ? this.w - this.offsetx : 0)) / this.w) + this.upperLeftRow;
-        this.index2 = Math.floor((game.input.y - (this.offsety !== 0 ? this.h - this.offsety : 0)) / this.h) + this.upperLeftColumn;
+        this.index1 = Math.floor((this.game.input.x - (this.offsetx !== 0 ? curW - this.offsetx : 0)) 
+            / curW) + this.upperLeftRow;
+        this.index2 = Math.floor((this.game.input.y - (this.offsety !== 0 ? curH - this.offsety : 0)) 
+            / curH) + this.upperLeftColumn;
 
         //update the grid offsets with the new index positions
-        this.xStart = Math.min(Math.max(this.index1 - Math.floor(xTiles / 2), 0), (game.world.width / this.w) - xTiles);
-        this.yStart = Math.min(Math.max(this.index2 - Math.floor(yTiles / 2), 0), (game.world.height / this.h) - yTiles);
+        this.xStart = Math.min(Math.max(this.index1 - Math.floor(xTiles / 2), 0), 
+            (this.game.world.width / curW) - xTiles);
+        this.yStart = Math.min(Math.max(this.index2 - Math.floor(yTiles / 2), 0), 
+            (this.game.world.height / curH) - yTiles);
 
         //draw all of the rectangles
         for (let i = this.xStart; i < this.xStart + xTiles; i++) {

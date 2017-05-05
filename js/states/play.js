@@ -15,13 +15,18 @@ Play.prototype = {
 
         //orangish brown
         this.stage.backgroundColor = '#c1440e';
-        this.g = new Grid(40, 40, 'black');
+        this.g = new Grid(this, 40, 40, 'black');
         this.g.makeGrid();
+
+        //the scale of the world (changes with zooming)
+        this.worldScale = 1;
+        //.bind(this) used to access 'this' scope within callback
+        this.input.mouse.mouseWheelCallback = this.zoom.bind(this);
+
     },
     update: function() {
         //grid.draw(xTiles, yTiles, opacity);
-        this.g.draw(1, 1, 0.75);
-
+        this.g.draw(3, 4, 0.75);
 
         if (this.input.activePointer.withinGame) {
             if (this.input.x > this.camera.view.width - 50) {
@@ -41,5 +46,15 @@ Play.prototype = {
     render: function() {
         //game.debug.text(game.input.activePointer.position, 2, 14, '#ffffff');
         //game.debug.cameraInfo(this.camera, 2, 64, '#ffffff');
+    },
+    zoom: function() {
+        if (this.input.mouse.wheelDelta === Phaser.Mouse.WHEEL_UP) {
+            this.worldScale += .025;
+        } else {
+            this.worldScale -= .025;
+        }
+        //clamp the scaling (arbitrary right now)
+        this.worldScale = Phaser.Math.clamp(this.worldScale, 0.75, 1.25);
+        this.world.scale.set(this.worldScale);
     }
 };
