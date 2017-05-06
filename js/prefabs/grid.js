@@ -5,12 +5,19 @@ function Grid(game, w, h, lineC) {
     this.w = w;
     this.h = h;
 
-    //bmdGrid is the bitmapData that draws the grid on the screen
-    this.bmdGrid = game.add.bitmapData(game.world.width, game.world.height);
-    this.bmdGrid.ctx.strokeStyle = lineC;
-
-    //lineWidth was going to be an argument, but it broke everything :/
-    this.bmdGrid.ctx.lineWidth = 1;
+    this.gridsRef = [];
+    this.gridsSpr = [];
+    for (let i = 0; i < 3; i++) {
+        //960x768 used because it is smallest common multiple of 32, 48, and 64 above 800x600
+        this.gridsRef[i] = game.add.bitmapData(960, 768);
+        this.gridsRef[i].ctx.strokeSylte = lineC;
+        this.gridsRef[i].ctx.lineWidth = 1;
+        this.gridsSpr[i] = game.add.tileSprite(0, 0, 960, 768, this.gridsRef[i]);
+        //this.gridsSpr[i].anchor.set(.5);
+        if (i !== 0) {
+            this.gridsSpr[i].kill();
+        }
+    }
 
     //create a 2-Dimensional matrix to represent the grid
     //this will be used for terrain (cells[3][4] is a mountain)
@@ -22,7 +29,6 @@ function Grid(game, w, h, lineC) {
     //bmdOverlay is the bitmapData that draws the highlights on the grid
     this.bmdOverlay = game.add.bitmapData(game.world.width, game.world.height);
     this.sprite = game.add.sprite(0, 0, this.bmdOverlay);
-    game.add.sprite(0, 0, this.bmdGrid);
 
     this.index1 = -1;
     this.index2 = -1;
@@ -30,16 +36,19 @@ function Grid(game, w, h, lineC) {
 
 //Draws the grid on screen 
 Grid.prototype.makeGrid = function() {
-    for (let i = 0; i < this.game.world.width; i += this.w) {
-        this.bmdGrid.ctx.moveTo(i, 0);
-        this.bmdGrid.ctx.lineTo(i, this.game.world.height);
-        this.bmdGrid.ctx.stroke();
-    }
+    for (let x = 0; x < 3; x++) {
+        //((x / 2) + 1) === 1, 1.5, 2
+        for (let i = 0; i < this.game.world.width; i += this.w * ((x / 2) + 1)) {
+            this.gridsRef[x].ctx.moveTo(i, 0);
+            this.gridsRef[x].ctx.lineTo(i, this.game.world.height);
+            this.gridsRef[x].ctx.stroke();
+        }
 
-    for (let i = 0; i < this.game.world.height; i += this.h) {
-        this.bmdGrid.ctx.moveTo(0, i);
-        this.bmdGrid.ctx.lineTo(this.game.world.width, i);
-        this.bmdGrid.ctx.stroke();
+        for (let i = 0; i < this.game.world.height; i += this.h * ((x / 2) + 1)) {
+            this.gridsRef[x].ctx.moveTo(0, i);
+            this.gridsRef[x].ctx.lineTo(this.game.world.width, i);
+            this.gridsRef[x].ctx.stroke();
+        }
     }
 };
 
@@ -57,7 +66,7 @@ Grid.prototype.draw = function(xTiles, yTiles, opacity) {
     if (this.index1 >= 0 && this.index2 >= 0) {
         for (let i = this.xStart; i < this.xStart + xTiles; i++) {
             for (let j = this.yStart; j < this.yStart + yTiles; j++) {
-                this.bmdOverlay.ctx.clearRect(this.w * i, this.h * j, this.w, this.h);
+                this.bmdOverlay.clear(curW * i, curH * j, curW, curH);
             }
         }
     }
@@ -82,7 +91,7 @@ Grid.prototype.draw = function(xTiles, yTiles, opacity) {
         //draw all of the rectangles
         for (let i = this.xStart; i < this.xStart + xTiles; i++) {
             for (let j = this.yStart; j < this.yStart + yTiles; j++) {
-                this.bmdOverlay.rect(this.w * i, this.h * j, this.w, this.h, '#66ff33');
+                this.bmdOverlay.rect(curW * i, curH * j, curW, curH, '#66ff33');
             }
         }
     }
