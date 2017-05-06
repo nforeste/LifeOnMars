@@ -13,7 +13,6 @@ function Grid(game, w, h, lineC) {
         this.gridsRef[i].ctx.strokeSylte = lineC;
         this.gridsRef[i].ctx.lineWidth = 1;
         this.gridsSpr[i] = game.add.tileSprite(0, 0, 960, 768, this.gridsRef[i]);
-        //this.gridsSpr[i].anchor.set(.5);
         if (i !== 0) {
             this.gridsSpr[i].kill();
         }
@@ -63,13 +62,8 @@ Grid.prototype.draw = function(xTiles, yTiles, opacity) {
     //change the opacity of the overlay
     this.bmdOverlay.ctx.globalAlpha = opacity;
 
-    if (this.index1 >= 0 && this.index2 >= 0) {
-        for (let i = this.xStart; i < this.xStart + xTiles; i++) {
-            for (let j = this.yStart; j < this.yStart + yTiles; j++) {
-                this.bmdOverlay.clear(curW * i, curH * j, curW, curH);
-            }
-        }
-    }
+    //clear the canvas
+    this.bmdOverlay.clear();
 
     //For now. This will be tweaked to include when picking up an object, etc.
     //Only draw rects when mouse is on the screen
