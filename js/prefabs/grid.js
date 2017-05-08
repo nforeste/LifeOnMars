@@ -39,12 +39,12 @@ Grid.prototype.makeGrid = function() {
         //((x / 2) + 1) === 1, 1.5, 2
         for (let i = 0; i < this.game.world.width; i += this.w * ((x / 2) + 1)) {
             this.gridsRef[x].ctx.moveTo(i, 0);
-            this.gridsRef[x].ctx.lineTo(i, this.game.world.height);
+            this.gridsRef[x].ctx.lineTo(i, 768);
         }
 
         for (let i = 0; i < this.game.world.height; i += this.h * ((x / 2) + 1)) {
             this.gridsRef[x].ctx.moveTo(0, i);
-            this.gridsRef[x].ctx.lineTo(this.game.world.width, i);
+            this.gridsRef[x].ctx.lineTo(960, i);
         }
         this.gridsRef[x].ctx.stroke();
     }

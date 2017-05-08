@@ -134,9 +134,6 @@ Play.prototype = {
             var oldCameraPosX = this.camera.x;
             var oldCameraPosY = this.camera.y;
 
-            //decrease the world scale by a factor of 50%
-            this.worldScale -= .5;
-
             //clear the current grid
             this.g.bmdOverlay.clear();
             this.g.gridsSpr[this.zoomLevel].kill();
@@ -144,8 +141,7 @@ Play.prototype = {
 
             //arbitrary right now, quarter of screen
             //seems to look okay, not sure how to improve atm
-            this.camera.x -= Math.round(this.camera.width / 4 / this.worldScale);
-            this.camera.y -= Math.round(this.camera.height / 4 / this.worldScale);
+            this.camera.focusOnXY(this.camera.view.centerX / 1.5, this.camera.view.centerY / 1.5);
 
             //move the grid by the amount the camera moved in the opposite direction
             if (oldCameraPosX !== this.camera.x || oldCameraPosY !== this.camera.y) {
@@ -155,6 +151,9 @@ Play.prototype = {
 
             //Make the new grid visible
             this.g.gridsSpr[this.zoomLevel].revive();
+
+            //decrease the world scale by a factor of 50%
+            this.worldScale -= .5;
 
             //Acutally scale all scalable objects
             this.gameWorld.scale.set(this.worldScale);
