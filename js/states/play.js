@@ -10,6 +10,9 @@ var Play = function(game) {
     //the scale of the world (changes with zooming)
     this.worldScale = 1;
     this.zoomLevel = 0;
+    this.mapSizeX = 4032;
+    this.mapSizeY = 4032;
+    this.dragSpeed = 2;
 };
 Play.prototype = {
     preload: function() {
@@ -33,7 +36,14 @@ Play.prototype = {
         this.g.makeGrid();
 
         //.bind(this) used to access 'this' scope within callback
-        this.input.mouse.mouseWheelCallback = this.zoom.bind(this);
+        this.input.mouse.mouseWheelCallback = function() {
+            //wheelDelta is 1 for wheel up and -1 for wheel down
+            if (this.input.mouse.wheelDelta === Phaser.Mouse.WHEEL_UP) {
+                this.zoomIn();
+            } else {
+                this.zoomOut();
+            }
+        }.bind(this);
 
         //Test building stuff :D
         this.hab1 = new Building(this, 1,  1, 'hab1x1');
@@ -54,73 +64,87 @@ Play.prototype = {
         //move the camera as the mouse goes to the sides of the screen
         //also scroll the background grid at the same frequency
         if (this.input.activePointer.withinGame) {
+            var oldCameraPosX = this.camera.position.x;
+            var oldCameraPosY = this.camera.position.y;
             if (this.input.x > this.camera.view.width - 50) {
-                if (this.camera.x + this.camera.view.width < this.world.width) {
-                    this.g.gridsSpr[this.zoomLevel].tilePosition.x -= 4;
-                }
-                this.camera.x += 4;
+                this.camera.x += this.dragSpeed;
+                this.g.gridsSpr[this.zoomLevel].tilePosition.x -= Math.abs(this.camera.x - oldCameraPosX);
             }
             if (this.input.x < 50) {
-                if (this.camera.x > 0) {
-                    this.g.gridsSpr[this.zoomLevel].tilePosition.x += 4;
-                }
-                this.camera.x -= 4;
+                this.camera.x -= this.dragSpeed;
+                this.g.gridsSpr[this.zoomLevel].tilePosition.x += Math.abs(this.camera.x - oldCameraPosX);
             }
             if (this.input.y > this.camera.view.height - 50) {
-                if (this.camera.y + this.camera.view.height < this.world.height) {
-                    this.g.gridsSpr[this.zoomLevel].tilePosition.y -= 4;
-                }
-                this.camera.y += 4;
+                this.camera.y += this.dragSpeed;
+                this.g.gridsSpr[this.zoomLevel].tilePosition.y -= Math.abs(this.camera.y - oldCameraPosY);
             }
             if (this.input.y < 50) {
-                if (this.camera.y > 0) {
-                    this.g.gridsSpr[this.zoomLevel].tilePosition.y += 4;
-                }
-                this.camera.y -= 4;
+                this.camera.y -= this.dragSpeed;
+                this.g.gridsSpr[this.zoomLevel].tilePosition.y += Math.abs(this.camera.y - oldCameraPosY);
             }
         }
+        //console.log(this.g.gridsSpr[this.zoomLevel].tilePosition);
 
         //keep the grid tileSprite centered on the camera
         this.g.gridsSpr[this.zoomLevel].x = this.camera.view.x;
         this.g.gridsSpr[this.zoomLevel].y = this.camera.view.y;
     },
     render: function() {
-        //game.debug.text(game.input.activePointer.position, 2, 14, '#ffffff');
-        //game.debug.cameraInfo(this.camera, 2, 64, '#ffffff');
+        game.debug.text(game.input.activePointer.position, 200, 14, '#ffffff');
+        game.debug.cameraInfo(this.camera, 2, 14, '#ffffff');
     },
-    zoom: function() {
-        //keep track of the previous zoom
-        var oldScale = this.worldScale;
-        var oldZoom = this.zoomLevel;
-
-        //move the scale up and down based on the mousewheel
-        if (this.input.mouse.wheelDelta === Phaser.Mouse.WHEEL_UP) {
+    zoomIn: function() {
+        if (this.worldScale < 2) {
+            var oldCameraPosX = this.camera.position.x;
+            var oldCameraPosY = this.camera.position.y;
             this.worldScale += .5;
-            this.zoomLevel++;
-        } else {
-            this.worldScale -= .5;
-            this.zoomLevel--;
-        }
+            this.dragSpeed++;
 
-        // this.gameWorld.pivot.set(this.input.worldX, this.input.worldY);
-        // this.gameWorld.x = this.input.worldX;
-        // this.gameWorld.y = this.input.worldY;
+            //arbitrary
+            //try to find a closer (better) solution
+            this.camera.x += this.input.x / this.worldScale;
+            this.camera.y += this.input.y / this.worldScale;
 
-        //clamp the scaling (arbitrary right now)
-        this.worldScale = Phaser.Math.clamp(this.worldScale, 1, 2);
-        this.zoomLevel = Phaser.Math.clamp(this.zoomLevel, 0, 2);
-        this.gameWorld.scale.set(this.worldScale);
+            if (oldCameraPosX !== this.camera.position.x || oldCameraPosY !== this.camera.position.y) {
+                this.g.gridsSpr[this.zoomLevel].tilePosition.x -= Math.abs(this.camera.x - oldCameraPosX);
+                this.g.gridsSpr[this.zoomLevel].tilePosition.y -= Math.abs(this.camera.y - oldCameraPosY);
+            }
 
-        //if the scale changed, replace the grid with the new zoom
-        //Can't just increase grid scale because it will make the line width thicker
-        if (oldScale !== this.worldScale) {
+            this.gameWorld.scale.set(this.worldScale);
+
             this.g.bmdOverlay.clear();
-            this.g.gridsSpr[oldZoom].kill();
-            this.g.gridsSpr[this.zoomLevel].tilePosition = this.g.gridsSpr[oldZoom].tilePosition;
-            this.g.gridsSpr[this.zoomLevel].revive();
+            this.g.gridsSpr[this.zoomLevel].kill();
+            this.zoomLevel++;
 
-            //this.g.gridsSpr[this.zoomLevel].tilePosition.x = this.input.worldX;
-            //this.g.gridsSpr[this.zoomLevel].tilePosition.y = this.input.worldY;
+            this.g.gridsSpr[this.zoomLevel].revive();
+            this.g.gridsSpr[this.zoomLevel].tilePosition = this.g.gridsSpr[this.zoomLevel - 1].tilePosition;
+        }
+    },
+    zoomOut: function() {
+        if (this.worldScale > 1) {
+            var oldCameraPosX = this.camera.position.x;
+            var oldCameraPosY = this.camera.position.y;
+            this.worldScale -= .5;
+            this.dragSpeed--;
+
+            //arbitrary right now, quarter of screen
+            //seems to look okay, not sure how to improve atm
+            this.camera.x -= 200;
+            this.camera.y -= 150;
+
+            if (oldCameraPosX !== this.camera.position.x || oldCameraPosY !== this.camera.position.y) {
+                this.g.gridsSpr[this.zoomLevel].tilePosition.x += Math.abs(this.camera.x - oldCameraPosX);
+                this.g.gridsSpr[this.zoomLevel].tilePosition.y += Math.abs(this.camera.y - oldCameraPosY);
+            }
+            
+            this.gameWorld.scale.set(this.worldScale);
+
+
+            this.g.bmdOverlay.clear();
+            this.g.gridsSpr[this.zoomLevel].kill();
+            this.zoomLevel--;
+            this.g.gridsSpr[this.zoomLevel].revive();
+            this.g.gridsSpr[this.zoomLevel].tilePosition = this.g.gridsSpr[this.zoomLevel + 1].tilePosition;
         }
     }
 };
