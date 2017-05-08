@@ -12,7 +12,7 @@ var Play = function(game) {
     this.zoomLevel = 0;
     this.mapSizeX = 4032;
     this.mapSizeY = 4032;
-    this.dragSpeed = 2;
+    this.dragSpeed = 4;
 };
 Play.prototype = {
     preload: function() {
@@ -95,56 +95,70 @@ Play.prototype = {
     },
     zoomIn: function() {
         if (this.worldScale < 2) {
+            //store the current camera position
             var oldCameraPosX = this.camera.position.x;
             var oldCameraPosY = this.camera.position.y;
+
+            //increase the world scale by a factor of 50%
             this.worldScale += .5;
-            this.dragSpeed++;
 
             //arbitrary
             //try to find a closer (better) solution
-            this.camera.x += this.input.x / this.worldScale;
-            this.camera.y += this.input.y / this.worldScale;
+            this.camera.x += Math.round(this.input.x / this.worldScale);
+            this.camera.y += Math.round(this.input.y / this.worldScale);
 
+
+            //Move the grid by the amount the camera moved in the opposite direction
             if (oldCameraPosX !== this.camera.position.x || oldCameraPosY !== this.camera.position.y) {
                 this.g.gridsSpr[this.zoomLevel].tilePosition.x -= Math.abs(this.camera.x - oldCameraPosX);
                 this.g.gridsSpr[this.zoomLevel].tilePosition.y -= Math.abs(this.camera.y - oldCameraPosY);
             }
 
-            this.gameWorld.scale.set(this.worldScale);
-
+            //for some reason this needs to be like this instead
+            //of exactly like in zoomOut
+            //if anyone can find a solution for that pls do
             this.g.bmdOverlay.clear();
             this.g.gridsSpr[this.zoomLevel].kill();
             this.zoomLevel++;
-
-            this.g.gridsSpr[this.zoomLevel].revive();
             this.g.gridsSpr[this.zoomLevel].tilePosition = this.g.gridsSpr[this.zoomLevel - 1].tilePosition;
+
+            //Make the new grid visible
+            this.g.gridsSpr[this.zoomLevel].revive();
+
+            //Acutally scale all scalable objects
+            this.gameWorld.scale.set(this.worldScale);
         }
     },
     zoomOut: function() {
         if (this.worldScale > 1) {
+            //store the current camera position
             var oldCameraPosX = this.camera.position.x;
             var oldCameraPosY = this.camera.position.y;
+
+            //decrease the world scale by a factor of 50%
             this.worldScale -= .5;
-            this.dragSpeed--;
+
+            //clear the current grid
+            this.g.bmdOverlay.clear();
+            this.g.gridsSpr[this.zoomLevel].kill();
+            this.zoomLevel--;
 
             //arbitrary right now, quarter of screen
             //seems to look okay, not sure how to improve atm
-            this.camera.x -= 200;
-            this.camera.y -= 150;
+            this.camera.x -= Math.round(this.camera.width / 4 / this.worldScale);
+            this.camera.y -= Math.round(this.camera.height / 4 / this.worldScale);
 
+            //move the grid by the amount the camera moved in the opposite direction
             if (oldCameraPosX !== this.camera.position.x || oldCameraPosY !== this.camera.position.y) {
                 this.g.gridsSpr[this.zoomLevel].tilePosition.x += Math.abs(this.camera.x - oldCameraPosX);
                 this.g.gridsSpr[this.zoomLevel].tilePosition.y += Math.abs(this.camera.y - oldCameraPosY);
             }
             
-            this.gameWorld.scale.set(this.worldScale);
-
-
-            this.g.bmdOverlay.clear();
-            this.g.gridsSpr[this.zoomLevel].kill();
-            this.zoomLevel--;
+            //Make the new grid visible
             this.g.gridsSpr[this.zoomLevel].revive();
-            this.g.gridsSpr[this.zoomLevel].tilePosition = this.g.gridsSpr[this.zoomLevel + 1].tilePosition;
+
+            //Acutally scale all scalable objects
+            this.gameWorld.scale.set(this.worldScale);
         }
     }
 };
