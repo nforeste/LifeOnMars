@@ -87,7 +87,7 @@ Play.prototype = {
         this.g.gridsSpr[this.zoomLevel].y = this.camera.view.y;
     },
     render: function() {
-        //game.debug.text(game.input.activePointer.position, 200, 14, '#ffffff');
+        //game.debug.text(game.input.worldX+', '+game.input.worldY, 200, 14, '#ffffff');
         //game.debug.cameraInfo(this.camera, 2, 14, '#ffffff');
         //game.time.advancedTiming=true;
         //game.debug.text(game.time.fps || '--',2,14,'#ffffff');
@@ -104,10 +104,10 @@ Play.prototype = {
             this.g.bmdOverlay.clear();
             this.g.gridsSpr[this.zoomLevel].kill();
 
-            //arbitrary
-            //try to find a closer (better) solution
-            this.camera.x += Math.round(this.input.x / this.worldScale);
-            this.camera.y += Math.round(this.input.y / this.worldScale);
+            //arbitrary right now, looks ok though
+            var focalMult = 1.2;
+
+            this.camera.focusOnXY(this.input.worldX * focalMult, this.input.worldY * focalMult);
 
             //Move the grid by the amount the camera moved in the opposite direction
             if (oldCameraPosX !== this.camera.x || oldCameraPosY !== this.camera.y) {
@@ -134,14 +134,18 @@ Play.prototype = {
             var oldCameraPosX = this.camera.x;
             var oldCameraPosY = this.camera.y;
 
+            //decrease the world scale by a factor of 50%
+            this.worldScale -= .5;
+
             //clear the current grid
             this.g.bmdOverlay.clear();
             this.g.gridsSpr[this.zoomLevel].kill();
             this.zoomLevel--;
 
-            //arbitrary right now, quarter of screen
-            //seems to look okay, not sure how to improve atm
-            this.camera.focusOnXY(this.camera.view.centerX / 1.5, this.camera.view.centerY / 1.5);
+            //arbitrary right now, looks ok though
+            var focalMult = 1.5;
+
+            this.camera.focusOnXY(this.camera.view.centerX / focalMult, this.camera.view.centerY / focalMult);
 
             //move the grid by the amount the camera moved in the opposite direction
             if (oldCameraPosX !== this.camera.x || oldCameraPosY !== this.camera.y) {
@@ -151,9 +155,6 @@ Play.prototype = {
 
             //Make the new grid visible
             this.g.gridsSpr[this.zoomLevel].revive();
-
-            //decrease the world scale by a factor of 50%
-            this.worldScale -= .5;
 
             //Acutally scale all scalable objects
             this.gameWorld.scale.set(this.worldScale);
