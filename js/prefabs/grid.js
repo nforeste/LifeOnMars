@@ -27,6 +27,7 @@ function Grid(game, w, h, lineC) {
 
     //bmdOverlay is the bitmapData that draws the highlights on the grid
     this.bmdOverlay = game.add.bitmapData(960, 768);
+    this.bmdOverlay.ctx.fillStyle = '#66ff33';
     this.bmdSprite = game.add.sprite(0, 0, this.bmdOverlay);
 
     this.index1 = -1;
@@ -62,7 +63,7 @@ Grid.prototype.draw = function(xTiles, yTiles, opacity) {
     this.bmdOverlay.ctx.globalAlpha = opacity;
 
     //clear the canvas
-    this.bmdOverlay.clear();
+    this.bmdOverlay.ctx.clearRect(0, 0, 960, 768);
 
     //move the sprite along with the camera with the offset
     this.bmdSprite.x = this.game.camera.x - this.offsetx;
@@ -83,11 +84,7 @@ Grid.prototype.draw = function(xTiles, yTiles, opacity) {
         this.yStart = Math.min(Math.max(this.index2 - Math.floor(yTiles / 2), 0), 
             (this.game.world.height / curH) - yTiles);
 
-        //draw all of the rectangles
-        for (let i = this.xStart; i < this.xStart + xTiles; i++) {
-            for (let j = this.yStart; j < this.yStart + yTiles; j++) {
-                this.bmdOverlay.rect(curW * i, curH * j, curW, curH, '#66ff33');
-            }
-        }
+        //draw the background highlights
+        this.bmdOverlay.ctx.fillRect(curW * this.xStart, curH * this.yStart, curW * xTiles, curH * yTiles);
     }
 };

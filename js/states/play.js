@@ -34,7 +34,8 @@ Play.prototype = {
         this.g.makeGrid();
 
         //.bind(this) used to access 'this' scope within callback
-        this.input.mouse.mouseWheelCallback = function() {
+        this.input.mouse.mouseWheelCallback = function(event) {
+            event.preventDefault();
             //wheelDelta is 1 for wheel up and -1 for wheel down
             if (this.input.mouse.wheelDelta === Phaser.Mouse.WHEEL_UP) {
                 this.zoomIn();
