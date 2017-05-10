@@ -3,7 +3,6 @@
 /*
 Play is the state containing the main game loop
 */
-
 var Play = function(game) {
     this.game = game;
 
@@ -11,6 +10,7 @@ var Play = function(game) {
     this.worldScale = 1;
     this.zoomLevel = 0;
     this.dragSpeed = 4;
+    this.worldSize = 4032;
 };
 Play.prototype = {
     preload: function() {
@@ -83,11 +83,10 @@ Play.prototype = {
         }
 
         //keep the grid tileSprite centered on the camera
-        this.g.gridsSpr[this.zoomLevel].x = this.camera.view.x;
-        this.g.gridsSpr[this.zoomLevel].y = this.camera.view.y;
+        this.g.gridsSpr[this.zoomLevel].x = this.camera.x;
+        this.g.gridsSpr[this.zoomLevel].y = this.camera.y;
     },
     render: function() {
-        //game.debug.text(game.input.worldX+', '+game.input.worldY, 200, 14, '#ffffff');
         //game.debug.cameraInfo(this.camera, 2, 14, '#ffffff');
         //game.time.advancedTiming=true;
         //game.debug.text(game.time.fps || '--',2,14,'#ffffff');
@@ -101,13 +100,21 @@ Play.prototype = {
             //increase the world scale by a factor of 50%
             this.worldScale += .5;
 
+            //Increase the size of the world by 50%
+            this.world.setBounds(0, 0, this.worldSize * this.worldScale, this.worldSize * this.worldScale);
+
+            //Clear the grid overlay and kill the current grid layer
             this.g.bmdOverlay.clear();
             this.g.gridsSpr[this.zoomLevel].kill();
 
-            //arbitrary right now, looks ok though
-            var focalMult = 1.2;
+            //move the camera slightly towards the mouse from the center of the screen
+            var offsetX = Math.round((this.input.x - (this.camera.width / 2)) / (this.camera.width / 250));
+            var offsetY = Math.round((this.input.y - (this.camera.height / 2)) / (this.camera.height / 250));
 
-            this.camera.focusOnXY(this.input.worldX * focalMult, this.input.worldY * focalMult);
+            //arbitrary, looks pretty good though
+            var focalMult = this.worldScale===1.5?1.5:1.35;
+            this.camera.focusOnXY((this.camera.view.centerX + offsetX) * focalMult, 
+                (this.camera.view.centerY + offsetY) * focalMult);
 
             //Move the grid by the amount the camera moved in the opposite direction
             if (oldCameraPosX !== this.camera.x || oldCameraPosY !== this.camera.y) {
@@ -115,9 +122,7 @@ Play.prototype = {
                 this.g.gridsSpr[this.zoomLevel].tilePosition.y -= Math.abs(this.camera.y - oldCameraPosY);
             }
 
-            //for some reason this needs to be like this instead
-            //of exactly like in zoomOut
-            //if anyone can find a solution for that pls do
+            //move to the next zoom level and copy the tile position to the next grid
             this.zoomLevel++;
             this.g.gridsSpr[this.zoomLevel].tilePosition = this.g.gridsSpr[this.zoomLevel - 1].tilePosition;
 
@@ -137,14 +142,16 @@ Play.prototype = {
             //decrease the world scale by a factor of 50%
             this.worldScale -= .5;
 
+            //decrease the size of the world by 50%
+            this.world.setBounds(0, 0, this.worldSize * this.worldScale, this.worldSize * this.worldScale);
+
             //clear the current grid
             this.g.bmdOverlay.clear();
             this.g.gridsSpr[this.zoomLevel].kill();
             this.zoomLevel--;
 
             //arbitrary right now, looks ok though
-            var focalMult = 1.5;
-
+            var focalMult = this.worldScale===1.5?1.35:1.5;
             this.camera.focusOnXY(this.camera.view.centerX / focalMult, this.camera.view.centerY / focalMult);
 
             //move the grid by the amount the camera moved in the opposite direction

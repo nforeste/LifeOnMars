@@ -33,8 +33,8 @@ Building.prototype.clicked = function() {
         this.alpha = 1;
 
         //snap the building to the grid 
-        this.x = this.game.g.xStart * 32;
-        this.y = this.game.g.yStart * 32;
+        this.x = (this.game.g.xStart + this.game.g.upperLeftRow) * 32;
+        this.y = (this.game.g.yStart + this.game.g.upperLeftColumn) * 32;
 
         //clear the grid highlights
         this.game.g.bmdOverlay.clear();

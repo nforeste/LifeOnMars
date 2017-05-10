@@ -26,8 +26,8 @@ function Grid(game, w, h, lineC) {
     }
 
     //bmdOverlay is the bitmapData that draws the highlights on the grid
-    this.bmdOverlay = game.add.bitmapData(game.world.width, game.world.height);
-    this.sprite = game.add.sprite(0, 0, this.bmdOverlay);
+    this.bmdOverlay = game.add.bitmapData(960, 768);
+    this.bmdSprite = game.add.sprite(0, 0, this.bmdOverlay);
 
     this.index1 = -1;
     this.index2 = -1;
@@ -53,8 +53,8 @@ Grid.prototype.makeGrid = function() {
 Grid.prototype.draw = function(xTiles, yTiles, opacity) {
     var curW = this.w * this.game.worldScale;
     var curH = this.h * this.game.worldScale;
-    this.upperLeftRow = Math.ceil(this.game.camera.view.x / curW);
-    this.upperLeftColumn = Math.ceil(this.game.camera.view.y / curH);
+    this.upperLeftRow = Math.floor(this.game.camera.view.x / curW);
+    this.upperLeftColumn = Math.floor(this.game.camera.view.y / curH);
     this.offsetx = this.game.camera.view.x % curW;
     this.offsety = this.game.camera.view.y % curH;
 
@@ -64,16 +64,18 @@ Grid.prototype.draw = function(xTiles, yTiles, opacity) {
     //clear the canvas
     this.bmdOverlay.clear();
 
+    //move the sprite along with the camera with the offset
+    this.bmdSprite.x = this.game.camera.x - this.offsetx;
+    this.bmdSprite.y = this.game.camera.y - this.offsety;
+
     //For now. This will be tweaked to include when picking up an object, etc.
     //Only draw rects when mouse is on the screen
     if (this.game.input.activePointer.withinGame) {
         //If the camera is scrolled so that it doesn't line up with the grid
         //i.e. it ends in the middle of one row (cutting it off)
         //then subtract the offset so that the mouse position still correctly finds the index
-        this.index1 = Math.floor((this.game.input.x - (this.offsetx !== 0 ? curW - this.offsetx : 0)) 
-            / curW) + this.upperLeftRow;
-        this.index2 = Math.floor((this.game.input.y - (this.offsety !== 0 ? curH - this.offsety : 0)) 
-            / curH) + this.upperLeftColumn;
+        this.index1 = Math.floor((this.game.input.x + this.offsetx) / curW);
+        this.index2 = Math.floor((this.game.input.y + this.offsety) / curH);
 
         //update the grid offsets with the new index positions
         this.xStart = Math.min(Math.max(this.index1 - Math.floor(xTiles / 2), 0), 
