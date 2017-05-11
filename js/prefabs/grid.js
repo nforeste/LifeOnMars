@@ -1,5 +1,12 @@
 'use strict';
 
+
+/**
+ * @param {Phaser.Game} game -- reference to the current game instance
+ * @param {number} w -- width of each grid cell
+ * @param {number} h -- height of each grid cell
+ * @param {string} lineC -- lineColor
+ */
 function Grid(game, w, h, lineC) {
     this.game = game;
     this.w = w;
@@ -27,14 +34,12 @@ function Grid(game, w, h, lineC) {
 
     //bmdOverlay is the bitmapData that draws the highlights on the grid
     this.bmdOverlay = game.add.bitmapData(960, 768);
-    this.bmdOverlay.ctx.fillStyle = '#66ff33';
     this.bmdSprite = game.add.sprite(0, 0, this.bmdOverlay);
 
     this.index1 = -1;
     this.index2 = -1;
 }
 
-//Draws the grid on screen 
 Grid.prototype.makeGrid = function() {
     for (let x = 0; x < 3; x++) {
         //((x / 2) + 1) === 1, 1.5, 2
@@ -51,6 +56,11 @@ Grid.prototype.makeGrid = function() {
     }
 };
 
+/**
+ * @param  {number} xTiles -- number of cells to draw in the x direction
+ * @param  {number} yTiles -- number of cells to draw in the y direction
+ * @param  {number} opacity -- opacity of the highlighting
+ */
 Grid.prototype.draw = function(xTiles, yTiles, opacity) {
     var curW = this.w * this.game.worldScale;
     var curH = this.h * this.game.worldScale;
@@ -79,12 +89,13 @@ Grid.prototype.draw = function(xTiles, yTiles, opacity) {
         this.index2 = Math.floor((this.game.input.y + this.offsety) / curH);
 
         //update the grid offsets with the new index positions
-        this.xStart = Math.min(Math.max(this.index1 - Math.floor(xTiles / 2), 0), 
+        this.xStart = Math.min(Math.max(this.index1 - Math.floor(xTiles / 2), 0),
             (this.game.world.width / curW) - xTiles);
         this.yStart = Math.min(Math.max(this.index2 - Math.floor(yTiles / 2), 0), 
             (this.game.world.height / curH) - yTiles);
 
         //draw the background highlights
+        this.bmdOverlay.ctx.fillStyle = '#66ff33';
         this.bmdOverlay.ctx.fillRect(curW * this.xStart, curH * this.yStart, curW * xTiles, curH * yTiles);
     }
 };

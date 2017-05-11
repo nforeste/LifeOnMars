@@ -9,24 +9,28 @@ var Play = function(game) {
     //the scale of the world (changes with zooming)
     this.worldScale = 1;
     this.zoomLevel = 0;
-    this.dragSpeed = 4;
+    this.scrollSpeed = 4;
     this.worldSize = 4032;
+    this.holdingBuilding = false;
 };
 Play.prototype = {
     preload: function() {
         //temporary... move to Load state
         this.load.path = 'assets/img/';
-        this.load.image('hab1x1', 'Habitation1x1.png');
-        this.load.image('hab2x1', 'Habitation2x1.png');
-        this.load.image('habBed', 'HabitationBed.png');
+        this.load.image('hab1x1Down', 'HabitationUnit1x1Down.png');
+        this.load.image('hab2x1LeftRight', 'HabitationUnit2x1LeftRight.png');
+        this.load.image('commandCenter', 'CommandCenter3x3.png');
+        this.load.image('walkStraight', 'WalkwayStraight.png');
+        this.load.image('walkT', 'WalkwayTShape.png');
+        this.load.image('walkCross', 'WalkwayCross.png');
+        this.load.image('hab2x2', 'HabitationUnit2x2.png');
+        this.load.image('hab1x1Right', 'HabitationUnit1x1Right.png');
 
         console.log('Play: preload()');
     },
     create: function() {
         console.log('Play: create()');
         this.world.setBounds(0, 0, 4032, 4032);
-
-        this.gameWorld = this.add.group();
 
         //orangish brown
         this.stage.backgroundColor = '#c1440e';
@@ -36,6 +40,7 @@ Play.prototype = {
         //.bind(this) used to access 'this' scope within callback
         this.input.mouse.mouseWheelCallback = function(event) {
             event.preventDefault();
+
             //wheelDelta is 1 for wheel up and -1 for wheel down
             if (this.input.mouse.wheelDelta === Phaser.Mouse.WHEEL_UP) {
                 this.zoomIn();
@@ -44,44 +49,69 @@ Play.prototype = {
             }
         }.bind(this);
 
-        //Test building stuff :D
-        this.hab1 = new Building(this, 1,  1, 'hab1x1');
-        this.hab1.x = 200;
-        this.hab1.y = 200;
+        //parent group of every gameObject
+        this.gameWorld = this.add.group();
 
-        this.hab2 = new Building(this, 2, 1, 'hab2x1');
+        //Test building stuff :D
+        this.hab1 = new Building(this, 1, 1, 'hab1x1Down', null, true);
+        this.hab1.x = 216;
+        this.hab1.y = 216;
+
+        this.hab2 = new Building(this, 2, 1, 'hab2x1LeftRight', null, true);
         this.hab2.x = 0;
         this.hab2.y = 0;
 
-        //All objects added to the world will be added to the gameWorld group
-        //Then, that is what will be scaled on zoom, instead of the whole world
-        //I can potentially put this into the building constructors...
-        this.gameWorld.add(this.hab1);
-        this.gameWorld.add(this.hab2);
+        this.commandCenter = new Building(this, 3, 3, 'commandCenter');
+        this.commandCenter.x = 96;
+        this.commandCenter.y = 96;
+
+        for (let i = 0; i < 5; i++) {
+            let hall = new Building(this, 1, 1, 'walkStraight', null, true);
+            hall.x = i * 64;
+            hall.y = 256;
+        }
     },
     update: function() {
+
+        //Move the camera by dragging the game world
+        var oldCameraPosX = this.camera.x;
+        var oldCameraPosY = this.camera.y;
+
         //move the camera as the mouse goes to the sides of the screen
         //also scroll the background grid at the same frequency
         if (this.input.activePointer.withinGame) {
-            var oldCameraPosX = this.camera.x;
-            var oldCameraPosY = this.camera.y;
-            if (this.input.x > this.camera.view.width - 50) {
-                this.camera.x += this.dragSpeed;
-                this.g.gridsSpr[this.zoomLevel].tilePosition.x -= Math.abs(this.camera.x - oldCameraPosX);
-            }
-            if (this.input.x < 50) {
-                this.camera.x -= this.dragSpeed;
-                this.g.gridsSpr[this.zoomLevel].tilePosition.x += Math.abs(this.camera.x - oldCameraPosX);
-            }
-            if (this.input.y > this.camera.view.height - 50) {
-                this.camera.y += this.dragSpeed;
-                this.g.gridsSpr[this.zoomLevel].tilePosition.y -= Math.abs(this.camera.y - oldCameraPosY);
-            }
-            if (this.input.y < 50) {
-                this.camera.y -= this.dragSpeed;
-                this.g.gridsSpr[this.zoomLevel].tilePosition.y += Math.abs(this.camera.y - oldCameraPosY);
+            //if the user is holding down the mouse
+            if (this.input.activePointer.isDown) {
+                if (this.origDragPoint) {
+                    var moveX = Math.round(this.origDragPoint.x - this.input.x);
+                    var moveY = Math.round(this.origDragPoint.y - this.input.y);
+
+                    this.camera.x += moveX;
+                    this.camera.y += moveY;
+                }
+                this.origDragPoint = this.input.activePointer.position.clone();
+            } else {
+                this.origDragPoint = null;
+
+                if (this.holdingBuilding) {
+                    if (this.input.x > this.camera.view.width - 100) {
+                        this.camera.x += this.scrollSpeed;
+                    }
+                    if (this.input.x < 100) {
+                        this.camera.x -= this.scrollSpeed;
+                    }
+                    if (this.input.y > this.camera.view.height - 100) {
+                        this.camera.y += this.scrollSpeed;
+                    }
+                    if (this.input.y < 100) {
+                        this.camera.y -= this.scrollSpeed;
+                    }
+                }
             }
         }
+
+        this.g.gridsSpr[this.zoomLevel].tilePosition.x += oldCameraPosX - this.camera.x;
+        this.g.gridsSpr[this.zoomLevel].tilePosition.y += oldCameraPosY - this.camera.y;
 
         //keep the grid tileSprite centered on the camera
         this.g.gridsSpr[this.zoomLevel].x = this.camera.x;
@@ -113,14 +143,14 @@ Play.prototype = {
             var offsetY = Math.round((this.input.y - (this.camera.height / 2)) / (this.camera.height / 250));
 
             //arbitrary, looks pretty good though
-            var focalMult = this.worldScale===1.5?1.5:1.35;
-            this.camera.focusOnXY((this.camera.view.centerX + offsetX) * focalMult, 
+            var focalMult = this.worldScale === 1.5 ? 1.5 : 1.35;
+            this.camera.focusOnXY((this.camera.view.centerX + offsetX) * focalMult,
                 (this.camera.view.centerY + offsetY) * focalMult);
 
             //Move the grid by the amount the camera moved in the opposite direction
             if (oldCameraPosX !== this.camera.x || oldCameraPosY !== this.camera.y) {
-                this.g.gridsSpr[this.zoomLevel].tilePosition.x -= Math.abs(this.camera.x - oldCameraPosX);
-                this.g.gridsSpr[this.zoomLevel].tilePosition.y -= Math.abs(this.camera.y - oldCameraPosY);
+                this.g.gridsSpr[this.zoomLevel].tilePosition.x += oldCameraPosX - this.camera.x;
+                this.g.gridsSpr[this.zoomLevel].tilePosition.y += oldCameraPosY - this.camera.y;
             }
 
             //move to the next zoom level and copy the tile position to the next grid
@@ -152,13 +182,13 @@ Play.prototype = {
             this.zoomLevel--;
 
             //arbitrary right now, looks ok though
-            var focalMult = this.worldScale===1.5?1.35:1.5;
+            var focalMult = this.worldScale === 1.5 ? 1.35 : 1.5;
             this.camera.focusOnXY(this.camera.view.centerX / focalMult, this.camera.view.centerY / focalMult);
 
             //move the grid by the amount the camera moved in the opposite direction
             if (oldCameraPosX !== this.camera.x || oldCameraPosY !== this.camera.y) {
-                this.g.gridsSpr[this.zoomLevel].tilePosition.x += Math.abs(this.camera.x - oldCameraPosX);
-                this.g.gridsSpr[this.zoomLevel].tilePosition.y += Math.abs(this.camera.y - oldCameraPosY);
+                this.g.gridsSpr[this.zoomLevel].tilePosition.x += oldCameraPosX - this.camera.x;
+                this.g.gridsSpr[this.zoomLevel].tilePosition.y += oldCameraPosY - this.camera.y;
             }
 
             //Make the new grid visible
