@@ -17,14 +17,18 @@ Play.prototype = {
     preload: function() {
         //temporary... move to Load state
         this.load.path = 'assets/img/';
-        this.load.image('hab1x1Down', 'HabitationUnit1x1Down.png');
-        this.load.image('hab2x1LeftRight', 'HabitationUnit2x1LeftRight.png');
-        this.load.image('commandCenter', 'CommandCenter3x3.png');
-        this.load.image('walkStraight', 'WalkwayStraight.png');
-        this.load.image('walkT', 'WalkwayTShape.png');
-        this.load.image('walkCross', 'WalkwayCross.png');
-        this.load.image('hab2x2', 'HabitationUnit2x2.png');
-        this.load.image('hab1x1Right', 'HabitationUnit1x1Right.png');
+        // this.load.image('hab1x1Down', 'HabitationUnit1x1Down.png');
+        // this.load.image('hab1x1Left', 'HabitationUnit1x1Left.png');
+        // this.load.image('hab1x1Up', 'HabitationUnit1x1Up.png');
+        // this.load.image('hab1x1Right', 'HabitationUnit1x1Right.png');
+        // this.load.image('hab2x1LeftRight', 'HabitationUnit2x1LeftRight.png');
+        // this.load.image('hab2x1UpDown', 'HabitationUnit2x1UpDown.png');
+        // this.load.image('commandCenter', 'CommandCenter3x3.png');
+        // this.load.image('walkStraight', 'WalkwayStraight.png');
+        // this.load.image('walkT', 'WalkwayTShape.png');
+        // this.load.image('walkCross', 'WalkwayCross.png');
+        // this.load.image('hab2x2', 'HabitationUnit2x2.png');
+        this.load.atlas('buildings', 'inProgressAtlas.png', 'inProgressAtlas.json');
 
         console.log('Play: preload()');
     },
@@ -53,20 +57,24 @@ Play.prototype = {
         this.gameWorld = this.add.group();
 
         //Test building stuff :D
-        this.hab1 = new Building(this, 1, 1, 'hab1x1Down', null, true);
+        this.hab1 = new Building(this, 1, 1, 'buildings', 'HabitationUnit1x1Down', true, [
+            'HabitationUnit1x1Left', 'HabitationUnit1x1Up', 'HabitationUnit1x1Right'
+        ]);
         this.hab1.x = 216;
         this.hab1.y = 216;
 
-        this.hab2 = new Building(this, 2, 1, 'hab2x1LeftRight', null, true);
+        this.hab2 = new Building(this, 2, 1, 'buildings', 'HabitationUnit2x1LeftRight', true, [
+            'HabitationUnit2x1UpDown'
+        ]);
         this.hab2.x = 0;
         this.hab2.y = 0;
 
-        this.commandCenter = new Building(this, 3, 3, 'commandCenter');
+        this.commandCenter = new Building(this, 3, 3, 'buildings', 'CommandCenter3x3');
         this.commandCenter.x = 96;
         this.commandCenter.y = 96;
 
         for (let i = 0; i < 5; i++) {
-            let hall = new Building(this, 1, 1, 'walkStraight', null, true);
+            let hall = new Building(this, 1, 1, 'buildings', 'WalkwayStraight', true);
             hall.x = i * 64;
             hall.y = 256;
         }
@@ -81,32 +89,10 @@ Play.prototype = {
         //also scroll the background grid at the same frequency
         if (this.input.activePointer.withinGame) {
             //if the user is holding down the mouse
-            if (this.input.activePointer.isDown) {
-                if (this.origDragPoint) {
-                    var moveX = Math.round(this.origDragPoint.x - this.input.x);
-                    var moveY = Math.round(this.origDragPoint.y - this.input.y);
-
-                    this.camera.x += moveX;
-                    this.camera.y += moveY;
-                }
-                this.origDragPoint = this.input.activePointer.position.clone();
+            if (this.holdingBuilding) {
+                this.panCam();
             } else {
-                this.origDragPoint = null;
-
-                if (this.holdingBuilding) {
-                    if (this.input.x > this.camera.view.width - 100) {
-                        this.camera.x += this.scrollSpeed;
-                    }
-                    if (this.input.x < 100) {
-                        this.camera.x -= this.scrollSpeed;
-                    }
-                    if (this.input.y > this.camera.view.height - 100) {
-                        this.camera.y += this.scrollSpeed;
-                    }
-                    if (this.input.y < 100) {
-                        this.camera.y -= this.scrollSpeed;
-                    }
-                }
+                this.dragCam();
             }
         }
 
@@ -121,6 +107,34 @@ Play.prototype = {
         //game.debug.cameraInfo(this.camera, 2, 14, '#ffffff');
         //game.time.advancedTiming=true;
         //game.debug.text(game.time.fps || '--',2,14,'#ffffff');
+    },
+    dragCam: function() {
+        if (this.input.activePointer.isDown) {
+            if (this.origDragPoint) {
+                var moveX = Math.round(this.origDragPoint.x - this.input.x);
+                var moveY = Math.round(this.origDragPoint.y - this.input.y);
+
+                this.camera.x += moveX;
+                this.camera.y += moveY;
+            }
+            this.origDragPoint = this.input.activePointer.position.clone();
+        } else {
+            this.origDragPoint = null;
+        }
+    },
+    panCam: function() {
+        if (this.input.x > this.camera.view.width - 100) {
+            this.camera.x += this.scrollSpeed;
+        }
+        if (this.input.x < 100) {
+            this.camera.x -= this.scrollSpeed;
+        }
+        if (this.input.y > this.camera.view.height - 100) {
+            this.camera.y += this.scrollSpeed;
+        }
+        if (this.input.y < 100) {
+            this.camera.y -= this.scrollSpeed;
+        }
     },
     zoomIn: function() {
         if (this.worldScale < 2) {

@@ -7,8 +7,9 @@
  * @param {string} key -- the cached key of the building sprite
  * @param {string} frame -- (optional) image frame in a texture atlas/spritesheet
  * @param {boolean} rotatable -- (optional) if the building can rotate (default: false)
+ * @param {array} otherFrames -- (optional) list of frames for that building (default: false)
  */
-function Building(game, w, h, key, frame, rotatable) {
+function Building(game, w, h, key, frame, rotatable, otherFrames) {
     Phaser.Sprite.call(this, game, 0, 0, key, frame);
 
     this.game = game;
@@ -17,6 +18,15 @@ function Building(game, w, h, key, frame, rotatable) {
     this.held = false;
     this.placed = false;
     this.rotatable = rotatable || false;
+    this.orientation = {
+        x: 0,
+        y: 0
+    };
+    if (otherFrames) {
+        this.otherFrames = otherFrames;
+        this.otherFrames.push(frame);
+        this.frameIndex = 0;
+    }
 
     game.add.existing(this);
     game.gameWorld.add(this);
@@ -43,7 +53,8 @@ Building.prototype.clicked = function() {
         this.placed = true;
 
         //anchor back in upper left corner to line up with grid
-        this.anchor.set(0);
+        this.anchor.x = this.orientation.x;
+        this.anchor.y = this.orientation.y;
         //put opacity back at full
         this.alpha = 1;
 
@@ -85,6 +96,25 @@ Building.prototype.update = function() {
 
 Building.prototype.rotate = function() {
     if (this.held && this.rotatable) {
-        this.angle += 90;
+        if (this.otherFrames !== undefined) {
+            //In this case, the building is 'rotated' by replacing its sprite
+            this.frameName = this.otherFrames[this.frameIndex++];
+            this.frameIndex %= this.otherFrames.length;
+            this.w = this.width / 32;
+            this.h = this.height / 32;
+        } else {
+            this.angle += 90;
+            //this ugly mess just moves the building's orientation so that it 
+            //can be anchored correctly after rotation
+            if (this.orientation.x === 0 && this.orientation.y === 0) {
+                this.orientation.y = 1;
+            } else if (this.orientation.x > 0 && this.orientation.y === 0) {
+                this.orientation.x = 0;
+            } else if (this.orientation.y > 0 && this.orientation.x === 0) {
+                this.orientation.x = 1;
+            } else {
+                this.orientation.y = 0;
+            }
+        }
     }
 };
