@@ -36,7 +36,7 @@ function Grid(game, w, h, lineC) {
         for (let j = 0; j < game.world.height / h; j++) {
             this.cells[i][j] = {
                 occupied: false,
-                connect: -1
+                connect: []
             };
         }
     }

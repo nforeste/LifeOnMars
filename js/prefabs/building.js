@@ -78,16 +78,18 @@ Building.prototype.placed = function() {
     //     }
     // }
 
-    this.connections.splice(this.deleteIndex, 1);
-    this.gridDeleteIndex.connect = -1;
+    //deleteIndex and gridDeleteIndex are readOnly
+    if (this._deleteIndex >= 0) {
+        this.connections.splice(this._deleteIndex, 1);
+        this._gridDelete[0].connect.splice(this._gridDelete[1], 1);
+    }
 
     for (let i = 0; i < this.connections.length; i++) {
-        let num = this.connections[i][0];
-        let x = Math.floor(num / 10);
-        let y = num % 10;
+        let x = this.connections[i][0];
+        let y = this.connections[i][1];
 
-        this.game.g.cells[x + xPos][y + yPos].connect = this.connections[i][1];
-        console.log('cell: (' + (x + xPos) + ', ' + (y + yPos) + ') = ' + this.connections[i][1]);
+        this.game.g.cells[x + xPos][y + yPos].connect.push(this.connections[i][2]);
+        console.log('cell: (' + (x + xPos) + ', ' + (y + yPos) + ') = ' + this.connections[i][2]);
     }
 
     this.game.g.bmdOverlay.clear();
@@ -110,42 +112,51 @@ Building.prototype.update = function() {
         var canPlace = false;
         this.events.onInputDown.active = true;
 
-
-        //TODO: 
-        //-find a better solution for this pls :/
-        this.deleteIndex = -1;
-        this.gridDeleteIndex = this.game.g.cells[0][0];
-
         if (xPos && yPos) {
             for (let i = 0; i < this.connections.length; i++) {
-                let num = this.connections[i][0];
-                let x = Math.floor(num / 10);
-                let y = num % 10;
+                let x = this.connections[i][0];
+                let y = this.connections[i][1];
 
-                if (this.connections[i][1] === this.UP) {
-                    if (this.game.g.cells[x + xPos][y + yPos - 1].connect === this.DOWN) {
-                        canPlace = true;
-                        this.deleteIndex = i;
-                        this.gridDeleteIndex = this.game.g.cells[x + xPos][y + yPos - 1];
-                    }
-                } else if (this.connections[i][1] === this.DOWN) {
-                    if (this.game.g.cells[x + xPos][y + yPos + 1].connect === this.UP) {
-                        canPlace = true;
-                        this.deleteIndex = i;
-                        this.gridDeleteIndex = this.game.g.cells[x + xPos][y + yPos + 1];
-                    }
-                } else if (this.connections[i][1] === this.LEFT) {
-                    if (this.game.g.cells[x + xPos - 1][y + yPos].connect === this.RIGHT) {
-                        canPlace = true;
-                        this.deleteIndex = i;
-                        this.gridDeleteIndex = this.game.g.cells[x + xPos - 1][y + yPos];
-                    }
+                if (this.connections[i][2] === this.UP) {
+                    let tmp = this.game.g.cells[x + xPos][y + yPos - 1];
+
+                    tmp.connect.forEach(function(c, j) {
+                        if (c === this.DOWN) {
+                            canPlace = true;
+                            this._deleteIndex = i;
+                            this._gridDelete = [tmp, j];
+                        }
+                    }, this);
+                } else if (this.connections[i][2] === this.DOWN) {
+                    let tmp = this.game.g.cells[x + xPos][y + yPos + 1];
+
+                    tmp.connect.forEach(function(c, j) {
+                        if (c === this.UP) {
+                            canPlace = true;
+                            this._deleteIndex = i;
+                            this._gridDelete = [tmp, j];
+                        }
+                    }, this);
+                } else if (this.connections[i][2] === this.LEFT) {
+                    let tmp = this.game.g.cells[x + xPos - 1][y + yPos];
+
+                    tmp.connect.forEach(function(c, j) {
+                        if (c === this.RIGHT) {
+                            canPlace = true;
+                            this._deleteIndex = i;
+                            this._gridDelete = [tmp, j];
+                        }
+                    }, this);
                 } else {
-                    if (this.game.g.cells[x + xPos + 1][y + yPos].connect === this.LEFT) {
-                        canPlace = true;
-                        this.deleteIndex = i;
-                        this.gridDeleteIndex = this.game.g.cells[x + xPos + 1][y + yPos];
-                    }
+                    let tmp = this.game.g.cells[x + xPos + 1][y + yPos];
+
+                    tmp.connect.forEach(function(c, j) {
+                        if (c === this.LEFT) {
+                            canPlace = true;
+                            this._deleteIndex = i;
+                            this._gridDelete = [tmp, j];
+                        }
+                    }, this);
                 }
             }
         }
@@ -161,7 +172,8 @@ Building.prototype.update = function() {
 };
 
 /**
- * A sublclass of Building, this defines a building that can be rotated
+ *  Inherits from Building
+ *  Defines a building that can be rotated
  */
 function RotatableBuilding(game, w, h, key, frame, otherFrames) {
     Building.call(this, game, w, h, key, frame);
@@ -180,7 +192,7 @@ RotatableBuilding.prototype = Object.create(Building.prototype);
 RotatableBuilding.prototype.constructor = RotatableBuilding;
 
 RotatableBuilding.prototype.rotate = function() {
-    if (this.held && this.otherFrames) {
+    if (this.held) {
         this.frameName = this.otherFrames[this.frameIndex++];
         this.frameIndex %= this.otherFrames.length;
         this.w = this.width / 32;
@@ -189,7 +201,7 @@ RotatableBuilding.prototype.rotate = function() {
 };
 
 /**
- * A subclass of Building, the walkway is a special case
+ *  Inherits from RotatableBuilding + Building
  */
 function Walkway(game, w, h, key, frame) {
     RotatableBuilding.call(this, game, w, h, key, frame);
@@ -199,8 +211,10 @@ function Walkway(game, w, h, key, frame) {
         y: 0
     };
 
-    this.connections.push([0, this.DOWN]);
-    this.connections.push([0, this.UP]);
+    this.connections.push([0, 0, this.DOWN]);
+    this.connections.push([0, 0, this.UP]);
+    this.connections.push([0, 0, this.LEFT]);
+    this.connections.push([0, 0, this.RIGHT]);
 }
 
 Walkway.prototype = Object.create(RotatableBuilding.prototype);
@@ -208,86 +222,95 @@ Walkway.prototype.constructor = Walkway;
 
 Walkway.prototype.rotate = function() {
     if (this.held) {
-        if (this.angle === 0) {
-            this.angle = 90;
-            this.orientation.y = 1;
-            this.connections[0][0].left = false;
-            this.connections[0][0].right = false;
-            this.connections[0][0].up = true;
-            this.connections[0][0].down = true;
-        } else {
-            this.angle = 0;
-            this.orientation.y = 0;
-            this.connections[0][0].left = true;
-            this.connections[0][0].right = true;
-            this.connections[0][0].up = false;
-            this.connections[0][0].down = false;
-        }
-    }
-};
-
-function WalkwayCorner(game, w, h, key, frame) {
-    Walkway.call(this, game, w, h, key, frame);
-    this.connections[1] = [0, this.LEFT];
-}
-
-WalkwayCorner.prototype = Object.create(Walkway.prototype);
-WalkwayCorner.prototype.constructor = WalkwayCorner;
-
-WalkwayCorner.prototype.rotate = function() {
-    if (this.held) {
         this.angle += 90;
 
         if (this.orientation.x === 0 && this.orientation.y === 0) {
             this.orientation.y = 1;
-            this.connections[0][0].down = false;
-            this.connections[0][0].up = true;
         } else if (this.orientation.x > 0 && this.orientation.y === 0) {
             this.orientation.x = 0;
-            this.connections[0][0].right = false;
-            this.connections[0][0].left = true;
         } else if (this.orientation.y > 0 && this.orientation.x === 0) {
             this.orientation.x = 1;
-            this.connections[0][0].left = false;
-            this.connections[0][0].right = true;
         } else {
             this.orientation.y = 0;
-            this.connections[0][0].up = false;
-            this.connections[0][0].down = true;
         }
     }
 };
 
-function CommandCenter(game, w, h, key, frame) {
+/**
+ *  Inherits from Building
+ */
+function ThreeByThree(game, w, h, key, frame) {
     Building.call(this, game, w, h, key, frame);
 
-    this.connections.push([10, this.UP]);
-    this.connections.push([21, this.RIGHT]);
-    this.connections.push([12, this.DOWN]);
-    this.connections.push([1, this.LEFT]);
+    this.connections.push([1, 0, this.UP]);
+    this.connections.push([2, 1, this.RIGHT]);
+    this.connections.push([1, 2, this.DOWN]);
+    this.connections.push([0, 1, this.LEFT]);
 }
 
-CommandCenter.prototype = Object.create(Building.prototype);
-CommandCenter.prototype.constructor = CommandCenter;
+ThreeByThree.prototype = Object.create(Building.prototype);
+ThreeByThree.prototype.constructor = ThreeByThree;
 
 /**
- * Habitation Unit inherits from the rotatable building object
+ *  Inherits from Building
  */
-function HabUnit(game, w, h, key, frame, otherFrames) {
-    RotatableBuilding.call(this, game, w, h, key, frame, otherFrames);
+function TwoByTwo(game, w, h, key, frame) {
+    Building.call(this, game, w, h, key, frame);
 
-    if (otherFrames) {
-        this.connections.push([0, this.DOWN]);
-        if (w > 1) {
-            this.connections.push([10, this.UP]);
-        }
-    } else {
-        this.connections.push([0, this.LEFT]);
-        this.connections.push([10, this.UP]);
-        this.connections.push([11, this.RIGHT]);
-        this.connections.push([1, this.DOWN]);
-    }
+    this.connections.push([0, 0, this.LEFT]);
+    this.connections.push([1, 0, this.UP]);
+    this.connections.push([1, 1, this.RIGHT]);
+    this.connections.push([0, 1, this.DOWN]);
 }
 
-HabUnit.prototype = Object.create(RotatableBuilding.prototype);
-HabUnit.prototype.constructor = HabUnit;
+TwoByTwo.prototype = Object.create(Building.prototype);
+TwoByTwo.prototype.constructor = TwoByTwo;
+
+/**
+ *  Inherits from RotatableBuilding + Building
+ */
+function TwoByOne(game, w, h, key, frame, otherFrames) {
+    RotatableBuilding.call(this, game, w, h, key, frame, otherFrames);
+
+    this.connections.push([0, 0, this.DOWN]);
+    this.connections.push([1, 0, this.UP]);
+    this.rotated = 1;
+}
+
+TwoByOne.prototype = Object.create(RotatableBuilding.prototype);
+TwoByOne.prototype.constructor = TwoByOne;
+
+TwoByOne.prototype.rotate = function() {
+    RotatableBuilding.prototype.rotate.call(this);
+
+    if (this.held) {
+        this.connections.forEach(function(c) {
+            //this just swaps the contents of c[0] and c[1]
+            [c[0], c[1]] = [c[1], c[0]];
+            c[2] += this.rotated;
+        }, this);
+        this.rotated *= -1;
+    }
+};
+
+/**
+ *  Inherits from RotatableBuiling and Building
+ */
+function OneByOne(game, w, h, key, frame, otherFrames) {
+    RotatableBuilding.call(this, game, w, h, key, frame, otherFrames);
+
+    this.connections.push([0, 0, this.DOWN]);
+}
+
+OneByOne.prototype = Object.create(RotatableBuilding.prototype);
+OneByOne.prototype.constructor = OneByOne;
+
+OneByOne.prototype.rotate = function() {
+    RotatableBuilding.prototype.rotate.call(this);
+
+    if (this.held) {
+        this.connections.forEach(function(c) {
+            c[2] = (c[2] + 1) % 4;
+        });
+    }
+};
