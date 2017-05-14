@@ -78,10 +78,12 @@ Play.prototype = {
             hall.x = i * 64;
             hall.y = 256;
         }
+        for (let i = 0; i < 10; i++) {
+            let corner = new Walkway(this, 1, 1, 'buildings', 'WalkwayCorner');
+            corner.x = 32 * i;
+            corner.y = 300;
+        }
 
-        let corner = new Walkway(this, 1, 1, 'buildings', 'WalkwayCorner');
-        corner.x = 200;
-        corner.y = 200;
 
         let hab2x2 = new TwoByTwo(this, 2, 2, 'buildings', 'HabitationUnit2x2');
         hab2x2.x = 400;
