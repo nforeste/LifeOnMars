@@ -57,27 +57,37 @@ Play.prototype = {
         this.gameWorld = this.add.group();
 
         //Test building stuff :D
-        this.hab1 = new Building(this, 1, 1, 'buildings', 'HabitationUnit1x1Down', true, [
+        this.hab1 = new OneByOne(this, 1, 1, 'buildings', 'HabitationUnit1x1Down', [
             'HabitationUnit1x1Left', 'HabitationUnit1x1Up', 'HabitationUnit1x1Right'
         ]);
         this.hab1.x = 216;
         this.hab1.y = 216;
 
-        this.hab2 = new Building(this, 2, 1, 'buildings', 'HabitationUnit2x1LeftRight', true, [
+        this.hab2 = new TwoByOne(this, 2, 1, 'buildings', 'HabitationUnit2x1LeftRight', [
             'HabitationUnit2x1UpDown'
         ]);
         this.hab2.x = 0;
         this.hab2.y = 0;
 
-        this.commandCenter = new Building(this, 3, 3, 'buildings', 'CommandCenter3x3');
+        this.commandCenter = new ThreeByThree(this, 3, 3, 'buildings', 'CommandCenter3x3');
         this.commandCenter.x = 96;
         this.commandCenter.y = 96;
 
         for (let i = 0; i < 5; i++) {
-            let hall = new Building(this, 1, 1, 'buildings', 'WalkwayStraight', true);
+            let hall = new Walkway(this, 1, 1, 'buildings', 'WalkwayStraight');
             hall.x = i * 64;
             hall.y = 256;
         }
+        for (let i = 0; i < 10; i++) {
+            let corner = new Walkway(this, 1, 1, 'buildings', 'WalkwayCorner');
+            corner.x = 32 * i;
+            corner.y = 300;
+        }
+
+
+        let hab2x2 = new TwoByTwo(this, 2, 2, 'buildings', 'HabitationUnit2x2');
+        hab2x2.x = 400;
+        hab2x2.y = 400;
     },
     update: function() {
 

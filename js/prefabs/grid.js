@@ -29,7 +29,16 @@ function Grid(game, w, h, lineC) {
     //this will be used for terrain (cells[3][4] is a mountain)
     this.cells = [];
     for (let i = 0; i < game.world.width / w; i++) {
-        this.cells[i] = [];
+        if (!this.cells[i]) {
+            this.cells[i] = [];
+        }
+
+        for (let j = 0; j < game.world.height / h; j++) {
+            this.cells[i][j] = {
+                occupied: undefined,
+                connect: []
+            };
+        }
     }
 
     //bmdOverlay is the bitmapData that draws the highlights on the grid
@@ -61,7 +70,7 @@ Grid.prototype.makeGrid = function() {
  * @param  {number} yTiles -- number of cells to draw in the y direction
  * @param  {number} opacity -- opacity of the highlighting
  */
-Grid.prototype.draw = function(xTiles, yTiles, opacity) {
+Grid.prototype.draw = function(xTiles, yTiles, opacity, color) {
     var curW = this.w * this.game.worldScale;
     var curH = this.h * this.game.worldScale;
     this.upperLeftRow = Math.floor(this.game.camera.view.x / curW);
@@ -79,23 +88,19 @@ Grid.prototype.draw = function(xTiles, yTiles, opacity) {
     this.bmdSprite.x = this.game.camera.x - this.offsetx;
     this.bmdSprite.y = this.game.camera.y - this.offsety;
 
-    //For now. This will be tweaked to include when picking up an object, etc.
-    //Only draw rects when mouse is on the screen
-    if (this.game.input.activePointer.withinGame) {
-        //If the camera is scrolled so that it doesn't line up with the grid
-        //i.e. it ends in the middle of one row (cutting it off)
-        //then subtract the offset so that the mouse position still correctly finds the index
-        this.index1 = Math.floor((this.game.input.x + this.offsetx) / curW);
-        this.index2 = Math.floor((this.game.input.y + this.offsety) / curH);
+    //If the camera is scrolled so that it doesn't line up with the grid
+    //i.e. it ends in the middle of one row (cutting it off)
+    //then subtract the offset so that the mouse position still correctly finds the index
+    this.index1 = Math.floor((this.game.input.x + this.offsetx) / curW);
+    this.index2 = Math.floor((this.game.input.y + this.offsety) / curH);
 
-        //update the grid offsets with the new index positions
-        this.xStart = Math.min(Math.max(this.index1 - Math.floor(xTiles / 2), 0),
-            (this.game.world.width / curW) - xTiles);
-        this.yStart = Math.min(Math.max(this.index2 - Math.floor(yTiles / 2), 0), 
-            (this.game.world.height / curH) - yTiles);
+    //update the grid offsets with the new index positions
+    this.xStart = Math.min(Math.max(this.index1 - Math.floor(xTiles / 2), 0),
+        (this.game.world.width / curW) - xTiles);
+    this.yStart = Math.min(Math.max(this.index2 - Math.floor(yTiles / 2), 0),
+        (this.game.world.height / curH) - yTiles);
 
-        //draw the background highlights
-        this.bmdOverlay.ctx.fillStyle = '#66ff33';
-        this.bmdOverlay.ctx.fillRect(curW * this.xStart, curH * this.yStart, curW * xTiles, curH * yTiles);
-    }
+    //draw the background highlights
+    this.bmdOverlay.ctx.fillStyle = color;
+    this.bmdOverlay.ctx.fillRect(curW * this.xStart, curH * this.yStart, curW * xTiles, curH * yTiles);
 };
