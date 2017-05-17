@@ -135,6 +135,10 @@ Building.prototype.changeForm = function(xPos, yPos) {
     }, this);
 };
 
+Building.prototype.updateResources = function() {
+    //generic function that will be overriden by every building
+};
+
 //called every frame, override Phaser.Sprite.update
 Building.prototype.update = function() {
     if (this.held) {
@@ -463,7 +467,7 @@ Walkway.prototype.changeForm = function(xPos, yPos) {
 /**
  *  Inherits from Building
  */
-function ThreeByThree(game, w, h, key, frame) {
+function CommandCenter(game, w, h, key, frame) {
     Building.call(this, game, w, h, key, frame);
 
     this.connections.push([1, 0, this.UP]);
@@ -472,13 +476,13 @@ function ThreeByThree(game, w, h, key, frame) {
     this.connections.push([0, 1, this.LEFT]);
 }
 
-ThreeByThree.prototype = Object.create(Building.prototype);
-ThreeByThree.prototype.constructor = ThreeByThree;
+CommandCenter.prototype = Object.create(Building.prototype);
+CommandCenter.prototype.constructor = CommandCenter;
 
 /**
  *  Inherits from Building
  */
-function TwoByTwo(game, w, h, key, frame) {
+function Habitation2x2(game, w, h, key, frame) {
     Building.call(this, game, w, h, key, frame);
 
     this.connections.push([0, 0, this.LEFT]);
@@ -487,13 +491,13 @@ function TwoByTwo(game, w, h, key, frame) {
     this.connections.push([0, 1, this.DOWN]);
 }
 
-TwoByTwo.prototype = Object.create(Building.prototype);
-TwoByTwo.prototype.constructor = TwoByTwo;
+Habitation2x2.prototype = Object.create(Building.prototype);
+Habitation2x2.prototype.constructor = Habitation2x2;
 
 /**
  *  Inherits from RotatableBuilding + Building
  */
-function TwoByOne(game, w, h, key, frame, otherFrames) {
+function Habitation2x1(game, w, h, key, frame, otherFrames) {
     RotatableBuilding.call(this, game, w, h, key, frame, otherFrames);
 
     this.connections.push([0, 0, this.DOWN]);
@@ -501,10 +505,10 @@ function TwoByOne(game, w, h, key, frame, otherFrames) {
     this.rotated = 1;
 }
 
-TwoByOne.prototype = Object.create(RotatableBuilding.prototype);
-TwoByOne.prototype.constructor = TwoByOne;
+Habitation2x1.prototype = Object.create(RotatableBuilding.prototype);
+Habitation2x1.prototype.constructor = Habitation2x1;
 
-TwoByOne.prototype.rotate = function() {
+Habitation2x1.prototype.rotate = function() {
     RotatableBuilding.prototype.rotate.call(this);
 
     if (this.held) {
@@ -518,23 +522,67 @@ TwoByOne.prototype.rotate = function() {
 };
 
 /**
- *  Inherits from RotatableBuiling and Building
+ *  Inherits from RotatableBuilding and Building
  */
-function OneByOne(game, w, h, key, frame, otherFrames) {
+function Habitation1x1(game, w, h, key, frame, otherFrames) {
     RotatableBuilding.call(this, game, w, h, key, frame, otherFrames);
 
     this.connections.push([0, 0, this.DOWN]);
 }
 
-OneByOne.prototype = Object.create(RotatableBuilding.prototype);
-OneByOne.prototype.constructor = OneByOne;
+Habitation1x1.prototype = Object.create(RotatableBuilding.prototype);
+Habitation1x1.prototype.constructor = Habitation1x1;
 
-OneByOne.prototype.rotate = function() {
+Habitation1x1.prototype.rotate = function() {
     RotatableBuilding.prototype.rotate.call(this);
 
     if (this.held) {
         this.connections.forEach(function(c) {
             c[2] = (c[2] + 1) % 4;
         });
+    }
+};
+
+function WaterTank2x1(game, w, h, key, frame, otherFrames) {
+    RotatableBuilding.call(this, game, w, h, key, frame, otherFrames);
+    this.connections.push([0, 0, this.LEFT]);
+    this.connections.push([1, 0, this.RIGHT]);
+    this.rotated = 1;
+}
+
+WaterTank2x1.prototype = Object.create(RotatableBuilding.prototype);
+WaterTank2x1.prototype.constructor = WaterTank2x1;
+
+WaterTank2x1.prototype.rotate = function() {
+    RotatableBuilding.prototype.rotate.call(this);
+
+    if (this.held) {
+        this.connections.forEach(function(c) {
+            [c[0], c[1]] = [c[1], c[0]];
+            c[2] += this.rotated;
+        }, this);
+        this.rotated *= -1;
+    }
+};
+
+function WaterRecycle2x1(game, w, h, key, frame, otherFrames) {
+    RotatableBuilding.call(this, game, w, h, key, frame, otherFrames);
+    this.connections.push([0, 0, this.LEFT]);
+    this.connections.push([1, 0, this.RIGHT]);
+    this.rotated = 1;
+}
+
+WaterRecycle2x1.prototype = Object.create(RotatableBuilding.prototype);
+WaterRecycle2x1.prototype.constructor = WaterRecycle2x1;
+
+WaterRecycle2x1.prototype.rotate = function() {
+    RotatableBuilding.prototype.rotate.call(this);
+
+    if (this.held) {
+        this.connections.forEach(function(c) {
+            [c[0], c[1]] = [c[1], c[0]];
+            c[2] += this.rotated;
+        }, this);
+        this.rotated *= -1;
     }
 };

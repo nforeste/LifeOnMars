@@ -57,19 +57,19 @@ Play.prototype = {
         this.gameWorld = this.add.group();
 
         //Test building stuff :D
-        this.hab1 = new OneByOne(this, 1, 1, 'buildings', 'HabitationUnit1x1Down', [
+        this.hab1 = new Habitation1x1(this, 1, 1, 'buildings', 'HabitationUnit1x1Down', [
             'HabitationUnit1x1Left', 'HabitationUnit1x1Up', 'HabitationUnit1x1Right'
         ]);
         this.hab1.x = 216;
         this.hab1.y = 216;
 
-        this.hab2 = new TwoByOne(this, 2, 1, 'buildings', 'HabitationUnit2x1LeftRight', [
+        this.hab2 = new Habitation2x1(this, 2, 1, 'buildings', 'HabitationUnit2x1LeftRight', [
             'HabitationUnit2x1UpDown'
         ]);
         this.hab2.x = 0;
         this.hab2.y = 0;
 
-        this.commandCenter = new ThreeByThree(this, 3, 3, 'buildings', 'CommandCenter3x3');
+        this.commandCenter = new CommandCenter(this, 3, 3, 'buildings', 'CommandCenter3x3');
         this.commandCenter.x = 96;
         this.commandCenter.y = 96;
 
@@ -85,9 +85,13 @@ Play.prototype = {
         }
 
 
-        let hab2x2 = new TwoByTwo(this, 2, 2, 'buildings', 'HabitationUnit2x2');
+        let hab2x2 = new Habitation2x2(this, 2, 2, 'buildings', 'HabitationUnit2x2');
         hab2x2.x = 400;
         hab2x2.y = 400;
+
+        // let waterTank = new WaterTank2x1(this, 2, 1, 'buildings', 'WaterTank2x1LeftRight', [
+        //     'WaterTank2x1UpDown'
+        // ]);
     },
     update: function() {
 
