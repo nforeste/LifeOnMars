@@ -11,7 +11,7 @@ var Play = function(game) {
     this.zoomLevel = 0;
     this.scrollSpeed = 4;
     this.worldSize = 4032;
-    this.holdingBuilding = false;
+    this.holdingBuilding = null;
 };
 Play.prototype = {
     preload: function() {
@@ -191,6 +191,9 @@ Play.prototype = {
 
             //Acutally scale all scalable objects
             this.gameObjects.scale.set(this.worldScale);
+            if (this.holdingBuilding) {
+            	this.holdingBuilding.scale.set(this.worldScale / 2);
+            }
 
             //this.gameObjects.forEach(this.setScale, this, true, this.child);
 
@@ -229,6 +232,9 @@ Play.prototype = {
 
             //Acutally scale all scalable objects
             this.gameObjects.scale.set(this.worldScale);
+            if (this.holdingBuilding) {
+            	this.holdingBuilding.scale.set(this.worldScale / 2);
+            }
 
             //this.gameObjects.forEach(this.setScale, this, true, this.child);
         }
