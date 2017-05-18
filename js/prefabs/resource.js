@@ -33,7 +33,7 @@ function Resource(game, currentAmount, storage, xpos, ypos, key, frame) {
         this.addKey = game.input.keyboard.addKey(Phaser.Keyboard.N);
     } else if (frame === 'HousingIcon') {
         this.addKey = game.input.keyboard.addKey(Phaser.Keyboard.B);
-        //} else if (key === 'FoodIcon') {
+        //} else if (frame === 'FoodIcon') {
         //this.addKey = game.input.keyboard.addKey(Phaser.Keyboard.V);
     } else if (frame === 'WaterIcon') {
         this.addKey = game.input.keyboard.addKey(Phaser.Keyboard.C);

@@ -17,7 +17,8 @@ function Building(game, w, h, key, frame) {
     this.placed = false;
 
     game.add.existing(this);
-    game.gameWorld.add(this);
+    game.UIObjects.add(this);
+    //game.gameObjectsWithUI.add(this);
 
     //start at half resolution
     this.scale.set(.5);
@@ -45,7 +46,7 @@ Building.prototype.purchased = function() {
     this.alpha = .75;
     this.held = true;
     this.game.holdingBuilding = true;
-    this.game.gameWorld.bringToTop(this);
+    this.game.UIObjects.bringToTop(this);
     this.anchor.set(.5);
     this.events.onInputDown.addOnce(Building.prototype.placed, this);
 };
@@ -53,6 +54,9 @@ Building.prototype.purchased = function() {
 Building.prototype.placed = function() {
     this.placed = true;
     this.held = false;
+
+    this.game.UIObjects.remove(this);
+    this.game.gameObjects.add(this);
 
     //this.orientation only applies to buildings that 
     //rotate without new frames, otherwise it should set to 0

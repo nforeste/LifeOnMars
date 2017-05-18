@@ -16,7 +16,7 @@ var Play = function(game) {
 Play.prototype = {
     preload: function() {
         //temporary... move to Load state
-        this.load.path = 'assets/img/';
+	this.load.path = 'assets/img/';
         // this.load.image('hab1x1Down', 'HabitationUnit1x1Down.png');
         // this.load.image('hab1x1Left', 'HabitationUnit1x1Left.png');
         // this.load.image('hab1x1Up', 'HabitationUnit1x1Up.png');
@@ -53,8 +53,15 @@ Play.prototype = {
             }
         }.bind(this);
 
+
+        this.allObjects = this.add.group();
         //parent group of every gameObject
-        this.gameWorld = this.add.group();
+        this.gameObjects = this.add.group();
+        //this.gameObjectsWithUI = this.add.group();
+        this.UIObjects = this.add.group();
+
+        this.allObjects.add(this.gameObjects);
+        this.allObjects.add(this.UIObjects);
 
         this.waterRes = new Resource(this, 0, 10, 360, 0, 'buildings', 'WaterIcon');
 
@@ -66,62 +73,8 @@ Play.prototype = {
 
         this.materialRes = new Resource(this, 0, 10, 680, 0, 'buildings', 'WaterIcon');
 
-        //Test building stuff :D
-        this.hab1 = new Habitation1x1(this, 1, 1, 'buildings', 'HabitationUnit1x1Down', [
-            'HabitationUnit1x1Left', 'HabitationUnit1x1Up', 'HabitationUnit1x1Right'
-        ]);
-        this.hab1.x = 216;
-        this.hab1.y = 216;
-
-        this.hab2 = new Habitation2x1(this, 2, 1, 'buildings', 'HabitationUnit2x1LeftRight', [
-            'HabitationUnit2x1UpDown'
-        ]);
-        this.hab2.x = 0;
-        this.hab2.y = 0;
-
-        this.commandCenter = new CommandCenter(this, 3, 3, 'buildings', 'CommandCenter3x3');
-        this.commandCenter.x = 96;
-        this.commandCenter.y = 96;
-
-        for (let i = 0; i < 5; i++) {
-            let hall = new Walkway(this, 1, 1, 'buildings', 'WalkwayStraight');
-            hall.x = i * 64;
-            hall.y = 256;
-        }
-        for (let i = 0; i < 10; i++) {
-            let corner = new Walkway(this, 1, 1, 'buildings', 'WalkwayCorner');
-            corner.x = 32 * i;
-            corner.y = 300;
-        }
-
-
-        let hab2x2 = new Habitation2x2(this, 2, 2, 'buildings', 'HabitationUnit2x2');
-        hab2x2.x = 400;
-        hab2x2.y = 400;
-
-        let waterTank = new WaterTank2x1(this, 2, 1, 'buildings', 'WaterTank2x1');
-        waterTank.x = 300;
-        waterTank.y = 300;
-
-        let panel = new SolarPanel1x1(this, 1, 1, 'buildings', 'SolarPanel1x1');
-        panel.x = 500;
-        panel.y = 400;
-
-        let power = new PowerStorage2x1(this, 2, 1, 'buildings', 'PowerStorage2x1LeftRight', [
-            'PowerStorage2x1UpDown'
-        ]);
-        power.x = 400;
-        power.y = 100;
-
-        let recycle = new WaterRecycler2x1(this, 2, 1, 'buildings', 'WaterRecycler2x1LeftRight', [
-            'WaterRecycler2x1UpDown'
-        ]);
-        recycle.x = 300;
-        recycle.y = 200;
-
-        let pad = new LandingPad3x3(this, 3, 3, 'buildings', 'LandingPad3x3');
-        pad.x = 600;
-        pad.y = 400;
+        //initiates the UI
+        this.UI = new UserInterface(this, this.camera);
     },
     update: function() {
 
@@ -135,7 +88,7 @@ Play.prototype = {
             //if the user is holding down the mouse
             if (this.holdingBuilding) {
                 this.panCam();
-            } else {
+            } else if(this.UI.canDrag){
                 this.dragCam();
             }
         }
@@ -144,8 +97,16 @@ Play.prototype = {
         this.g.gridsSpr[this.zoomLevel].tilePosition.y += oldCameraPosY - this.camera.y;
 
         //keep the grid tileSprite centered on the camera
-        this.g.gridsSpr[this.zoomLevel].x = this.camera.x;
-        this.g.gridsSpr[this.zoomLevel].y = this.camera.y;
+        this.g.gridsSpr[this.zoomLevel].x = this.camera.view.x;
+        this.g.gridsSpr[this.zoomLevel].y = this.camera.view.y;
+
+        this.UI.display();
+
+        if(this.UI.buttonBuilding != null){
+			if(this.UI.buttonBuilding.placed){
+				this.gameObjects.bringToTop(this.UI.toolbar);
+			}
+		}
     },
     render: function() {
         //game.debug.cameraInfo(this.camera, 2, 14, '#ffffff');
@@ -167,13 +128,23 @@ Play.prototype = {
         }
     },
     panCam: function() {
+    	// I added this to better suit the UI. If the menu is active, then 
+    	// the user's cursor has to be closer to the bottom of the screen
+    	// for the camera to scroll, to avoid accidentally scrolling downward
+    	// while placing a building.
+    	if (this.UI.menuActive){
+        	this.panDistance = 30;
+        } else {
+        	this.panDistance = 100;
+        }
+
         if (this.input.x > this.camera.view.width - 100) {
             this.camera.x += this.scrollSpeed;
         }
         if (this.input.x < 100) {
             this.camera.x -= this.scrollSpeed;
         }
-        if (this.input.y > this.camera.view.height - 100) {
+        if (this.input.y > this.camera.view.height - this.panDistance) {
             this.camera.y += this.scrollSpeed;
         }
         if (this.input.y < 100) {
@@ -219,7 +190,11 @@ Play.prototype = {
             this.g.gridsSpr[this.zoomLevel].revive();
 
             //Acutally scale all scalable objects
-            this.gameWorld.scale.set(this.worldScale);
+            this.gameObjects.scale.set(this.worldScale);
+
+            //this.gameObjects.forEach(this.setScale, this, true, this.child);
+
+            //console.log(this.allObjects);
         }
     },
     zoomOut: function() {
@@ -253,7 +228,17 @@ Play.prototype = {
             this.g.gridsSpr[this.zoomLevel].revive();
 
             //Acutally scale all scalable objects
-            this.gameWorld.scale.set(this.worldScale);
+            this.gameObjects.scale.set(this.worldScale);
+
+            //this.gameObjects.forEach(this.setScale, this, true, this.child);
         }
     }
+    /*setScale: function(child){
+    	console.log();
+
+    	//child.scale.set(0.5);
+    	if(child != this.UI.toolbar){
+    		child.scale.set(this.worldScale);
+    	}
+    }*/
 };
