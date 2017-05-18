@@ -54,7 +54,8 @@ Building.prototype.placed = function() {
     this.placed = true;
     this.held = false;
 
-    //this.orientation only applies to walkways, otherwise it should set to 0
+    //this.orientation only applies to buildings that 
+    //rotate without new frames, otherwise it should set to 0
     if (this.orientation) {
         this.anchor.x = this.orientation.x;
         this.anchor.y = this.orientation.y;
@@ -543,10 +544,14 @@ Habitation1x1.prototype.rotate = function() {
     }
 };
 
-function WaterTank2x1(game, w, h, key, frame, otherFrames) {
-    RotatableBuilding.call(this, game, w, h, key, frame, otherFrames);
+function WaterTank2x1(game, w, h, key, frame) {
+    RotatableBuilding.call(this, game, w, h, key, frame);
     this.connections.push([0, 0, this.LEFT]);
     this.connections.push([1, 0, this.RIGHT]);
+    this.orientation = {
+        x: 0,
+        y: 0
+    };
     this.rotated = 1;
 }
 
@@ -554,9 +559,14 @@ WaterTank2x1.prototype = Object.create(RotatableBuilding.prototype);
 WaterTank2x1.prototype.constructor = WaterTank2x1;
 
 WaterTank2x1.prototype.rotate = function() {
-    RotatableBuilding.prototype.rotate.call(this);
-
     if (this.held) {
+        this.angle += 90 * this.rotated;
+        //y orientation is 1 if angle is greater than 0 (+ before bool converts to number)
+        this.orientation.y = +(this.angle > 0);
+        let temp = this.w;
+        this.w = this.h;
+        this.h = temp;
+
         this.connections.forEach(function(c) {
             [c[0], c[1]] = [c[1], c[0]];
             c[2] += this.rotated;
@@ -565,17 +575,17 @@ WaterTank2x1.prototype.rotate = function() {
     }
 };
 
-function WaterRecycle2x1(game, w, h, key, frame, otherFrames) {
+function WaterRecycler2x1(game, w, h, key, frame, otherFrames) {
     RotatableBuilding.call(this, game, w, h, key, frame, otherFrames);
     this.connections.push([0, 0, this.LEFT]);
     this.connections.push([1, 0, this.RIGHT]);
     this.rotated = 1;
 }
 
-WaterRecycle2x1.prototype = Object.create(RotatableBuilding.prototype);
-WaterRecycle2x1.prototype.constructor = WaterRecycle2x1;
+WaterRecycler2x1.prototype = Object.create(RotatableBuilding.prototype);
+WaterRecycler2x1.prototype.constructor = WaterRecycler2x1;
 
-WaterRecycle2x1.prototype.rotate = function() {
+WaterRecycler2x1.prototype.rotate = function() {
     RotatableBuilding.prototype.rotate.call(this);
 
     if (this.held) {
@@ -586,3 +596,68 @@ WaterRecycle2x1.prototype.rotate = function() {
         this.rotated *= -1;
     }
 };
+
+function PowerStorage2x1(game, w, h, key, frame, otherFrames) {
+    RotatableBuilding.call(this, game, w, h, key, frame, otherFrames);
+    this.connections.push([0, 0, this.DOWN]);
+    this.connections.push([1, 0, this.UP]);
+    this.rotated = 1;
+}
+
+PowerStorage2x1.prototype = Object.create(RotatableBuilding.prototype);
+PowerStorage2x1.prototype.constructor = PowerStorage2x1;
+
+PowerStorage2x1.prototype.rotate = function() {
+    RotatableBuilding.prototype.rotate.call(this);
+    if (this.held) {
+        this.connections.forEach(function(c) {
+            [c[0], c[1]] = [c[1], c[0]];
+            c[2] += this.rotated;
+        }, this);
+        this.rotated *= -1;
+    }
+};
+
+function SolarPanel1x1(game, w, h, key, frame) {
+    RotatableBuilding.call(this, game, w, h, key, frame);
+    this.connections.push([0, 0, this.DOWN]);
+    this.orientation = {
+        x: 0,
+        y: 0
+    };
+}
+
+SolarPanel1x1.prototype = Object.create(RotatableBuilding.prototype);
+SolarPanel1x1.prototype.constructor = SolarPanel1x1;
+
+
+SolarPanel1x1.prototype.rotate = function() {
+    if (this.held) {
+        this.connections.forEach(function(c) {
+            c[2] = (c[2] + 1) % 4;
+        });
+
+        this.angle += 90;
+
+        if (this.orientation.x === 0 && this.orientation.y === 0) {
+            this.orientation.y = 1;
+        } else if (this.orientation.x > 0 && this.orientation.y === 0) {
+            this.orientation.x = 0;
+        } else if (this.orientation.y > 0 && this.orientation.x === 0) {
+            this.orientation.x = 1;
+        } else {
+            this.orientation.y = 0;
+        }
+    }
+};
+
+function LandingPad3x3(game, w, h, key, frame) {
+    Building.call(this, game, w, h, key, frame);
+    this.connections.push([1, 0, this.UP]);
+    this.connections.push([2, 1, this.RIGHT]);
+    this.connections.push([1, 2, this.DOWN]);
+    this.connections.push([0, 1, this.LEFT]);
+}
+
+LandingPad3x3.prototype = Object.create(Building.prototype);
+LandingPad3x3.prototype.constructor = LandingPad3x3;

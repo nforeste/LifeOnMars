@@ -89,9 +89,29 @@ Play.prototype = {
         hab2x2.x = 400;
         hab2x2.y = 400;
 
-        // let waterTank = new WaterTank2x1(this, 2, 1, 'buildings', 'WaterTank2x1LeftRight', [
-        //     'WaterTank2x1UpDown'
-        // ]);
+        let waterTank = new WaterTank2x1(this, 2, 1, 'buildings', 'WaterTank2x1');
+        waterTank.x = 300;
+        waterTank.y = 300;
+
+        let panel = new SolarPanel1x1(this, 1, 1, 'buildings', 'SolarPanel1x1');
+        panel.x = 500;
+        panel.y = 400;
+
+        let power = new PowerStorage2x1(this, 2, 1, 'buildings', 'PowerStorage2x1LeftRight', [
+            'PowerStorage2x1UpDown'
+        ]);
+        power.x = 400;
+        power.y = 100;
+
+        let recycle = new WaterRecycler2x1(this, 2, 1, 'buildings', 'WaterRecycler2x1LeftRight', [
+            'WaterRecycler2x1UpDown'
+        ]);
+        recycle.x = 300;
+        recycle.y = 200;
+
+        let pad = new LandingPad3x3(this, 3, 3, 'buildings', 'LandingPad3x3');
+        pad.x = 600;
+        pad.y = 400;
     },
     update: function() {
 
