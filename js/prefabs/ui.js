@@ -32,7 +32,7 @@ function UserInterface(game, camera){
 	// Boolean to test whether or not the player has the toolbar enabled.
 	this.menuActive = false;
 
-	this.buildingArray = ['HabitationUnit1x1Down', 'HabitationUnit2x1LeftRight', 'CommandCenter3x3', 'WaterTank2x1', 'WaterRecycler2x1', 'HabitationUnit2x2', 'WalkwayStraight', 'WalkwayCorner'];
+	this.buildingArray = ['HabitationUnit1x1Down', 'HabitationUnit2x1LeftRight', 'CommandCenter3x3', 'WaterTank2x1', 'WaterRecycler2x1LeftRight', 'HabitationUnit2x2', 'WalkwayStraight', 'WalkwayCorner', 'LandingPad3x3'];
 	this.i;
 	this.icons = this.game.add.group();
 	this.icons.classType = Phaser.Button;
@@ -123,98 +123,105 @@ UserInterface.prototype.display = function(){
 };
 
 UserInterface.prototype.makeBuilding = function(indivIcon){
-	this.indivIcon = indivIcon;
-	this.frame = this.indivIcon._frame.name;
+	if (!this.game.holdingBuilding) {
+		this.indivIcon = indivIcon;
+		this.frame = this.indivIcon._frame.name;
 
-	/*this.horizontalUnits = 0;
-	this.verticalUnits = 0;
-	this.rotateBool = false;
-	this.otherFormations = null;*/
+		/*this.horizontalUnits = 0;
+		this.verticalUnits = 0;
+		this.rotateBool = false;
+		this.otherFormations = null;*/
 
-	//console.log(this.indivIcon._frame.name);
+		//console.log(this.indivIcon._frame.name);
 
-	if(this.frame == 'HabitationUnit1x1Down'){
+		if(this.frame == 'HabitationUnit1x1Down'){
 
-		/*this.horizontalUnits = 1;
-		this.verticalUnits = 1;
-		this.rotateBool = true;
-        this.otherformations = ['HabitationUnit1x1Left', 'HabitationUnit1x1Up', 'HabitationUnit1x1Right'];*/
+			/*this.horizontalUnits = 1;
+			this.verticalUnits = 1;
+			this.rotateBool = true;
+	        this.otherformations = ['HabitationUnit1x1Left', 'HabitationUnit1x1Up', 'HabitationUnit1x1Right'];*/
 
-        /*this.buttonBuilding = new OneByOne(this.game, 1, 1, 'buildings', this.frame, [
-            'HabitationUnit1x1Left', 'HabitationUnit1x1Up', 'HabitationUnit1x1Right'
-        ]);*/
-        this.buttonBuilding = new Habitation1x1(this.game, 1, 1, 'buildings', 'HabitationUnit1x1Down', [
-            'HabitationUnit1x1Left', 'HabitationUnit1x1Up', 'HabitationUnit1x1Right'
-        ]);;
+	        /*this.buttonBuilding = new OneByOne(this.game, 1, 1, 'buildings', this.frame, [
+	            'HabitationUnit1x1Left', 'HabitationUnit1x1Up', 'HabitationUnit1x1Right'
+	        ]);*/
+	        this.buttonBuilding = new Habitation1x1(this.game, 1, 1, 'buildings', 'HabitationUnit1x1Down', [
+	            'HabitationUnit1x1Left', 'HabitationUnit1x1Up', 'HabitationUnit1x1Right'
+	        ]);
 
-    } else if (this.frame == 'HabitationUnit2x1LeftRight') {
-    	
-    	/*this.horizontalUnits = 2;
-    	this.verticalUnits = 1;
-    	this.rotateBool = true;
-    	this.otherFormations = ['HabitationUnit2x1UpDown'];*/
+	    } else if (this.frame == 'HabitationUnit2x1LeftRight') {
+	    	
+	    	/*this.horizontalUnits = 2;
+	    	this.verticalUnits = 1;
+	    	this.rotateBool = true;
+	    	this.otherFormations = ['HabitationUnit2x1UpDown'];*/
 
-    	this.buttonBuilding = new Habitation2x1(this.game, 2, 1, 'buildings', 'HabitationUnit2x1LeftRight', [
-            'HabitationUnit2x1UpDown'
-        ]);
+	    	this.buttonBuilding = new Habitation2x1(this.game, 2, 1, 'buildings', 'HabitationUnit2x1LeftRight', [
+	            'HabitationUnit2x1UpDown'
+	        ]);
 
-    } else if (this.frame == 'CommandCenter3x3'){
-    	
-    	/*this.horizontalUnits = 3;
-    	this.verticalUnits = 3;*/
+	    } else if (this.frame == 'CommandCenter3x3'){
+	    	
+	    	/*this.horizontalUnits = 3;
+	    	this.verticalUnits = 3;*/
 
-    	this.buttonBuilding = new CommandCenter(this.game, 3, 3, 'buildings', 'CommandCenter3x3');
+	    	this.buttonBuilding = new CommandCenter(this.game, 3, 3, 'buildings', 'CommandCenter3x3');
 
-    } else if (this.frame == 'WaterTank2x1'){
+	    } else if (this.frame == 'WaterTank2x1'){
 
-    	/*this.horizontalUnits = 2;
-    	this.verticalUnits = 1;*/
+	    	/*this.horizontalUnits = 2;
+	    	this.verticalUnits = 1;*/
 
-    	this.buttonBuilding = new WaterTank2x1(this.game, 2, 1, 'buildings', 'WaterTank2x1');
+	    	this.buttonBuilding = new WaterTank2x1(this.game, 2, 1, 'buildings', 'WaterTank2x1');
 
-    } else if (this.frame == 'WaterRecycler2x1'){
+	    } else if (this.frame == 'WaterRecycler2x1LeftRight'){
 
-    	/*this.horizontalUnits = 2;
-    	this.verticalUnits = 1;*/
+	    	/*this.horizontalUnits = 2;
+	    	this.verticalUnits = 1;*/
 
-    	this.buttonBuilding = new WaterRecycle2x1(this.game, 2, 1, 'buildings', this.frame);
+	    	this.buttonBuilding = new WaterRecycler2x1(this.game, 2, 1, 'buildings', 'WaterRecycler2x1LeftRight', [
+	    		'WaterRecycler2x1UpDown'
+	    	]);
 
-    } else if (this.frame == 'HabitationUnit2x2'){
+	    } else if (this.frame == 'HabitationUnit2x2'){
 
-    	/*this.horizontalUnits = 2;
-    	this.verticalUnits = 2;*/
+	    	/*this.horizontalUnits = 2;
+	    	this.verticalUnits = 2;*/
 
-    	this.buttonBuilding = new Habitation2x2(this.game, 2, 2, 'buildings', 'HabitationUnit2x2');
+	    	this.buttonBuilding = new Habitation2x2(this.game, 2, 2, 'buildings', 'HabitationUnit2x2');
 
-    } else if (this.frame == 'WalkwayStraight'){
+	    } else if (this.frame == 'WalkwayStraight'){
 
-    	/*this.horizontalUnits = 1;
-    	this.verticalUnits = 1;*/
+	    	/*this.horizontalUnits = 1;
+	    	this.verticalUnits = 1;*/
 
-    	this.buttonBuilding = new Walkway(this.game, 1, 1, 'buildings', this.frame);
+	    	this.buttonBuilding = new Walkway(this.game, 1, 1, 'buildings', this.frame);
 
-    } else if (this.frame == 'WalkwayCorner'){
+	    } else if (this.frame == 'WalkwayCorner'){
 
-    	/*this.horizontalUnits = 1;
-    	this.verticalUnits = 1;*/
+	    	/*this.horizontalUnits = 1;
+	    	this.verticalUnits = 1;*/
 
-    	this.buttonBuilding = new Walkway(this.game, 1, 1, 'buildings', this.frame);
+	    	this.buttonBuilding = new Walkway(this.game, 1, 1, 'buildings', this.frame);
 
-    }
+	    } else if (this.frame == 'LandingPad3x3'){
+	    	this.buttonBuilding = new LandingPad3x3(this.game, 3, 3, 'buildings', this.frame);
+	    } 
 
-    //this.buttonBuilding = new OneByOne(this.game, 1, 1, 'buildings', this.frame, [
-    //        'HabitationUnit1x1Left', 'HabitationUnit1x1Up', 'HabitationUnit1x1Right'
-    //    ]);
+	    //this.buttonBuilding = new OneByOne(this.game, 1, 1, 'buildings', this.frame, [
+	    //        'HabitationUnit1x1Left', 'HabitationUnit1x1Up', 'HabitationUnit1x1Right'
+	    //    ]);
 
-    //this.buttonBuilding = new Building(this.game, this.horizontalUnits, this.verticalUnits, 'buildings', this.frame, this.rotateBool, this.otherFormations);
-    
-    if(this.buttonBuilding != null){
-    	this.buttonBuilding.x = this.game.input.mousePointer.x;
-		this.buttonBuilding.y = this.game.input.mousePointer.y;
-		this.buttonBuilding.purchased();
+	    //this.buttonBuilding = new Building(this.game, this.horizontalUnits, this.verticalUnits, 'buildings', this.frame, this.rotateBool, this.otherFormations);
+	    
+	    if(this.buttonBuilding != null){
+	    	this.buttonBuilding.x = this.game.input.mousePointer.x;
+			this.buttonBuilding.y = this.game.input.mousePointer.y;
+			this.buttonBuilding.purchased();
+		}
+		//console.log(this.buttonBuilding.held);
+		//console.log(this.tag);
 	}
-	//console.log(this.buttonBuilding.held);
-	//console.log(this.tag);
+	
 };
 
 UserInterface.prototype.hoverOver = function(indivIcon){
