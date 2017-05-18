@@ -56,6 +56,16 @@ Play.prototype = {
         //parent group of every gameObject
         this.gameWorld = this.add.group();
 
+        this.waterRes = new Resource(this, 0, 10, 360, 0, 'buildings', 'WaterIcon');
+
+        this.foodRes = new Resource(this, 0, 10, 440, 0, 'buildings', 'WaterIcon'); //swap out the sprites when they get made
+
+        this.houseRes = new Resource(this, 0, 10, 520, 0, 'buildings', 'HousingIcon');
+
+        this.powerRes = new Resource(this, 0, 10, 600, 0, 'buildings', 'PowerIcon');
+
+        this.materialRes = new Resource(this, 0, 10, 680, 0, 'buildings', 'WaterIcon');
+
         //Test building stuff :D
         this.hab1 = new Habitation1x1(this, 1, 1, 'buildings', 'HabitationUnit1x1Down', [
             'HabitationUnit1x1Left', 'HabitationUnit1x1Up', 'HabitationUnit1x1Right'
