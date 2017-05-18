@@ -28,11 +28,6 @@ Play.prototype = {
         // this.load.image('walkT', 'WalkwayTShape.png');
         // this.load.image('walkCross', 'WalkwayCross.png');
         // this.load.image('hab2x2', 'HabitationUnit2x2.png');
-        this.load.spritesheet('water', 'WaterIcon.png');
-        this.load.spritesheet('food', 'WaterIcon.png');//temp
-        this.load.spritesheet('mats', 'WaterIcon.png');
-        this.load.spritesheet('power', 'PowerIcon.png');
-        this.load.spritesheet('house', 'HousingIcon.png');
         this.load.atlas('buildings', 'inProgressAtlas.png', 'inProgressAtlas.json');
 
         console.log('Play: preload()');
@@ -61,25 +56,15 @@ Play.prototype = {
         //parent group of every gameObject
         this.gameWorld = this.add.group();
 
-        this.waterRes=new Resource(this,0,10,360,0,'water');
-        this.waterRes.fixedToCamera=true;
-        this.waterRes.text.fixedToCamera=true;
+        this.waterRes = new Resource(this, 0, 10, 360, 0, 'buildings', 'WaterIcon');
 
-		this.foodRes=new Resource(this,0,10,440,0,'food');//swap out the sprites when they get made
-        this.foodRes.fixedToCamera=true;
-        this.foodRes.text.fixedToCamera=true;
+        this.foodRes = new Resource(this, 0, 10, 440, 0, 'buildings', 'WaterIcon'); //swap out the sprites when they get made
 
-		this.houseRes=new Resource(this,0,10,520,0,'house');
-        this.houseRes.fixedToCamera=true;
-        this.houseRes.text.fixedToCamera=true;
+        this.houseRes = new Resource(this, 0, 10, 520, 0, 'buildings', 'HousingIcon');
 
-		this.powerRes=new Resource(this,0,10,600,0,'power');
-        this.powerRes.fixedToCamera=true;
-        this.powerRes.text.fixedToCamera=true;
+        this.powerRes = new Resource(this, 0, 10, 600, 0, 'buildings', 'PowerIcon');
 
-		this.materialRes=new Resource(this,0,10,680,0,'mats');
-        this.materialRes.fixedToCamera=true;
-        this.materialRes.text.fixedToCamera=true;
+        this.materialRes = new Resource(this, 0, 10, 680, 0, 'buildings', 'WaterIcon');
 
         //Test building stuff :D
         this.hab1 = new Habitation1x1(this, 1, 1, 'buildings', 'HabitationUnit1x1Down', [
