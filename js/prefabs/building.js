@@ -14,7 +14,7 @@ function Building(game, w, h, key, frame) {
     this.w = w;
     this.h = h;
     this.held = false;
-    this.placed = false;
+    //this.placed = false;
 
     game.add.existing(this);
     game.UIObjects.add(this);
@@ -36,7 +36,7 @@ function Building(game, w, h, key, frame) {
     //This will later be changed to somewhere else
     //Because the building object should be created
     //When this function is called
-    this.events.onInputDown.addOnce(this.purchased, this);
+    //this.events.onInputDown.addOnce(this.purchased, this);
 }
 
 Building.prototype = Object.create(Phaser.Sprite.prototype);
@@ -45,14 +45,19 @@ Building.prototype.constructor = Building;
 Building.prototype.purchased = function() {
     this.alpha = .75;
     this.held = true;
-    this.game.holdingBuilding = true;
+    this.game.holdingBuilding = this;
     this.game.UIObjects.bringToTop(this);
     this.anchor.set(.5);
+    this.scale.set(this.game.worldScale / 2);
     this.events.onInputDown.addOnce(Building.prototype.placed, this);
 };
 
-Building.prototype.placed = function() {
-    this.placed = true;
+/**
+ * @param  {number} xPosition -- (optional) x position to put the building
+ * @param  {number} yPosition -- (optional) y position to put the building
+ */
+Building.prototype.placed = function(xPosition, yPosition) {
+    //this.placed = true;
     this.held = false;
 
     this.game.UIObjects.remove(this);
@@ -67,11 +72,12 @@ Building.prototype.placed = function() {
         this.anchor.set(0);
     }
 
+    this.scale.set(.5);
     this.alpha = 1;
-    this.game.holdingBuilding = false;
+    this.game.holdingBuilding = null;
 
-    var xPos = this.game.g.xStart + this.game.g.upperLeftRow;
-    var yPos = this.game.g.yStart + this.game.g.upperLeftColumn;
+    var xPos = (this.game.g.xStart + this.game.g.upperLeftRow) || xPosition;
+    var yPos = (this.game.g.yStart + this.game.g.upperLeftColumn) || yPosition;
 
     this.x = xPos * 32;
     this.y = yPos * 32;
@@ -147,8 +153,8 @@ Building.prototype.updateResources = function() {
 //called every frame, override Phaser.Sprite.update
 Building.prototype.update = function() {
     if (this.held) {
-        this.x = this.game.input.worldX / this.game.worldScale;
-        this.y = this.game.input.worldY / this.game.worldScale;
+        this.x = this.game.input.worldX;
+        this.y = this.game.input.worldY;
 
         var xPos = this.game.g.xStart + this.game.g.upperLeftRow;
         var yPos = this.game.g.yStart + this.game.g.upperLeftColumn;
@@ -231,7 +237,7 @@ Building.prototype.update = function() {
         if (!canPlace || blocked) {
             opacity = .5;
             highlightColor = '#facade';
-            this.events.onInputDown.active = true;
+            this.events.onInputDown.active = false;
         }
 
         this.game.g.draw(this.w, this.h, opacity, highlightColor);
@@ -262,8 +268,8 @@ RotatableBuilding.prototype.rotate = function() {
     if (this.held) {
         this.frameName = this.otherFrames[this.frameIndex++];
         this.frameIndex %= this.otherFrames.length;
-        this.w = this.width / 32;
-        this.h = this.height / 32;
+        this.w = this.width / (32 * this.game.worldScale);
+        this.h = this.height / (32 * this.game.worldScale);
     }
 };
 
@@ -573,7 +579,7 @@ WaterTank2x1.prototype.rotate = function() {
 
         this.connections.forEach(function(c) {
             [c[0], c[1]] = [c[1], c[0]];
-            c[2] += this.rotated;
+            c[2] = (c[2] + 4 + this.rotated) % 4;
         }, this);
         this.rotated *= -1;
     }
@@ -595,7 +601,7 @@ WaterRecycler2x1.prototype.rotate = function() {
     if (this.held) {
         this.connections.forEach(function(c) {
             [c[0], c[1]] = [c[1], c[0]];
-            c[2] += this.rotated;
+            c[2] = (c[2] + 4 + this.rotated) % 4;
         }, this);
         this.rotated *= -1;
     }

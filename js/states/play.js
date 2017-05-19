@@ -3,6 +3,7 @@
 /*
 Play is the state containing the main game loop
 */
+
 var Play = function(game) {
     this.game = game;
 
@@ -11,12 +12,12 @@ var Play = function(game) {
     this.zoomLevel = 0;
     this.scrollSpeed = 4;
     this.worldSize = 4032;
-    this.holdingBuilding = false;
+    this.holdingBuilding = null;
 };
 Play.prototype = {
     preload: function() {
         //temporary... move to Load state
-	this.load.path = 'assets/img/';
+        this.load.path = 'assets/img/';
         // this.load.image('hab1x1Down', 'HabitationUnit1x1Down.png');
         // this.load.image('hab1x1Left', 'HabitationUnit1x1Left.png');
         // this.load.image('hab1x1Up', 'HabitationUnit1x1Up.png');
@@ -64,17 +65,35 @@ Play.prototype = {
         this.allObjects.add(this.UIObjects);
 
         this.waterRes = new Resource(this, 0, 10, 360, 0, 'buildings', 'WaterIcon');
-
         this.foodRes = new Resource(this, 0, 10, 440, 0, 'buildings', 'WaterIcon'); //swap out the sprites when they get made
-
         this.houseRes = new Resource(this, 0, 10, 520, 0, 'buildings', 'HousingIcon');
-
         this.powerRes = new Resource(this, 0, 10, 600, 0, 'buildings', 'PowerIcon');
-
         this.materialRes = new Resource(this, 0, 10, 680, 0, 'buildings', 'WaterIcon');
 
         //initiates the UI
         this.UI = new UserInterface(this, this.camera);
+
+        //get the x and y position to place the starting command center
+        //they will be random at least 500 px from the world edge
+        let xPos = this.rnd.integerInRange(500, this.world.width - 500);
+        xPos -= xPos % 32;
+        let yPos = this.rnd.integerInRange(500, this.world.height - 500);
+        yPos -= yPos % 32;
+
+        //build the starting command center and place it on the location
+        let commandCenter = new CommandCenter(this, 3, 3, 'buildings', 'CommandCenter3x3');
+        commandCenter.x = xPos;
+        commandCenter.y = yPos;
+        commandCenter.placed(xPos / 32, yPos / 32);
+
+        //store the old camera position and move the camera to focus on the command center
+        let oldCameraPosX = this.camera.x;
+        let oldCameraPosY = this.camera.y;
+        this.camera.focusOnXY(xPos + 48, yPos + 48);
+
+        //move the grid tileSprite so that it stays correct with the adjusted camera
+        this.g.gridsSpr[this.zoomLevel].tilePosition.x += oldCameraPosX - this.camera.x;
+        this.g.gridsSpr[this.zoomLevel].tilePosition.y += oldCameraPosY - this.camera.y;
     },
     update: function() {
 
@@ -88,7 +107,7 @@ Play.prototype = {
             //if the user is holding down the mouse
             if (this.holdingBuilding) {
                 this.panCam();
-            } else if(this.UI.canDrag){
+            } else if (this.UI.canDrag) {
                 this.dragCam();
             }
         }
@@ -102,11 +121,11 @@ Play.prototype = {
 
         this.UI.display();
 
-        if(this.UI.buttonBuilding != null){
-			if(this.UI.buttonBuilding.placed){
-				this.gameObjects.bringToTop(this.UI.toolbar);
-			}
-		}
+        if (this.UI.buttonBuilding !== null) {
+            if (this.UI.buttonBuilding.placed) {
+                this.gameObjects.bringToTop(this.UI.toolbar);
+            }
+        }
     },
     render: function() {
         //game.debug.cameraInfo(this.camera, 2, 14, '#ffffff');
@@ -128,14 +147,14 @@ Play.prototype = {
         }
     },
     panCam: function() {
-    	// I added this to better suit the UI. If the menu is active, then 
-    	// the user's cursor has to be closer to the bottom of the screen
-    	// for the camera to scroll, to avoid accidentally scrolling downward
-    	// while placing a building.
-    	if (this.UI.menuActive){
-        	this.panDistance = 30;
+        // I added this to better suit the UI. If the menu is active, then 
+        // the user's cursor has to be closer to the bottom of the screen
+        // for the camera to scroll, to avoid accidentally scrolling downward
+        // while placing a building.
+        if (this.UI.menuActive) {
+            this.panDistance = 30;
         } else {
-        	this.panDistance = 100;
+            this.panDistance = 100;
         }
 
         if (this.input.x > this.camera.view.width - 100) {
@@ -191,6 +210,9 @@ Play.prototype = {
 
             //Acutally scale all scalable objects
             this.gameObjects.scale.set(this.worldScale);
+            if (this.holdingBuilding) {
+                this.holdingBuilding.scale.set(this.worldScale / 2);
+            }
 
             //this.gameObjects.forEach(this.setScale, this, true, this.child);
 
@@ -229,16 +251,11 @@ Play.prototype = {
 
             //Acutally scale all scalable objects
             this.gameObjects.scale.set(this.worldScale);
+            if (this.holdingBuilding) {
+                this.holdingBuilding.scale.set(this.worldScale / 2);
+            }
 
             //this.gameObjects.forEach(this.setScale, this, true, this.child);
         }
     }
-    /*setScale: function(child){
-    	console.log();
-
-    	//child.scale.set(0.5);
-    	if(child != this.UI.toolbar){
-    		child.scale.set(this.worldScale);
-    	}
-    }*/
 };
