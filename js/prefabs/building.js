@@ -14,7 +14,7 @@ function Building(game, w, h, key, frame) {
     this.w = w;
     this.h = h;
     this.held = false;
-    this.placed = false;
+    //this.placed = false;
 
     game.add.existing(this);
     game.UIObjects.add(this);
@@ -52,8 +52,12 @@ Building.prototype.purchased = function() {
     this.events.onInputDown.addOnce(Building.prototype.placed, this);
 };
 
-Building.prototype.placed = function() {
-    this.placed = true;
+/**
+ * @param  {number} xPosition -- (optional) x position to put the building
+ * @param  {number} yPosition -- (optional) y position to put the building
+ */
+Building.prototype.placed = function(xPosition, yPosition) {
+    //this.placed = true;
     this.held = false;
 
     this.game.UIObjects.remove(this);
@@ -72,8 +76,8 @@ Building.prototype.placed = function() {
     this.alpha = 1;
     this.game.holdingBuilding = null;
 
-    var xPos = this.game.g.xStart + this.game.g.upperLeftRow;
-    var yPos = this.game.g.yStart + this.game.g.upperLeftColumn;
+    var xPos = (this.game.g.xStart + this.game.g.upperLeftRow) || xPosition;
+    var yPos = (this.game.g.yStart + this.game.g.upperLeftColumn) || yPosition;
 
     this.x = xPos * 32;
     this.y = yPos * 32;
@@ -148,7 +152,7 @@ Building.prototype.updateResources = function() {
 
 //called every frame, override Phaser.Sprite.update
 Building.prototype.update = function() {
-    if (this.held) { 
+    if (this.held) {
         this.x = this.game.input.worldX;
         this.y = this.game.input.worldY;
 
@@ -233,7 +237,7 @@ Building.prototype.update = function() {
         if (!canPlace || blocked) {
             opacity = .5;
             highlightColor = '#facade';
-            this.events.onInputDown.active = true;
+            this.events.onInputDown.active = false;
         }
 
         this.game.g.draw(this.w, this.h, opacity, highlightColor);
@@ -575,7 +579,7 @@ WaterTank2x1.prototype.rotate = function() {
 
         this.connections.forEach(function(c) {
             [c[0], c[1]] = [c[1], c[0]];
-            c[2] += this.rotated;
+            c[2] = (c[2] + 4 + this.rotated) % 4;
         }, this);
         this.rotated *= -1;
     }
@@ -597,7 +601,7 @@ WaterRecycler2x1.prototype.rotate = function() {
     if (this.held) {
         this.connections.forEach(function(c) {
             [c[0], c[1]] = [c[1], c[0]];
-            c[2] += this.rotated;
+            c[2] = (c[2] + 4 + this.rotated) % 4;
         }, this);
         this.rotated *= -1;
     }
