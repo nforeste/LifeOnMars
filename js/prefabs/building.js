@@ -14,11 +14,9 @@ function Building(game, w, h, key, frame) {
     this.w = w;
     this.h = h;
     this.held = false;
-    //this.placed = false;
 
     game.add.existing(this);
     game.UIObjects.add(this);
-    //game.gameObjectsWithUI.add(this);
 
     //start at half resolution
     this.scale.set(.5);
@@ -49,15 +47,20 @@ Building.prototype.purchased = function() {
     this.game.UIObjects.bringToTop(this);
     this.anchor.set(.5);
     this.scale.set(this.game.worldScale / 2);
-    this.events.onInputDown.addOnce(Building.prototype.placed, this);
+
+    //Once an object is purchased, remove the resources
+    Object.entries(this.cost).forEach(([key, value]) => {
+        this.game.resources[key].subtract(value);
+    }, this);
+
+    this.events.onInputDown.addOnce(Building.prototype.place, this);
 };
 
 /**
  * @param  {number} xPosition -- (optional) x position to put the building
  * @param  {number} yPosition -- (optional) y position to put the building
  */
-Building.prototype.placed = function(xPosition, yPosition) {
-    //this.placed = true;
+Building.prototype.place = function(xPosition, yPosition) {
     this.held = false;
 
     this.game.UIObjects.remove(this);
@@ -75,6 +78,10 @@ Building.prototype.placed = function(xPosition, yPosition) {
     this.scale.set(.5);
     this.alpha = 1;
     this.game.holdingBuilding = null;
+
+    //update the resources for each building (or start the loop to do so)
+    this.updateResources();
+
 
     var xPos = (this.game.g.xStart + this.game.g.upperLeftRow) || xPosition;
     var yPos = (this.game.g.yStart + this.game.g.upperLeftColumn) || yPosition;
@@ -114,11 +121,25 @@ Building.prototype.getInfo = function() {
     //UI popup to give player info about the building
 };
 
+Building.prototype.cancelPlacement = function() {
+    //add back all of the resources the building costs
+    Object.entries(this.cost).forEach(([key, value]) => {
+        this.game.resources[key].add(value);
+    }, this);
+
+    //no longer holding a building, clear the grid highlights
+    this.game.holdingBuilding = false;
+    this.game.g.bmdOverlay.clear();
+
+    //destroy the building sprite (not kill, which only changes visibility)
+    this.destroy();
+};
+
 //When a building is placed, check all of its connection points
 //to see if it is touching a walkway that needs to change,
 //then call changeForm() recursively on that walkway
 Building.prototype.changeForm = function(xPos, yPos) {
-    this.connections.forEach(function(c) {
+    this.connections.forEach(c => {
         if (c[2] === this.UP) {
             let tmp = this.game.g.cells[c[0] + xPos][c[1] + yPos - 1];
 
@@ -148,6 +169,13 @@ Building.prototype.changeForm = function(xPos, yPos) {
 
 Building.prototype.updateResources = function() {
     //generic function that will be overriden by every building
+    //updates resources based on the needs of the building
+};
+
+Building.prototype.hasResources = function() {
+    //generic function that will be overriden by every building
+    //checks to see if the player has enough resources to create a building
+    return false;
 };
 
 //called every frame, override Phaser.Sprite.update
@@ -241,6 +269,11 @@ Building.prototype.update = function() {
         }
 
         this.game.g.draw(this.w, this.h, opacity, highlightColor);
+
+
+        if (this.game.input.keyboard.addKey(Phaser.Keyboard.ESC).justPressed()) {
+            this.cancelPlacement();
+        }
     }
 };
 
@@ -305,20 +338,27 @@ function Walkway(game, w, h, key, frame) {
     this.connections.push([0, 0, this.UP]);
     this.connections.push([0, 0, this.LEFT]);
     this.connections.push([0, 0, this.RIGHT]);
+    this.cost = {
+        mat: 1
+    };
 }
 
 Walkway.prototype = Object.create(RotatableBuilding.prototype);
 Walkway.prototype.constructor = Walkway;
 
+Walkway.prototype.hasResources = function() {
+    return this.game.resources.mat.currentAmount >= this.cost.mat;
+};
+
 Walkway.prototype.rotate = function() {
     if (this.held) {
         this.angle += 90;
         this.rotAngle = (this.rotAngle + 1) % 4;
-        this.openPoints = this.openPoints.map(function(c) {
+        this.openPoints = this.openPoints.map(c => {
             return (c + 1) % 4;
         });
 
-        this.closedPoints.forEach(function(c) {
+        this.closedPoints.forEach(c => {
             c[0] = (c[0] + 1) % 4;
         });
 
@@ -352,8 +392,8 @@ Walkway.prototype.changeForm = function(xPos, yPos) {
         if (this.openPoints[i] === this.UP) {
             let tmp = this.game.g.cells[xPos][yPos - 1];
 
-            tmp.connect.forEach(function(gc) {
-                if (gc === this.DOWN) {
+            tmp.connect.forEach(c => {
+                if (c === this.DOWN) {
                     this.closedPoints.push([this.UP, true]);
                     this.openPoints.splice(i, 1);
                     turnAngle = Math.abs(1 - this.rotAngle);
@@ -362,8 +402,8 @@ Walkway.prototype.changeForm = function(xPos, yPos) {
         } else if (this.openPoints[i] === this.RIGHT) {
             let tmp = this.game.g.cells[xPos + 1][yPos];
 
-            tmp.connect.forEach(function(gc) {
-                if (gc === this.LEFT) {
+            tmp.connect.forEach(c => {
+                if (c === this.LEFT) {
                     this.closedPoints.push([this.RIGHT, true]);
                     this.openPoints.splice(i, 1);
                     turnAngle = Math.abs(2 - this.rotAngle);
@@ -372,8 +412,8 @@ Walkway.prototype.changeForm = function(xPos, yPos) {
         } else if (this.openPoints[i] === this.DOWN) {
             let tmp = this.game.g.cells[xPos][yPos + 1];
 
-            tmp.connect.forEach(function(gc) {
-                if (gc === this.UP) {
+            tmp.connect.forEach(c => {
+                if (c === this.UP) {
                     this.closedPoints.push([this.DOWN, true]);
                     this.openPoints.splice(i, 1);
                     turnAngle = Math.abs(3 - this.rotAngle);
@@ -381,8 +421,8 @@ Walkway.prototype.changeForm = function(xPos, yPos) {
             }, this);
         } else {
             let tmp = this.game.g.cells[xPos - 1][yPos];
-            tmp.connect.forEach(function(gc) {
-                if (gc === this.RIGHT) {
+            tmp.connect.forEach(c => {
+                if (c === this.RIGHT) {
                     this.closedPoints.push([this.LEFT, true]);
                     this.openPoints.splice(i, 1);
                     turnAngle = 4 - this.rotAngle;
@@ -402,8 +442,8 @@ Walkway.prototype.changeForm = function(xPos, yPos) {
             let tmp = this.game.g.cells[xPos][yPos - 1];
 
             if (tmp.occupied && tmp.occupied instanceof Walkway) {
-                tmp.occupied.openPoints.forEach(function(gc) {
-                    if (gc === this.DOWN) {
+                tmp.occupied.openPoints.forEach(c => {
+                    if (c === this.DOWN) {
                         tmp.occupied.changeForm(xPos, yPos - 1);
                     }
                 }, this);
@@ -412,8 +452,8 @@ Walkway.prototype.changeForm = function(xPos, yPos) {
             let tmp = this.game.g.cells[xPos + 1][yPos];
 
             if (tmp.occupied && tmp.occupied instanceof Walkway) {
-                tmp.occupied.openPoints.forEach(function(gc) {
-                    if (gc === this.LEFT) {
+                tmp.occupied.openPoints.forEach(c => {
+                    if (c === this.LEFT) {
                         tmp.occupied.changeForm(xPos + 1, yPos);
                     }
                 }, this);
@@ -422,8 +462,8 @@ Walkway.prototype.changeForm = function(xPos, yPos) {
             let tmp = this.game.g.cells[xPos][yPos + 1];
 
             if (tmp.occupied && tmp.occupied instanceof Walkway) {
-                tmp.occupied.openPoints.forEach(function(gc) {
-                    if (gc === this.UP) {
+                tmp.occupied.openPoints.forEach(c => {
+                    if (c === this.UP) {
                         tmp.occupied.changeForm(xPos, yPos + 1);
                     }
                 }, this);
@@ -432,8 +472,8 @@ Walkway.prototype.changeForm = function(xPos, yPos) {
             let tmp = this.game.g.cells[xPos - 1][yPos];
 
             if (tmp.occupied && tmp.occupied instanceof Walkway) {
-                tmp.occupied.openPoints.forEach(function(gc) {
-                    if (gc === this.RIGHT) {
+                tmp.occupied.openPoints.forEach(c => {
+                    if (c === this.RIGHT) {
                         tmp.occupied.changeForm(xPos - 1, yPos);
                     }
                 }, this);
@@ -485,10 +525,19 @@ function CommandCenter(game, w, h, key, frame) {
     this.connections.push([2, 1, this.RIGHT]);
     this.connections.push([1, 2, this.DOWN]);
     this.connections.push([0, 1, this.LEFT]);
+    this.foodGain = 1;
+    this.waterGain = 1;
 }
 
 CommandCenter.prototype = Object.create(Building.prototype);
 CommandCenter.prototype.constructor = CommandCenter;
+
+CommandCenter.prototype.updateResources = function() {
+    this.game.time.events.loop(10000, function() {
+        this.game.resources.food.add(1);
+        this.game.resources.water.add(1);
+    }, this);
+};
 
 /**
  *  Inherits from Building
@@ -500,10 +549,21 @@ function Habitation2x2(game, w, h, key, frame) {
     this.connections.push([1, 0, this.UP]);
     this.connections.push([1, 1, this.RIGHT]);
     this.connections.push([0, 1, this.DOWN]);
+    this.cost = {
+        mat: 5
+    };
 }
 
 Habitation2x2.prototype = Object.create(Building.prototype);
 Habitation2x2.prototype.constructor = Habitation2x2;
+
+Habitation2x2.prototype.updateResources = function() {
+    this.game.resources.house.increaseStorage(15);
+};
+
+Habitation2x2.prototype.hasResources = function() {
+    return this.game.resources.mat.currentAmount >= this.cost.mat;
+};
 
 /**
  *  Inherits from RotatableBuilding + Building
@@ -514,16 +574,27 @@ function Habitation2x1(game, w, h, key, frame, otherFrames) {
     this.connections.push([0, 0, this.DOWN]);
     this.connections.push([1, 0, this.UP]);
     this.rotated = 1;
+    this.cost = {
+        mat: 3
+    };
 }
 
 Habitation2x1.prototype = Object.create(RotatableBuilding.prototype);
 Habitation2x1.prototype.constructor = Habitation2x1;
 
+Habitation2x1.prototype.updateResources = function() {
+    this.game.resources.house.increaseStorage(10);
+};
+
+Habitation2x1.prototype.hasResources = function() {
+    return this.game.resources.mat.currentAmount >= this.cost.mat;
+};
+
 Habitation2x1.prototype.rotate = function() {
     RotatableBuilding.prototype.rotate.call(this);
 
     if (this.held) {
-        this.connections.forEach(function(c) {
+        this.connections.forEach(c => {
             //this just swaps the contents of c[0] and c[1]
             [c[0], c[1]] = [c[1], c[0]];
             c[2] += this.rotated;
@@ -539,16 +610,27 @@ function Habitation1x1(game, w, h, key, frame, otherFrames) {
     RotatableBuilding.call(this, game, w, h, key, frame, otherFrames);
 
     this.connections.push([0, 0, this.DOWN]);
+    this.cost = {
+        mat: 2
+    };
 }
 
 Habitation1x1.prototype = Object.create(RotatableBuilding.prototype);
 Habitation1x1.prototype.constructor = Habitation1x1;
 
+Habitation1x1.prototype.updateResources = function() {
+    this.game.resources.house.increaseStorage(5);
+};
+
+Habitation1x1.prototype.hasResources = function() {
+    return this.game.resources.mat.currentAmount >= this.cost.mat;
+};
+
 Habitation1x1.prototype.rotate = function() {
     RotatableBuilding.prototype.rotate.call(this);
 
     if (this.held) {
-        this.connections.forEach(function(c) {
+        this.connections.forEach(c => {
             c[2] = (c[2] + 1) % 4;
         });
     }
@@ -563,10 +645,21 @@ function WaterTank2x1(game, w, h, key, frame) {
         y: 0
     };
     this.rotated = 1;
+    this.cost = {
+        mat: 5
+    };
 }
 
 WaterTank2x1.prototype = Object.create(RotatableBuilding.prototype);
 WaterTank2x1.prototype.constructor = WaterTank2x1;
+
+WaterTank2x1.prototype.updateResources = function() {
+    this.game.resources.water.increaseStorage(15);
+};
+
+WaterTank2x1.prototype.hasResources = function() {
+    return this.game.resources.mat.currentAmount >= this.cost.mat;
+};
 
 WaterTank2x1.prototype.rotate = function() {
     if (this.held) {
@@ -577,7 +670,7 @@ WaterTank2x1.prototype.rotate = function() {
         this.w = this.h;
         this.h = temp;
 
-        this.connections.forEach(function(c) {
+        this.connections.forEach(c => {
             [c[0], c[1]] = [c[1], c[0]];
             c[2] = (c[2] + 4 + this.rotated) % 4;
         }, this);
@@ -590,16 +683,29 @@ function WaterRecycler2x1(game, w, h, key, frame, otherFrames) {
     this.connections.push([0, 0, this.LEFT]);
     this.connections.push([1, 0, this.RIGHT]);
     this.rotated = 1;
+    this.cost = {
+        mat: 5
+    };
 }
 
 WaterRecycler2x1.prototype = Object.create(RotatableBuilding.prototype);
 WaterRecycler2x1.prototype.constructor = WaterRecycler2x1;
 
+WaterRecycler2x1.prototype.updateResources = function() {
+    this.game.time.events.loop(8000, function() {
+        this.game.resources.water.add(2);
+    }, this);
+};
+
+WaterRecycler2x1.prototype.hasResources = function() {
+    return this.game.resources.mat.currentAmount >= this.cost.mat;
+};
+
 WaterRecycler2x1.prototype.rotate = function() {
     RotatableBuilding.prototype.rotate.call(this);
 
     if (this.held) {
-        this.connections.forEach(function(c) {
+        this.connections.forEach(c => {
             [c[0], c[1]] = [c[1], c[0]];
             c[2] = (c[2] + 4 + this.rotated) % 4;
         }, this);
@@ -612,15 +718,26 @@ function PowerStorage2x1(game, w, h, key, frame, otherFrames) {
     this.connections.push([0, 0, this.DOWN]);
     this.connections.push([1, 0, this.UP]);
     this.rotated = 1;
+    this.cost = {
+        mat: 5
+    };
 }
 
 PowerStorage2x1.prototype = Object.create(RotatableBuilding.prototype);
 PowerStorage2x1.prototype.constructor = PowerStorage2x1;
 
+PowerStorage2x1.prototype.updateResources = function() {
+    this.game.resources.power.increaseStorage(10);
+};
+
+PowerStorage2x1.prototype.hasResources = function() {
+    return this.game.resources.mat.currentAmount >= this.cost.mat;
+};
+
 PowerStorage2x1.prototype.rotate = function() {
     RotatableBuilding.prototype.rotate.call(this);
     if (this.held) {
-        this.connections.forEach(function(c) {
+        this.connections.forEach(c => {
             [c[0], c[1]] = [c[1], c[0]];
             c[2] += this.rotated;
         }, this);
@@ -635,15 +752,28 @@ function SolarPanel1x1(game, w, h, key, frame) {
         x: 0,
         y: 0
     };
+    this.cost = {
+        mat: 3
+    };
 }
 
 SolarPanel1x1.prototype = Object.create(RotatableBuilding.prototype);
 SolarPanel1x1.prototype.constructor = SolarPanel1x1;
 
+SolarPanel1x1.prototype.updateResources = function() {
+    this.game.time.events.loop(5000, function() {
+        this.game.resources.power.add(1);
+    }, this);
+};
+
+SolarPanel1x1.prototype.hasResources = function() {
+    return this.game.resources.mat.currentAmount >= this.cost.mat;
+};
+
 
 SolarPanel1x1.prototype.rotate = function() {
     if (this.held) {
-        this.connections.forEach(function(c) {
+        this.connections.forEach(c => {
             c[2] = (c[2] + 1) % 4;
         });
 
@@ -667,7 +797,14 @@ function LandingPad3x3(game, w, h, key, frame) {
     this.connections.push([2, 1, this.RIGHT]);
     this.connections.push([1, 2, this.DOWN]);
     this.connections.push([0, 1, this.LEFT]);
+    this.cost = {
+        mat: 10
+    };
 }
 
 LandingPad3x3.prototype = Object.create(Building.prototype);
 LandingPad3x3.prototype.constructor = LandingPad3x3;
+
+LandingPad3x3.prototype.hasResources = function() {
+    return this.game.resources.mat.currentAmount >= this.cost.mat;
+};

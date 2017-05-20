@@ -33,8 +33,8 @@ function Resource(game, currentAmount, storage, xpos, ypos, key, frame) {
         this.addKey = game.input.keyboard.addKey(Phaser.Keyboard.N);
     } else if (frame === 'HousingIcon') {
         this.addKey = game.input.keyboard.addKey(Phaser.Keyboard.B);
-        //} else if (frame === 'FoodIcon') {
-        //this.addKey = game.input.keyboard.addKey(Phaser.Keyboard.V);
+    } else if (frame === 'FoodIcon') {
+        this.addKey = game.input.keyboard.addKey(Phaser.Keyboard.V);
     } else if (frame === 'WaterIcon') {
         this.addKey = game.input.keyboard.addKey(Phaser.Keyboard.C);
     }
@@ -52,6 +52,10 @@ Resource.prototype.update = function() {
     //this.text.x=this.x+40;
     //this.text.y=this.y;
 
+    if (this.currentAmount > this.storage) {
+        this.currentAmount = this.storage;
+    }
+
     this.text.setText(this.currentAmount + '/' + this.storage);
     //console.log(this.currentAmount+'/'+this.storage);
     this.incomeText.x = this.x + 30;
@@ -66,15 +70,20 @@ Resource.prototype.update = function() {
         this.incomeText.alpha = 0;
         this.outcomeText.alpha = 0;
     }
-    if (this.currentAmount > this.storage) {
-        this.currentAmount = this.storage;
-    }
     if (this.addKey.isDown) {
         this.currentAmount++;
     }
 
 };
 
-Resource.prototype.addIncome = function(amount) {
+Resource.prototype.add = function(amount) {
     this.currentAmount += amount;
+};
+
+Resource.prototype.increaseStorage = function(amount) {
+    this.storage += amount;
+};
+
+Resource.prototype.subtract = function(amount) {
+    this.currentAmount -= amount;
 };

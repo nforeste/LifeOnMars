@@ -64,12 +64,13 @@ Play.prototype = {
         this.allObjects.add(this.gameObjects);
         this.allObjects.add(this.UIObjects);
 
-        this.waterRes = new Resource(this, 0, 10, 360, 0, 'buildings', 'WaterIcon');
-        this.foodRes = new Resource(this, 0, 10, 440, 0, 'buildings', 'WaterIcon'); //swap out the sprites when they get made
-        this.houseRes = new Resource(this, 0, 10, 520, 0, 'buildings', 'HousingIcon');
-        this.powerRes = new Resource(this, 0, 10, 600, 0, 'buildings', 'PowerIcon');
-        this.materialRes = new Resource(this, 0, 10, 680, 0, 'buildings', 'WaterIcon');
-        this.mainTimer = new Timer(this, 0, 0, 5, 0, 'buildings', 'WaterIcon');
+        this.resources = {
+            water: new Resource(this, 5, 15, 360, 0, 'buildings', 'WaterIcon'),
+            food: new Resource(this, 5, 15, 440, 0, 'buildings', 'FoodIcon'),
+            house: new Resource(this, 5, 5, 520, 0, 'buildings', 'HousingIcon'),
+            power: new Resource(this, 5, 10, 600, 0, 'buildings', 'PowerIcon'),
+            mat: new Resource(this, 15, 30, 680, 0, 'buildings', 'WaterIcon')
+        };
 
         //initiates the UI
         this.UI = new UserInterface(this, this.camera);
@@ -85,7 +86,7 @@ Play.prototype = {
         let commandCenter = new CommandCenter(this, 3, 3, 'buildings', 'CommandCenter3x3');
         commandCenter.x = xPos;
         commandCenter.y = yPos;
-        commandCenter.placed(xPos / 32, yPos / 32);
+        commandCenter.place(xPos / 32, yPos / 32);
 
         //store the old camera position and move the camera to focus on the command center
         let oldCameraPosX = this.camera.x;
@@ -122,11 +123,11 @@ Play.prototype = {
 
         this.UI.display();
 
-        if (this.UI.buttonBuilding !== null) {
-            if (this.UI.buttonBuilding.placed) {
-                this.gameObjects.bringToTop(this.UI.toolbar);
-            }
-        }
+        // if (this.UI.buttonBuilding !== null) {
+        //     if (this.UI.buttonBuilding.placed) {
+        //         this.gameObjects.bringToTop(this.UI.toolbar);
+        //     }
+        // }
     },
     render: function() {
         //game.debug.cameraInfo(this.camera, 2, 14, '#ffffff');
