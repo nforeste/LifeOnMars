@@ -172,10 +172,17 @@ Building.prototype.updateResources = function() {
     //updates resources based on the needs of the building
 };
 
+/**
+ * @return {Boolean} Whether or not the player has enough resources for the building
+ */
 Building.prototype.hasResources = function() {
-    //generic function that will be overriden by every building
-    //checks to see if the player has enough resources to create a building
-    return false;
+    let success = true;
+    Object.entries(this.cost).forEach(([key, value]) => {
+        if (this.game.resources[key].currentAmount < value) {
+            success = false;
+        }
+    }, this);
+    return success;
 };
 
 //called every frame, override Phaser.Sprite.update
@@ -345,10 +352,6 @@ function Walkway(game, w, h, key, frame) {
 
 Walkway.prototype = Object.create(RotatableBuilding.prototype);
 Walkway.prototype.constructor = Walkway;
-
-Walkway.prototype.hasResources = function() {
-    return this.game.resources.mat.currentAmount >= this.cost.mat;
-};
 
 Walkway.prototype.rotate = function() {
     if (this.held) {
@@ -561,10 +564,6 @@ Habitation2x2.prototype.updateResources = function() {
     this.game.resources.house.increaseStorage(15);
 };
 
-Habitation2x2.prototype.hasResources = function() {
-    return this.game.resources.mat.currentAmount >= this.cost.mat;
-};
-
 /**
  *  Inherits from RotatableBuilding + Building
  */
@@ -584,10 +583,6 @@ Habitation2x1.prototype.constructor = Habitation2x1;
 
 Habitation2x1.prototype.updateResources = function() {
     this.game.resources.house.increaseStorage(10);
-};
-
-Habitation2x1.prototype.hasResources = function() {
-    return this.game.resources.mat.currentAmount >= this.cost.mat;
 };
 
 Habitation2x1.prototype.rotate = function() {
@@ -622,10 +617,6 @@ Habitation1x1.prototype.updateResources = function() {
     this.game.resources.house.increaseStorage(5);
 };
 
-Habitation1x1.prototype.hasResources = function() {
-    return this.game.resources.mat.currentAmount >= this.cost.mat;
-};
-
 Habitation1x1.prototype.rotate = function() {
     RotatableBuilding.prototype.rotate.call(this);
 
@@ -655,10 +646,6 @@ WaterTank2x1.prototype.constructor = WaterTank2x1;
 
 WaterTank2x1.prototype.updateResources = function() {
     this.game.resources.water.increaseStorage(15);
-};
-
-WaterTank2x1.prototype.hasResources = function() {
-    return this.game.resources.mat.currentAmount >= this.cost.mat;
 };
 
 WaterTank2x1.prototype.rotate = function() {
@@ -697,10 +684,6 @@ WaterRecycler2x1.prototype.updateResources = function() {
     }, this);
 };
 
-WaterRecycler2x1.prototype.hasResources = function() {
-    return this.game.resources.mat.currentAmount >= this.cost.mat;
-};
-
 WaterRecycler2x1.prototype.rotate = function() {
     RotatableBuilding.prototype.rotate.call(this);
 
@@ -728,10 +711,6 @@ PowerStorage2x1.prototype.constructor = PowerStorage2x1;
 
 PowerStorage2x1.prototype.updateResources = function() {
     this.game.resources.power.increaseStorage(10);
-};
-
-PowerStorage2x1.prototype.hasResources = function() {
-    return this.game.resources.mat.currentAmount >= this.cost.mat;
 };
 
 PowerStorage2x1.prototype.rotate = function() {
@@ -764,10 +743,6 @@ SolarPanel1x1.prototype.updateResources = function() {
     this.game.time.events.loop(5000, function() {
         this.game.resources.power.add(1);
     }, this);
-};
-
-SolarPanel1x1.prototype.hasResources = function() {
-    return this.game.resources.mat.currentAmount >= this.cost.mat;
 };
 
 
@@ -805,6 +780,42 @@ function LandingPad3x3(game, w, h, key, frame) {
 LandingPad3x3.prototype = Object.create(Building.prototype);
 LandingPad3x3.prototype.constructor = LandingPad3x3;
 
-LandingPad3x3.prototype.hasResources = function() {
-    return this.game.resources.mat.currentAmount >= this.cost.mat;
+function Hydroponics2x2(game, w, h, key, frame) {
+    Building.call(this, game, w, h, key, frame);
+    this.connections.push([0, 0, this.LEFT]);
+    this.connections.push([0, 1, this.DOWN]);
+    this.connections.push([1, 0, this.UP]);
+    this.connections.push([1, 1, this.RIGHT]);
+    this.cost = {
+        mat: 8
+    };
+}
+
+Hydroponics2x2.prototype = Object.create(Building.prototype);
+Hydroponics2x2.prototype.constructor = Hydroponics2x2;
+
+function Storage1x1(game, w, h, key, frame, otherFrames) {
+    RotatableBuilding.call(this, game, w, h, key, frame, otherFrames);
+    this.connections.push([0, 0, this.DOWN]);
+    this.cost = {
+        mat: 3
+    };
+}
+
+Storage1x1.prototype = Object.create(RotatableBuilding.prototype);
+Storage1x1.prototype.constructor = Storage1x1;
+
+Storage1x1.prototype.updateResources = function() {
+    this.game.resources.food.increaseStorage(5);
+    this.game.resources.mat.increaseStorage(10);
+};
+
+Storage1x1.prototype.rotate = function() {
+    RotatableBuilding.prototype.rotate.call(this);
+
+    if (this.held) {
+        this.connections.forEach(c => {
+            c[2] = (c[2] + 1) % 4;
+        });
+    }
 };

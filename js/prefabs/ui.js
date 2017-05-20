@@ -32,10 +32,23 @@ function UserInterface(game, camera) {
     // Boolean to test whether or not the player has the toolbar enabled.
     this.menuActive = false;
 
-    this.buildingArray = ['HabitationUnit1x1Down', 'HabitationUnit2x1LeftRight', 'CommandCenter3x3', 'WaterTank2x1',
-        'WaterRecycler2x1LeftRight', 'HabitationUnit2x2', 'WalkwayStraight', 'WalkwayCorner', 'LandingPad3x3'
+    this.buildings = {
+        'WalkwayStraight': ['Walkway', 1, 1],
+        'WalkwayCorner': ['Walkway', 1, 1],
+        'HabitationUnit1x1Down': ['Habitation1x1', 1, 1, 'HabitationUnit1x1Left', 'HabitationUnit1x1Up',
+            'HabitationUnit1x1Right'
+        ],
+        'HabitationUnit2x1LeftRight': ['Habitation2x1', 2, 1, 'HabitationUnit2x1UpDown'],
+        'HabitationUnit2x2': ['Habitation2x2', 2, 2],
+        'Storage1x1Down': ['Storage1x1', 1, 1, 'Storage1x1Left', 'Storage1x1Up', 'Storage1x1Right'],
+        'WaterTank2x1': ['WaterTank2x1', 2, 1],
+        'WaterRecycler2x1LeftRight': ['WaterRecycler2x1', 2, 1, 'WaterRecycler2x1UpDown'],
+        'LandingPad3x3': ['LandingPad3x3', 3, 3]
+    };
+
+    this.buildingArray = ['WalkwayStraight', 'WalkwayCorner', 'HabitationUnit1x1Down', 'HabitationUnit2x1LeftRight',
+        'HabitationUnit2x2', 'Storage1x1Down', 'WaterTank2x1', 'WaterRecycler2x1LeftRight', 'LandingPad3x3'
     ];
-    this.i;
     this.icons = this.game.add.group();
     this.icons.classType = Phaser.Button;
 
@@ -56,10 +69,10 @@ function UserInterface(game, camera) {
     this.instructText.addColor('#01060f', 0);
     this.instructText.fontSize = 19;
 
-    for (this.i = 0; this.i < this.buildingArray.length; this.i++) {
-        this.indivIcon = this.icons.create(2 * (this.i - Math.floor(this.toolbarLength / 2)) * (this.camera.width /
+    for (let i = 0; i < this.buildingArray.length; i++) {
+        this.indivIcon = this.icons.create(2 * (i - Math.floor(this.toolbarLength / 2)) * (this.camera.width /
             (this.toolbarLength * 2)), 0, 'buildings');
-        this.indivIcon.frameName = this.buildingArray[this.i];
+        this.indivIcon.frameName = this.buildingArray[i];
 
         this.indivIcon.onInputDown.add(this.makeBuilding, this, 0, this.indivIcon);
         this.indivIcon.onInputOver.add(this.hoverOver, this, 0, this.indivIcon, this.tag);
@@ -139,101 +152,29 @@ UserInterface.prototype.makeBuilding = function(indivIcon) {
         this.indivIcon = indivIcon;
         this.frame = this.indivIcon._frame.name;
 
-        /*this.horizontalUnits = 0;
-        this.verticalUnits = 0;
-        this.rotateBool = false;
-        this.otherFormations = null;*/
+        //get the current building info from the 'buildings' object
+        let building = this.buildings[this.frame];
+        let name = building[0];
+        let width = building[1];
+        let height = building[2];
 
-        //console.log(this.indivIcon._frame.name);
-
-        if (this.frame === 'HabitationUnit1x1Down') {
-
-            /*this.horizontalUnits = 1;
-            this.verticalUnits = 1;
-            this.rotateBool = true;
-            this.otherformations = ['HabitationUnit1x1Left', 'HabitationUnit1x1Up', 'HabitationUnit1x1Right'];*/
-
-            /*this.buttonBuilding = new OneByOne(this.game, 1, 1, 'buildings', this.frame, [
-                'HabitationUnit1x1Left', 'HabitationUnit1x1Up', 'HabitationUnit1x1Right'
-            ]);*/
-            this.buttonBuilding = new Habitation1x1(this.game, 1, 1, 'buildings', 'HabitationUnit1x1Down', [
-                'HabitationUnit1x1Left', 'HabitationUnit1x1Up', 'HabitationUnit1x1Right'
-            ]);
-
-        } else if (this.frame === 'HabitationUnit2x1LeftRight') {
-
-            /*this.horizontalUnits = 2;
-            this.verticalUnits = 1;
-            this.rotateBool = true;
-            this.otherFormations = ['HabitationUnit2x1UpDown'];*/
-
-            this.buttonBuilding = new Habitation2x1(this.game, 2, 1, 'buildings', 'HabitationUnit2x1LeftRight', [
-                'HabitationUnit2x1UpDown'
-            ]);
-
-        } else if (this.frame === 'CommandCenter3x3') {
-
-            /*this.horizontalUnits = 3;
-            this.verticalUnits = 3;*/
-
-            this.buttonBuilding = new CommandCenter(this.game, 3, 3, 'buildings', 'CommandCenter3x3');
-
-        } else if (this.frame === 'WaterTank2x1') {
-
-            /*this.horizontalUnits = 2;
-            this.verticalUnits = 1;*/
-
-            this.buttonBuilding = new WaterTank2x1(this.game, 2, 1, 'buildings', 'WaterTank2x1');
-
-        } else if (this.frame === 'WaterRecycler2x1LeftRight') {
-
-            /*this.horizontalUnits = 2;
-            this.verticalUnits = 1;*/
-
-            this.buttonBuilding = new WaterRecycler2x1(this.game, 2, 1, 'buildings', 'WaterRecycler2x1LeftRight', [
-                'WaterRecycler2x1UpDown'
-            ]);
-
-        } else if (this.frame === 'HabitationUnit2x2') {
-
-            /*this.horizontalUnits = 2;
-            this.verticalUnits = 2;*/
-
-            this.buttonBuilding = new Habitation2x2(this.game, 2, 2, 'buildings', 'HabitationUnit2x2');
-
-        } else if (this.frame === 'WalkwayStraight') {
-
-            /*this.horizontalUnits = 1;
-            this.verticalUnits = 1;*/
-
-            this.buttonBuilding = new Walkway(this.game, 1, 1, 'buildings', this.frame);
-
-        } else if (this.frame === 'WalkwayCorner') {
-
-            /*this.horizontalUnits = 1;
-            this.verticalUnits = 1;*/
-
-            this.buttonBuilding = new Walkway(this.game, 1, 1, 'buildings', this.frame);
-
-        } else if (this.frame === 'LandingPad3x3') {
-            this.buttonBuilding = new LandingPad3x3(this.game, 3, 3, 'buildings', this.frame);
+        //if the building has other images, store that array
+        if (building.length > 3) {
+            var buildingParams = building.slice(3, building.length);
         }
 
-        //this.buttonBuilding = new OneByOne(this.game, 1, 1, 'buildings', this.frame, [
-        //        'HabitationUnit1x1Left', 'HabitationUnit1x1Up', 'HabitationUnit1x1Right'
-        //    ]);
+        //call the building constructor directly through the window (only works on browsers)
+        this.buttonBuilding = new window[name](this.game, width, height, 'buildings', this.frame, buildingParams);
 
-        //this.buttonBuilding = new Building(this.game, this.horizontalUnits, this.verticalUnits, 'buildings', this.frame, this.rotateBool, this.otherFormations);
-
+        //if the player has enough resources, purchase the building
         if (this.buttonBuilding && this.buttonBuilding.hasResources()) {
             this.buttonBuilding.x = this.game.input.mousePointer.x;
             this.buttonBuilding.y = this.game.input.mousePointer.y;
             this.buttonBuilding.purchased();
+        } else {
+            this.buttonBuilding.destroy();
         }
-        //console.log(this.buttonBuilding.held);
-        //console.log(this.tag);
     }
-
 };
 
 UserInterface.prototype.hoverOver = function(indivIcon) {
