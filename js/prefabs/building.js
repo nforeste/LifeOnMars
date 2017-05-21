@@ -819,3 +819,22 @@ Storage1x1.prototype.rotate = function() {
         });
     }
 };
+
+function Storage2x2(game, w, h, key, frame) {
+    Building.call(this, game, w, h, key, frame);
+    this.connections.push([0, 0, this.LEFT]);
+    this.connections.push([0, 1, this.Down]);
+    this.connections.push([1, 0, this.UP]);
+    this.connections.push([1, 1, this.RIGHT]);
+    this.cost = {
+        mat: 8
+    };
+}
+
+Storage2x2.prototype = Object.create(Building.prototype);
+Storage2x2.prototype.constructor = Storage2x2;
+
+Storage2x2.prototype.updateResources = function() {
+    this.game.resources.food.increaseStorage(10);
+    this.game.resources.mat.increaseStorage(20);
+};

@@ -35,19 +35,19 @@ function UserInterface(game, camera) {
     this.buildings = {
         'WalkwayStraight': ['Walkway', 1, 1],
         'WalkwayCorner': ['Walkway', 1, 1],
-        'HabitationUnit1x1Down': ['Habitation1x1', 1, 1, 'HabitationUnit1x1Left', 'HabitationUnit1x1Up',
-            'HabitationUnit1x1Right'
-        ],
-        'HabitationUnit2x1LeftRight': ['Habitation2x1', 2, 1, 'HabitationUnit2x1UpDown'],
-        'HabitationUnit2x2': ['Habitation2x2', 2, 2],
+        'Habitation1x1Down': ['Habitation1x1', 1, 1, 'Habitation1x1Left', 'Habitation1x1Up', 'Habitation1x1Right'],
+        'Habitation2x1LeftRight': ['Habitation2x1', 2, 1, 'Habitation2x1UpDown'],
+        'Habitation2x2': ['Habitation2x2', 2, 2],
         'Storage1x1Down': ['Storage1x1', 1, 1, 'Storage1x1Left', 'Storage1x1Up', 'Storage1x1Right'],
+        'Storage2x2': ['Storage2x2', 2, 2],
         'WaterTank2x1': ['WaterTank2x1', 2, 1],
         'WaterRecycler2x1LeftRight': ['WaterRecycler2x1', 2, 1, 'WaterRecycler2x1UpDown'],
         'LandingPad3x3': ['LandingPad3x3', 3, 3]
     };
 
-    this.buildingArray = ['WalkwayStraight', 'WalkwayCorner', 'HabitationUnit1x1Down', 'HabitationUnit2x1LeftRight',
-        'HabitationUnit2x2', 'Storage1x1Down', 'WaterTank2x1', 'WaterRecycler2x1LeftRight', 'LandingPad3x3'
+    this.buildingArray = ['WalkwayStraight', 'WalkwayCorner', 'Habitation1x1Down', 'Habitation2x1LeftRight',
+        'Habitation2x2', 'Storage1x1Down', 'Storage2x2', 'WaterTank2x1', 'WaterRecycler2x1LeftRight',
+        'LandingPad3x3'
     ];
     this.icons = this.game.add.group();
     this.icons.classType = Phaser.Button;
@@ -150,7 +150,7 @@ UserInterface.prototype.display = function() {
 UserInterface.prototype.makeBuilding = function(indivIcon) {
     if (!this.game.holdingBuilding) {
         this.indivIcon = indivIcon;
-        this.frame = this.indivIcon._frame.name;
+        this.frame = this.indivIcon.frameName;
 
         //get the current building info from the 'buildings' object
         let building = this.buildings[this.frame];
@@ -181,7 +181,7 @@ UserInterface.prototype.hoverOver = function(indivIcon) {
     this.indivIcon = indivIcon;
     this.indivIcon.scale.x *= this.scaleFactor;
     this.indivIcon.scale.y = this.indivIcon.scale.x;
-    this.frame = this.indivIcon._frame.name;
+    this.frame = this.indivIcon.frameName;
 
     this.tag = this.frame;
     this.changeTag();
@@ -191,7 +191,7 @@ UserInterface.prototype.hoverOut = function(indivIcon) {
     this.indivIcon = indivIcon;
     this.indivIcon.scale.x *= (1 / this.scaleFactor);
     this.indivIcon.scale.y = this.indivIcon.scale.x;
-    this.frame = this.indivIcon._frame.name;
+    this.frame = this.indivIcon.frameName;
 
     this.tag = this.closeTag;
     this.changeTag();
