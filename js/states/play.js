@@ -69,6 +69,7 @@ Play.prototype = {
         this.houseRes = new Resource(this, 0, 10, 520, 0, 'buildings', 'HousingIcon');
         this.powerRes = new Resource(this, 0, 10, 600, 0, 'buildings', 'PowerIcon');
         this.materialRes = new Resource(this, 0, 10, 680, 0, 'buildings', 'WaterIcon');
+        this.mainTimer = new Timer(this, 0, 0, 5, 0, 'buildings', 'WaterIcon');
 
         //initiates the UI
         this.UI = new UserInterface(this, this.camera);
