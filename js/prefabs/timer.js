@@ -13,81 +13,84 @@
 // creates a timer image and numerical timer with text that appears upon being hovered over 
 function Timer(game, min, sec, xpos, ypos, key, frame) {
     Phaser.Sprite.call(this, game, xpos, ypos, key, frame);
-	this.game = game;
-	this.min = min;
-	this.sec = sec;
-    this.milli = 0;
-	this.x = xpos;
-	this.y = ypos;
-	this.hovered = false;
+    this.game = game;
+    this.min = min;
+    this.sec = sec;
+    this.x = xpos;
+    this.y = ypos;
+
+    //interval of time before more resources arrive (in minutes)
+    this.resourceInterval = 2;
+
+    //anchor the sprite at the center
+    this.anchor.set(.5);
+
     game.add.existing(this);
+
+    //enable event listeners on the sprite
     this.inputEnabled = true;
     this.fixedToCamera = true;
-	var style = {
-        font: '24px Arial',
+
+    //style of the timer text
+    var style = {
+        font: '24px Helvetica Neue',
+        fill: 'lightgray',
         wordWrap: false
     };
+
     //displays the numerical timer
-    this.text = game.add.text(this.x + 50, this.y + 20, '0' + this.min + ':' + '0' + this.sec, style);
+    this.text = game.add.text(this.x + 16, this.y - 12, '0' + this.min + ':' + '0' + this.sec, style);
     this.text.fixedToCamera = true;
-	var style2 = {
-        font: '18px Arial',
-        wordWrap: false
-    };
+
+    //change the font size smaller for the subtext
+    style.font = '18px Helvetica Neue';
+
     //displays additional timer information
-    this.timerText = game.add.text(this.x + 20, this.y + 45, 'Resource Update in 60 seconds', style2);
+    this.timerText = game.add.text(this.x - 5, this.y + 15, 'Resource Update in ' +
+        (this.resourceInterval * 60) + ' seconds', style);
     this.timerText.alpha = 0;
-    this.addKey = game.input.keyboard.addKey(Phaser.Keyboard.T);
+    this.timerText.fixedToCamera = true;
+
+    //add events for hovering over the sprite and moving the mouse off the sprite
+    this.events.onInputOver.add(this.hover, this);
+    this.events.onInputOut.add(this.endHover, this);
+
+    //every second increment the timer
+    this.game.time.events.loop(1000, this.increaseTimer, this);
 }
 
 Timer.prototype = Object.create(Phaser.Sprite.prototype);
 Timer.prototype.constructor = Timer;
 
-Timer.prototype.update = function() {
-    //makes sure the time is displayed correctly regardless of the number of minutes or seconds
-    if (this.sec < 10 && this.min < 10) {
-    	this.text.setText('0' + this.min + ':' + '0' + this.sec);
-    } else if (this.sec >= 10 && this.min < 10) {
-        this.text.setText('0' + this.min + ':' + this.sec);
-    } else if (this.sec < 10 && this.min >= 10) {
-        this.text.setText(this.min + ':' + '0' + this.sec);
-    } else if (this.sec >= 10 && this.min >= 10) {
-        this.text.setText(this.min + ':' + this.sec);
-    }
-
-    //adds one minute to the timer every time 60 seconds pass
-    if (this.sec == 60) {
-        this.sec = this.sec - 60;
+Timer.prototype.increaseTimer = function() {
+    this.sec++;
+    if (this.sec % 60 === 0) {
         this.min++;
+
+        //if it has been the necessary number of minutes, more people arrive from earth
+        if (this.min % this.resourceInterval === 0) {
+            this.game.peopleArrive();
+            this.sec = 0;
+        }
     }
 
-    //makes sure the additional information is accurate for any number of seconds
-    this.resCount = 60 - this.sec;
-    if (this.resCount == 1) {
-        this.timerText.setText('Resource Update in 1 second');
-    } else {
-        this.timerText.setText('Resource Update in ' + this.resCount + ' seconds');
-    }
+    //set the main timer text every second (with leading 0s where appropriate)
+    let sec = this.sec % 60;
+    this.text.setText((this.min < 10 ? '0' : '') + this.min + ':' + (sec < 10 ? '0' : '') + sec);
 
-	this.timerText.x = this.x + 20;
-	this.timerText.y = this.y + 45;
+    //set the secondary timer every second
+    let remaining = (this.resourceInterval * 60) - this.sec;
+    this.timerText.setText('Resource Update in ' + remaining + ' second' + (sec === 59 ? '' : 's'));
+};
 
-    //makes the additional information appear when hovered over by the cursor
-	if (this.input.pointerOver()) {
-		this.timerText.alpha = .99;
-	} else {
-		this.timerText.alpha = 0;
-	}
-	if (this.addKey.isDown) {
-		this.sec++;
-	}
+Timer.prototype.hover = function() {
+    this.timerText.alpha = .99;
+};
 
-    //increments the timer
-    if (this.milli == 60) {
-        this.milli = 0;
-        this.sec++;
-    } else {
-        this.milli++;
-    }
+Timer.prototype.endHover = function() {
+    this.timerText.alpha = 0;
+};
+
+Timer.prototype.update = function() {
 
 };

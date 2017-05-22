@@ -42,6 +42,29 @@ Play.prototype = {
         this.g = new Grid(this, 32, 32, 'black');
         this.g.makeGrid();
 
+        this.allObjects = this.add.group();
+        //parent group of every gameObject
+        this.gameObjects = this.add.group();
+        //this.gameObjectsWithUI = this.add.group();
+        this.UIObjects = this.add.group();
+
+        this.allObjects.add(this.gameObjects);
+        this.allObjects.add(this.UIObjects);
+
+        this.resources = {
+            water: new Resource(this, 5, 15, 400, 32, 'buildings', 'WaterIcon'),
+            food: new Resource(this, 5, 15, 480, 32, 'buildings', 'FoodIcon'),
+            house: new Resource(this, 5, 5, 560, 32, 'buildings', 'HousingIcon'),
+            power: new Resource(this, 5, 10, 640, 32, 'buildings', 'PowerIcon'),
+            mat: new Resource(this, 15, 30, 720, 32, 'buildings', 'WaterIcon')
+        };
+
+        //initiates the UI
+        this.UI = new UserInterface(this, this.camera);
+
+        //initiates the population update timer
+        this.Timer = new Timer(this, 0, 0, 24, 32, 'buildings', 'WaterIcon');
+
         //.bind(this) used to access 'this' scope within callback
         this.input.mouse.mouseWheelCallback = function(event) {
             event.preventDefault();
@@ -54,26 +77,6 @@ Play.prototype = {
             }
         }.bind(this);
 
-
-        this.allObjects = this.add.group();
-        //parent group of every gameObject
-        this.gameObjects = this.add.group();
-        //this.gameObjectsWithUI = this.add.group();
-        this.UIObjects = this.add.group();
-
-        this.allObjects.add(this.gameObjects);
-        this.allObjects.add(this.UIObjects);
-
-        this.waterRes = new Resource(this, 0, 10, 360, 0, 'buildings', 'WaterIcon');
-        this.foodRes = new Resource(this, 0, 10, 440, 0, 'buildings', 'WaterIcon'); //swap out the sprites when they get made
-        this.houseRes = new Resource(this, 0, 10, 520, 0, 'buildings', 'HousingIcon');
-        this.powerRes = new Resource(this, 0, 10, 600, 0, 'buildings', 'PowerIcon');
-        this.materialRes = new Resource(this, 0, 10, 680, 0, 'buildings', 'WaterIcon');
-        this.mainTimer = new Timer(this, 0, 0, 5, 0, 'buildings', 'WaterIcon');
-
-        //initiates the UI
-        this.UI = new UserInterface(this, this.camera);
-
         //get the x and y position to place the starting command center
         //they will be random at least 500 px from the world edge
         let xPos = this.rnd.integerInRange(500, this.world.width - 500);
@@ -85,7 +88,7 @@ Play.prototype = {
         let commandCenter = new CommandCenter(this, 3, 3, 'buildings', 'CommandCenter3x3');
         commandCenter.x = xPos;
         commandCenter.y = yPos;
-        commandCenter.placed(xPos / 32, yPos / 32);
+        commandCenter.place(xPos / 32, yPos / 32);
 
         //store the old camera position and move the camera to focus on the command center
         let oldCameraPosX = this.camera.x;
@@ -122,16 +125,19 @@ Play.prototype = {
 
         this.UI.display();
 
-        if (this.UI.buttonBuilding !== null) {
-            if (this.UI.buttonBuilding.placed) {
-                this.gameObjects.bringToTop(this.UI.toolbar);
-            }
-        }
+        // if (this.UI.buttonBuilding !== null) {
+        //     if (this.UI.buttonBuilding.placed) {
+        //         this.gameObjects.bringToTop(this.UI.toolbar);
+        //     }
+        // }
     },
     render: function() {
         //game.debug.cameraInfo(this.camera, 2, 14, '#ffffff');
         //game.time.advancedTiming=true;
         //game.debug.text(game.time.fps || '--',2,14,'#ffffff');
+    },
+    peopleArrive: function() {
+        console.log('people have arrived');
     },
     dragCam: function() {
         if (this.input.activePointer.isDown) {
