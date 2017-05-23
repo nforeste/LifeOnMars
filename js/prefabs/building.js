@@ -30,11 +30,6 @@ function Building(game, w, h, key, frame) {
 
     //give the sprite button functionality
     this.inputEnabled = true;
-
-    //This will later be changed to somewhere else
-    //Because the building object should be created
-    //When this function is called
-    //this.events.onInputDown.addOnce(this.purchased, this);
 }
 
 Building.prototype = Object.create(Phaser.Sprite.prototype);
@@ -47,11 +42,6 @@ Building.prototype.purchased = function() {
     this.game.UIObjects.bringToTop(this);
     this.anchor.set(.5);
     this.scale.set(this.game.worldScale / 2);
-
-    //Once an object is purchased, remove the resources
-    Object.entries(this.cost).forEach(([key, value]) => {
-        this.game.resources[key].subtract(value);
-    }, this);
 
     this.events.onInputDown.addOnce(Building.prototype.place, this);
 };
@@ -78,6 +68,11 @@ Building.prototype.place = function(xPosition, yPosition) {
     this.scale.set(.5);
     this.alpha = 1;
     this.game.holdingBuilding = null;
+
+    //Once an object is placed, remove the resources
+    Object.entries(this.cost).forEach(([key, value]) => {
+        this.game.resources[key].subtract(value);
+    }, this);
 
     //update the resources for each building (or start the loop to do so)
     this.updateResources();
@@ -122,16 +117,12 @@ Building.prototype.getInfo = function() {
 };
 
 Building.prototype.cancelPlacement = function() {
-    //add back all of the resources the building costs
-    Object.entries(this.cost).forEach(([key, value]) => {
-        this.game.resources[key].add(value);
-    }, this);
-
     //no longer holding a building, clear the grid highlights
     this.game.holdingBuilding = false;
     this.game.g.bmdOverlay.clear();
 
     //destroy the building sprite (not kill, which only changes visibility)
+    this.held = false;
     this.destroy();
 };
 
@@ -216,6 +207,8 @@ Building.prototype.update = function() {
             //if the building isn't blocked by another building,
             //check to make sure that it has a connection point
             //with another building/walkway to attach to
+            //Additionally, a building cannot be placed directly next to another building
+            //(need to place at least one walkway in between)
             if (!blocked) {
                 for (let i = 0; i < this.connections.length; i++) {
                     let x = this.connections[i][0];
@@ -223,6 +216,10 @@ Building.prototype.update = function() {
 
                     if (this.connections[i][2] === this.UP) {
                         let tmp = this.game.g.cells[x + xPos][y + yPos - 1];
+
+                        if (!(this instanceof Walkway) && tmp.occupied && !(tmp.occupied instanceof Walkway)) {
+                            continue;
+                        }
 
                         tmp.connect.forEach(function(c, j) {
                             if (c === this.DOWN) {
@@ -234,6 +231,10 @@ Building.prototype.update = function() {
                     } else if (this.connections[i][2] === this.DOWN) {
                         let tmp = this.game.g.cells[x + xPos][y + yPos + 1];
 
+                        if (!(this instanceof Walkway) && tmp.occupied && !(tmp.occupied instanceof Walkway)) {
+                            continue;
+                        }
+
                         tmp.connect.forEach(function(c, j) {
                             if (c === this.UP) {
                                 canPlace = true;
@@ -244,6 +245,10 @@ Building.prototype.update = function() {
                     } else if (this.connections[i][2] === this.LEFT) {
                         let tmp = this.game.g.cells[x + xPos - 1][y + yPos];
 
+                        if (!(this instanceof Walkway) && tmp.occupied && !(tmp.occupied instanceof Walkway)) {
+                            continue;
+                        }
+
                         tmp.connect.forEach(function(c, j) {
                             if (c === this.RIGHT) {
                                 canPlace = true;
@@ -253,6 +258,10 @@ Building.prototype.update = function() {
                         }, this);
                     } else {
                         let tmp = this.game.g.cells[x + xPos + 1][y + yPos];
+
+                        if (!(this instanceof Walkway) && tmp.occupied && !(tmp.occupied instanceof Walkway)) {
+                            continue;
+                        }
 
                         tmp.connect.forEach(function(c, j) {
                             if (c === this.LEFT) {
@@ -530,6 +539,7 @@ function CommandCenter(game, w, h, key, frame) {
     this.connections.push([0, 1, this.LEFT]);
     this.foodGain = 1;
     this.waterGain = 1;
+    this.cost = {};
 }
 
 CommandCenter.prototype = Object.create(Building.prototype);

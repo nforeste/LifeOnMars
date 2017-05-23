@@ -18,17 +18,6 @@ Play.prototype = {
     preload: function() {
         //temporary... move to Load state
         this.load.path = 'assets/img/';
-        // this.load.image('hab1x1Down', 'HabitationUnit1x1Down.png');
-        // this.load.image('hab1x1Left', 'HabitationUnit1x1Left.png');
-        // this.load.image('hab1x1Up', 'HabitationUnit1x1Up.png');
-        // this.load.image('hab1x1Right', 'HabitationUnit1x1Right.png');
-        // this.load.image('hab2x1LeftRight', 'HabitationUnit2x1LeftRight.png');
-        // this.load.image('hab2x1UpDown', 'HabitationUnit2x1UpDown.png');
-        // this.load.image('commandCenter', 'CommandCenter3x3.png');
-        // this.load.image('walkStraight', 'WalkwayStraight.png');
-        // this.load.image('walkT', 'WalkwayTShape.png');
-        // this.load.image('walkCross', 'WalkwayCross.png');
-        // this.load.image('hab2x2', 'HabitationUnit2x2.png');
         this.load.atlas('buildings', 'inProgressAtlas.png', 'inProgressAtlas.json');
 
         console.log('Play: preload()');
@@ -45,7 +34,6 @@ Play.prototype = {
         this.allObjects = this.add.group();
         //parent group of every gameObject
         this.gameObjects = this.add.group();
-        //this.gameObjectsWithUI = this.add.group();
         this.UIObjects = this.add.group();
 
         this.allObjects.add(this.gameObjects);
