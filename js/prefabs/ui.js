@@ -35,6 +35,8 @@ function UserInterface(game, camera) {
     this.buildings = {
         'WalkwayStraight': ['Walkway', 1, 1],
         'WalkwayCorner': ['Walkway', 1, 1],
+        'BrickMine2x2': ['BrickMine2x2', 2, 2],
+        'IceMine2x2': ['IceMine2x2', 2, 2],
         'Habitation1x1Down': ['Habitation1x1', 1, 1, 'Habitation1x1Left', 'Habitation1x1Up', 'Habitation1x1Right'],
         'Habitation2x1LeftRight': ['Habitation2x1', 2, 1, 'Habitation2x1UpDown'],
         'Habitation2x2': ['Habitation2x2', 2, 2],
@@ -45,9 +47,9 @@ function UserInterface(game, camera) {
         'LandingPad3x3': ['LandingPad3x3', 3, 3]
     };
 
-    this.buildingArray = ['WalkwayStraight', 'WalkwayCorner', 'Habitation1x1Down', 'Habitation2x1LeftRight',
-        'Habitation2x2', 'Storage1x1Down', 'Storage2x2', 'WaterTank2x1', 'WaterRecycler2x1LeftRight',
-        'LandingPad3x3'
+    this.buildingArray = ['WalkwayStraight', 'WalkwayCorner', 'BrickMine2x2', 'IceMine2x2', 'Habitation1x1Down',
+        'Habitation2x1LeftRight', 'Habitation2x2', 'Storage1x1Down', 'Storage2x2', 'WaterTank2x1',
+        'WaterRecycler2x1LeftRight', 'LandingPad3x3'
     ];
     this.icons = this.game.add.group();
     this.icons.classType = Phaser.Button;
