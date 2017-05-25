@@ -6,29 +6,19 @@ Play is the state containing the main game loop
 
 var Play = function(game) {
     this.game = game;
-
-    //the scale of the world (changes with zooming)
-    this.worldScale = 1;
-    this.zoomLevel = 0;
-    this.scrollSpeed = 4;
-    this.worldSize = 4032;
-    this.holdingBuilding = null;
 };
 Play.prototype = {
+    //the scale of the world (changes with zooming)
+    worldScale: 1,
+    zoomLevel: 0,
+    scrollSpeed: 4,
+    worldSize: 4032,
+    holdingBuilding: null,
+    newPeople: 5,
+
     preload: function() {
         //temporary... move to Load state
         this.load.path = 'assets/img/';
-        // this.load.image('hab1x1Down', 'HabitationUnit1x1Down.png');
-        // this.load.image('hab1x1Left', 'HabitationUnit1x1Left.png');
-        // this.load.image('hab1x1Up', 'HabitationUnit1x1Up.png');
-        // this.load.image('hab1x1Right', 'HabitationUnit1x1Right.png');
-        // this.load.image('hab2x1LeftRight', 'HabitationUnit2x1LeftRight.png');
-        // this.load.image('hab2x1UpDown', 'HabitationUnit2x1UpDown.png');
-        // this.load.image('commandCenter', 'CommandCenter3x3.png');
-        // this.load.image('walkStraight', 'WalkwayStraight.png');
-        // this.load.image('walkT', 'WalkwayTShape.png');
-        // this.load.image('walkCross', 'WalkwayCross.png');
-        // this.load.image('hab2x2', 'HabitationUnit2x2.png');
         this.load.atlas('buildings', 'inProgressAtlas.png', 'inProgressAtlas.json');
 
         console.log('Play: preload()');
@@ -45,18 +35,17 @@ Play.prototype = {
         this.allObjects = this.add.group();
         //parent group of every gameObject
         this.gameObjects = this.add.group();
-        //this.gameObjectsWithUI = this.add.group();
         this.UIObjects = this.add.group();
 
         this.allObjects.add(this.gameObjects);
         this.allObjects.add(this.UIObjects);
 
         this.resources = {
-            water: new Resource(this, 5, 15, 400, 32, 'buildings', 'WaterIcon'),
-            food: new Resource(this, 5, 15, 480, 32, 'buildings', 'FoodIcon'),
-            house: new Resource(this, 5, 5, 560, 32, 'buildings', 'HousingIcon'),
-            power: new Resource(this, 5, 10, 640, 32, 'buildings', 'PowerIcon'),
-            mat: new Resource(this, 15, 30, 720, 32, 'buildings', 'WaterIcon')
+            water: new Resource(this, 50, 150, 415, 32, 'buildings', 'WaterIcon'),
+            food: new Resource(this, 50, 150, 500, 32, 'buildings', 'FoodIcon'),
+            house: new Resource(this, 5, 5, 585, 32, 'buildings', 'HousingIcon'),
+            power: new Resource(this, 5, 10, 650, 32, 'buildings', 'PowerIcon'),
+            mat: new Resource(this, 150, 300, 720, 32, 'buildings', 'WaterIcon')
         };
 
         //initiates the UI
@@ -124,12 +113,6 @@ Play.prototype = {
         this.g.gridsSpr[this.zoomLevel].y = this.camera.view.y;
 
         this.UI.display();
-
-        // if (this.UI.buttonBuilding !== null) {
-        //     if (this.UI.buttonBuilding.placed) {
-        //         this.gameObjects.bringToTop(this.UI.toolbar);
-        //     }
-        // }
     },
     render: function() {
         //game.debug.cameraInfo(this.camera, 2, 14, '#ffffff');
@@ -137,7 +120,37 @@ Play.prototype = {
         //game.debug.text(game.time.fps || '--',2,14,'#ffffff');
     },
     peopleArrive: function() {
-        console.log('people have arrived');
+        let style = {
+            fill: '#fff',
+            font: '64px Helvetica Neue'
+        };
+
+        //create text, centered and fixed to camera, at 1/4 scale
+        let text = this.add.text(this.camera.width / 2, 100, this.newPeople + ' more people arriving', style);
+        text.fixedToCamera = true;
+        text.anchor.set(.5);
+        text.scale.set(.25);
+
+        //tween the text larger
+        this.add.tween(text.scale).to({
+            x: 1,
+            y: 1
+        }, 1500, 'Linear', true, 0, -1, true);
+
+        //check to make sure the player has enough housing to support the new people
+        if (this.resources.house.storage < this.resources.house.currentAmount + this.newPeople) {
+            console.log('YOU LOSE BITCH');
+            //Do game over stuff here?
+        }
+
+        //add more people
+        this.resources.house.add(this.newPeople);
+        this.newPeople *= 2;
+
+        //destroy the text (delete it)
+        this.time.events.add(3000, function() {
+            text.destroy();
+        });
     },
     dragCam: function() {
         if (this.input.activePointer.isDown) {

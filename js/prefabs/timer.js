@@ -19,8 +19,8 @@ function Timer(game, min, sec, xpos, ypos, key, frame) {
     this.x = xpos;
     this.y = ypos;
 
-    //interval of time before more resources arrive (in minutes)
-    this.resourceInterval = 2;
+    //interval of time before more resources arrive (in seconds)
+    this.resourceInterval = 120;
 
     //anchor the sprite at the center
     this.anchor.set(.5);
@@ -66,12 +66,12 @@ Timer.prototype.increaseTimer = function() {
     this.sec++;
     if (this.sec % 60 === 0) {
         this.min++;
+    }
 
-        //if it has been the necessary number of minutes, more people arrive from earth
-        if (this.min % this.resourceInterval === 0) {
-            this.game.peopleArrive();
-            this.sec = 0;
-        }
+    //if it has been the necessary number of minutes, more people arrive from earth
+    if (this.sec === this.resourceInterval) {
+        this.game.peopleArrive();
+        this.sec = 0;
     }
 
     //set the main timer text every second (with leading 0s where appropriate)
@@ -79,7 +79,7 @@ Timer.prototype.increaseTimer = function() {
     this.text.setText((this.min < 10 ? '0' : '') + this.min + ':' + (sec < 10 ? '0' : '') + sec);
 
     //set the secondary timer every second
-    let remaining = (this.resourceInterval * 60) - this.sec;
+    let remaining = this.resourceInterval - this.sec;
     this.timerText.setText('Resource Update in ' + remaining + ' second' + (sec === 59 ? '' : 's'));
 };
 
