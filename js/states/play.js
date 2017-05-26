@@ -20,6 +20,7 @@ Play.prototype = {
         //temporary... move to Load state
         this.load.path = 'assets/img/';
         this.load.atlas('buildings', 'inProgressAtlas.png', 'inProgressAtlas.json');
+        this.load.image('toolbarTabs', 'ToolbarTabs.png');
 
         console.log('Play: preload()');
     },
@@ -27,7 +28,7 @@ Play.prototype = {
         console.log('Play: create()');
         this.world.setBounds(0, 0, 4032, 4032);
 
-        //orangish brown
+        //orangish brownF
         this.stage.backgroundColor = '#c1440e';
         this.g = new Grid(this, 32, 32, 'black');
         this.g.makeGrid();
@@ -171,19 +172,19 @@ Play.prototype = {
         // the user's cursor has to be closer to the bottom of the screen
         // for the camera to scroll, to avoid accidentally scrolling downward
         // while placing a building.
-        if (this.UI.menuActive) {
+        if (this.UI.menuActive || this.UI.hovering) {
             this.panDistance = 30;
         } else {
             this.panDistance = 100;
         }
 
-        if (this.input.x > this.camera.view.width - 100) {
+        if (this.input.x > this.camera.view.width - this.panDistance) {
             this.camera.x += this.scrollSpeed;
         }
-        if (this.input.x < 100) {
+        if (this.input.x < this.panDistance ) {
             this.camera.x -= this.scrollSpeed;
         }
-        if (this.input.y > this.camera.view.height - this.panDistance) {
+        if (this.input.y > this.camera.view.height - this.panDistance && !this.UI.hovering) {
             this.camera.y += this.scrollSpeed;
         }
         if (this.input.y < 100) {
@@ -230,6 +231,7 @@ Play.prototype = {
 
             //Acutally scale all scalable objects
             this.gameObjects.scale.set(this.worldScale);
+
             if (this.holdingBuilding) {
                 this.holdingBuilding.scale.set(this.worldScale / 2);
             }
@@ -271,6 +273,7 @@ Play.prototype = {
 
             //Acutally scale all scalable objects
             this.gameObjects.scale.set(this.worldScale);
+
             if (this.holdingBuilding) {
                 this.holdingBuilding.scale.set(this.worldScale / 2);
             }
@@ -278,4 +281,12 @@ Play.prototype = {
             //this.gameObjects.forEach(this.setScale, this, true, this.child);
         }
     }
+    /*setScale: function(child){
+    	console.log();
+
+    	//child.scale.set(0.5);
+    	if(child != this.UI.toolbar){
+    		child.scale.set(this.worldScale);
+    	}
+    }*/
 };
