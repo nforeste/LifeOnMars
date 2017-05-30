@@ -1,3 +1,4 @@
 /.eslintrc.json
 /assets/*
 /js/phaser.js
+*.DS_Store

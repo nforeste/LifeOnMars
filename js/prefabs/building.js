@@ -670,6 +670,12 @@ WaterRecycler2x1.prototype.constructor = WaterRecycler2x1;
 WaterRecycler2x1.prototype.updateResources = function() {
     this.game.time.events.loop(4000, function() {
         this.game.resources.water.add(2);
+        var waterCurrent = this.game.resource.water.currentAmount;
+        var waterMax = this.game.resource.water.storage;
+        this.ratio = waterCurrent / waterMax;
+        this.ratio = Math.floor(this.ratio * 9);
+
+        this.frameName = (this.rotated === 1? 'WaterTankLeftRight': 'WaterTankUpDown') + this.ratio;
     }, this);
 };
 
@@ -815,7 +821,7 @@ function Storage2x2(game, w, h, key, frame) {
     this.connections.push([1, 1, this.RIGHT]);
     this.cost = {
         mat: 25
-    };
+    }
 }
 
 Storage2x2.prototype = Object.create(Building.prototype);
@@ -824,6 +830,12 @@ Storage2x2.prototype.constructor = Storage2x2;
 Storage2x2.prototype.updateResources = function() {
     this.game.resources.food.increaseStorage(20);
     this.game.resources.mat.increaseStorage(40);
+    var storageCurrent = this.game.resource.food.currentAmount + this.game.resources.mat.currentAmount;
+    var storageMax = this.game.resource.food.storage + this.game.resources.mat.storage;
+    this.ratio = storageCurrent / storageMax;
+    this.ratio = Math.floor(this.ratio * 17);
+    
+    this.frameName = 'Storage' + this.ratio;
 };
 
 function BrickMine2x2(game, w, h, key, frame) {
