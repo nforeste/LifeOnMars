@@ -1,22 +1,22 @@
 'use strict';
 
 /**
- * @param {Phaser.Game} game -- reference to the current game instance
+ * @param {Phaser.Game} _game -- reference to the current game instance
  * @param {number} w -- width of the building (in grid cells)
  * @param {number} h -- height of the building (in grid cells)
  * @param {string} key -- the cached key of the building sprite
  * @param {string} frame -- (optional) image frame in a texture atlas/spritesheet
  */
-function Building(game, w, h, key, frame) {
-    Phaser.Sprite.call(this, game, 0, 0, key, frame);
+function Building(_game, w, h, key, frame) {
+    Phaser.Sprite.call(this, _game.game, 0, 0, key, frame);
 
-    this.game = game;
+    this._game = _game;
     this.w = w;
     this.h = h;
     this.held = false;
 
-    game.add.existing(this);
-    game.UIObjects.add(this);
+    _game.add.existing(this);
+    _game.UIObjects.add(this);
 
     //start at half resolution
     this.scale.set(.5);
@@ -38,10 +38,10 @@ Building.prototype.constructor = Building;
 Building.prototype.purchased = function() {
     this.alpha = .75;
     this.held = true;
-    this.game.holdingBuilding = this;
-    this.game.UIObjects.bringToTop(this);
+    this._game.holdingBuilding = this;
+    this._game.UIObjects.bringToTop(this);
     this.anchor.set(.5);
-    this.scale.set(this.game.worldScale / 2);
+    this.scale.set(this._game.worldScale / 2);
 
     this.events.onInputDown.addOnce(Building.prototype.place, this);
 };
@@ -56,17 +56,20 @@ Building.prototype.place = function(xPosition, yPosition) {
     //update the resources for each building (or start the loop to do so)
     this.updateResources();
 
-    this.game.UIObjects.remove(this);
+    this._game.UIObjects.remove(this);
 
     //check to see if the building is a storage container with animated frames
     if (this instanceof WaterTank2x1 || this instanceof Storage2x2) {
-        this.game.storageBuildings.add(this);
+        this._game.storageBuildings.add(this);
         this.updateFrame();
         this.angle = 0;
-        this.orient.x = 0;
-        this.orient.y = 0;
+
+        if (this.orient) {
+            this.orient.x = 0;
+            this.orient.y = 0;
+        }
     } else {
-        this.game.gameObjects.add(this);
+        this._game.gameObjects.add(this);
     }
 
     //this.orient only applies to buildings that 
@@ -80,15 +83,15 @@ Building.prototype.place = function(xPosition, yPosition) {
 
     this.scale.set(.5);
     this.alpha = 1;
-    this.game.holdingBuilding = null;
+    this._game.holdingBuilding = null;
 
     //Once an object is placed, remove the resources
     Object.entries(this.cost).forEach(([key, value]) => {
-        this.game.resources[key].subtract(value);
+        this._game.resources[key].subtract(value);
     }, this);
 
-    var xPos = (this.game.g.xStart + this.game.g.upperLeftRow) || xPosition;
-    var yPos = (this.game.g.yStart + this.game.g.upperLeftColumn) || yPosition;
+    var xPos = (this._game.g.xStart + this._game.g.upperLeftRow) || xPosition;
+    var yPos = (this._game.g.yStart + this._game.g.upperLeftColumn) || yPosition;
 
     this.x = xPos * 32;
     this.y = yPos * 32;
@@ -96,7 +99,7 @@ Building.prototype.place = function(xPosition, yPosition) {
     // //update cell info here
     for (let i = xPos; i < xPos + this.w; i++) {
         for (let j = yPos; j < yPos + this.h; j++) {
-            this.game.g.cells[i][j].occupied = this;
+            this._game.g.cells[i][j].occupied = this;
         }
     }
 
@@ -105,7 +108,7 @@ Building.prototype.place = function(xPosition, yPosition) {
         let x = this.connections[i][0];
         let y = this.connections[i][1];
 
-        this.game.g.cells[x + xPos][y + yPos].connect.push(this.connections[i][2]);
+        this._game.g.cells[x + xPos][y + yPos].connect.push(this.connections[i][2]);
     }
 
     this.changeForm(xPos, yPos);
@@ -117,7 +120,7 @@ Building.prototype.place = function(xPosition, yPosition) {
         this._gridDelete[0].connect.splice(this._gridDelete[1], 1);
     }
 
-    this.game.g.bmdOverlay.clear();
+    this._game.g.bmdOverlay.clear();
     this.events.onInputDown.add(Building.prototype.getInfo, this);
 };
 
@@ -127,8 +130,8 @@ Building.prototype.getInfo = function() {
 
 Building.prototype.cancelPlacement = function() {
     //no longer holding a building, clear the grid highlights
-    this.game.holdingBuilding = false;
-    this.game.g.bmdOverlay.clear();
+    this._game.holdingBuilding = false;
+    this._game.g.bmdOverlay.clear();
 
     //destroy the building sprite (not kill, which only changes visibility)
     this.held = false;
@@ -141,24 +144,24 @@ Building.prototype.cancelPlacement = function() {
 Building.prototype.changeForm = function(xPos, yPos) {
     this.connections.forEach(c => {
         if (c[2] === this.UP) {
-            let tmp = this.game.g.cells[c[0] + xPos][c[1] + yPos - 1];
+            let tmp = this._game.g.cells[c[0] + xPos][c[1] + yPos - 1];
 
             if (tmp.occupied && tmp.occupied instanceof Walkway) {
                 tmp.occupied.changeForm(c[0] + xPos, c[1] + yPos - 1);
             }
         } else if (c[2] === this.RIGHT) {
-            let tmp = this.game.g.cells[c[0] + xPos + 1][c[1] + yPos];
+            let tmp = this._game.g.cells[c[0] + xPos + 1][c[1] + yPos];
             if (tmp.occupied && tmp.occupied instanceof Walkway) {
                 tmp.occupied.changeForm(c[0] + xPos + 1, c[1] + yPos);
             }
         } else if (c[2] === this.DOWN) {
-            let tmp = this.game.g.cells[c[0] + xPos][c[1] + yPos + 1];
+            let tmp = this._game.g.cells[c[0] + xPos][c[1] + yPos + 1];
 
             if (tmp.occupied && tmp.occupied instanceof Walkway) {
                 tmp.occupied.changeForm(c[0] + xPos, c[1] + yPos + 1);
             }
         } else {
-            let tmp = this.game.g.cells[c[0] + xPos - 1][c[1] + yPos];
+            let tmp = this._game.g.cells[c[0] + xPos - 1][c[1] + yPos];
 
             if (tmp.occupied && tmp.occupied instanceof Walkway) {
                 tmp.occupied.changeForm(c[0] + xPos - 1, c[1] + yPos);
@@ -178,7 +181,7 @@ Building.prototype.updateResources = function() {
 Building.prototype.hasResources = function() {
     let success = true;
     Object.entries(this.cost).forEach(([key, value]) => {
-        if (this.game.resources[key].currentAmount < value) {
+        if (this._game.resources[key].currentAmount < value) {
             success = false;
         }
     }, this);
@@ -188,11 +191,11 @@ Building.prototype.hasResources = function() {
 //called every frame, override Phaser.Sprite.update
 Building.prototype.update = function() {
     if (this.held) {
-        this.x = this.game.input.worldX;
-        this.y = this.game.input.worldY;
+        this.x = this._game.input.worldX;
+        this.y = this._game.input.worldY;
 
-        var xPos = this.game.g.xStart + this.game.g.upperLeftRow;
-        var yPos = this.game.g.yStart + this.game.g.upperLeftColumn;
+        var xPos = this._game.g.xStart + this._game.g.upperLeftRow;
+        var yPos = this._game.g.yStart + this._game.g.upperLeftColumn;
         var highlightColor = '#66ff33';
         var opacity = .25;
         var canPlace = false;
@@ -204,7 +207,7 @@ Building.prototype.update = function() {
             //any occupied squares, and if so mark it as blocked
             for (let i = xPos; i < xPos + this.w; i++) {
                 for (let j = yPos; j < yPos + this.h; j++) {
-                    if (this.game.g.cells[i][j].occupied) {
+                    if (this._game.g.cells[i][j].occupied) {
                         blocked = true;
                         break;
                     }
@@ -222,7 +225,7 @@ Building.prototype.update = function() {
                     let y = this.connections[i][1];
 
                     if (this.connections[i][2] === this.UP) {
-                        let tmp = this.game.g.cells[x + xPos][y + yPos - 1];
+                        let tmp = this._game.g.cells[x + xPos][y + yPos - 1];
 
                         if (!(this instanceof Walkway) && tmp.occupied && !(tmp.occupied instanceof Walkway)) {
                             continue;
@@ -236,7 +239,7 @@ Building.prototype.update = function() {
                             }
                         }, this);
                     } else if (this.connections[i][2] === this.DOWN) {
-                        let tmp = this.game.g.cells[x + xPos][y + yPos + 1];
+                        let tmp = this._game.g.cells[x + xPos][y + yPos + 1];
 
                         if (!(this instanceof Walkway) && tmp.occupied && !(tmp.occupied instanceof Walkway)) {
                             continue;
@@ -250,7 +253,7 @@ Building.prototype.update = function() {
                             }
                         }, this);
                     } else if (this.connections[i][2] === this.LEFT) {
-                        let tmp = this.game.g.cells[x + xPos - 1][y + yPos];
+                        let tmp = this._game.g.cells[x + xPos - 1][y + yPos];
 
                         if (!(this instanceof Walkway) && tmp.occupied && !(tmp.occupied instanceof Walkway)) {
                             continue;
@@ -264,7 +267,7 @@ Building.prototype.update = function() {
                             }
                         }, this);
                     } else {
-                        let tmp = this.game.g.cells[x + xPos + 1][y + yPos];
+                        let tmp = this._game.g.cells[x + xPos + 1][y + yPos];
 
                         if (!(this instanceof Walkway) && tmp.occupied && !(tmp.occupied instanceof Walkway)) {
                             continue;
@@ -291,10 +294,10 @@ Building.prototype.update = function() {
             this.events.onInputDown.active = false;
         }
 
-        this.game.g.draw(this.w, this.h, opacity, highlightColor);
+        this._game.g.draw(this.w, this.h, opacity, highlightColor);
 
         //If the user presses the Escape Key, cancel the placement
-        if (this.game.input.keyboard.addKey(Phaser.Keyboard.ESC).justPressed()) {
+        if (this._game.input.keyboard.addKey(Phaser.Keyboard.ESC).justPressed()) {
             this.cancelPlacement();
         }
     }
@@ -304,8 +307,8 @@ Building.prototype.update = function() {
  *  Inherits from Building
  *  Defines a building that can be rotated
  */
-function RotatableBuilding(game, w, h, key, frame, otherFrames) {
-    Building.call(this, game, w, h, key, frame);
+function RotatableBuilding(_game, w, h, key, frame, otherFrames) {
+    Building.call(this, _game, w, h, key, frame);
 
     if (otherFrames) {
         this.otherFrames = otherFrames;
@@ -313,7 +316,7 @@ function RotatableBuilding(game, w, h, key, frame, otherFrames) {
         this.frameIndex = 0;
     }
 
-    var r = game.input.keyboard.addKey(Phaser.Keyboard.R);
+    var r = _game.input.keyboard.addKey(Phaser.Keyboard.R);
     r.onDown.add(this.rotate, this);
 }
 
@@ -324,16 +327,16 @@ RotatableBuilding.prototype.rotate = function() {
     if (this.held) {
         this.frameName = this.otherFrames[this.frameIndex++];
         this.frameIndex %= this.otherFrames.length;
-        this.w = this.width / (32 * this.game.worldScale);
-        this.h = this.height / (32 * this.game.worldScale);
+        this.w = this.width / (32 * this._game.worldScale);
+        this.h = this.height / (32 * this._game.worldScale);
     }
 };
 
 /**
  *  Inherits from RotatableBuilding + Building
  */
-function Walkway(game, w, h, key, frame) {
-    RotatableBuilding.call(this, game, w, h, key, frame);
+function Walkway(_game, w, h, key, frame) {
+    RotatableBuilding.call(this, _game, w, h, key, frame);
 
     this.orient = {
         x: 0,
@@ -401,7 +404,7 @@ Walkway.prototype.changeForm = function(xPos, yPos) {
     let i = this.openPoints.length;
     while (i--) {
         if (this.openPoints[i] === this.UP) {
-            let tmp = this.game.g.cells[xPos][yPos - 1];
+            let tmp = this._game.g.cells[xPos][yPos - 1];
 
             tmp.connect.forEach(c => {
                 if (c === this.DOWN) {
@@ -411,7 +414,7 @@ Walkway.prototype.changeForm = function(xPos, yPos) {
                 }
             }, this);
         } else if (this.openPoints[i] === this.RIGHT) {
-            let tmp = this.game.g.cells[xPos + 1][yPos];
+            let tmp = this._game.g.cells[xPos + 1][yPos];
 
             tmp.connect.forEach(c => {
                 if (c === this.LEFT) {
@@ -421,7 +424,7 @@ Walkway.prototype.changeForm = function(xPos, yPos) {
                 }
             }, this);
         } else if (this.openPoints[i] === this.DOWN) {
-            let tmp = this.game.g.cells[xPos][yPos + 1];
+            let tmp = this._game.g.cells[xPos][yPos + 1];
 
             tmp.connect.forEach(c => {
                 if (c === this.UP) {
@@ -431,7 +434,7 @@ Walkway.prototype.changeForm = function(xPos, yPos) {
                 }
             }, this);
         } else {
-            let tmp = this.game.g.cells[xPos - 1][yPos];
+            let tmp = this._game.g.cells[xPos - 1][yPos];
             tmp.connect.forEach(c => {
                 if (c === this.RIGHT) {
                     this.closedPoints.push([this.LEFT, true]);
@@ -450,7 +453,7 @@ Walkway.prototype.changeForm = function(xPos, yPos) {
     //recursively call this function to change that walkway as well
     for (let i = 0; i < this.closedPoints.length; i++) {
         if (this.closedPoints[i][1] && this.closedPoints[i][0] === this.UP) {
-            let tmp = this.game.g.cells[xPos][yPos - 1];
+            let tmp = this._game.g.cells[xPos][yPos - 1];
 
             if (tmp.occupied && tmp.occupied instanceof Walkway) {
                 tmp.occupied.openPoints.forEach(c => {
@@ -460,7 +463,7 @@ Walkway.prototype.changeForm = function(xPos, yPos) {
                 }, this);
             }
         } else if (this.closedPoints[i][1] && this.closedPoints[i][0] === this.RIGHT) {
-            let tmp = this.game.g.cells[xPos + 1][yPos];
+            let tmp = this._game.g.cells[xPos + 1][yPos];
 
             if (tmp.occupied && tmp.occupied instanceof Walkway) {
                 tmp.occupied.openPoints.forEach(c => {
@@ -470,7 +473,7 @@ Walkway.prototype.changeForm = function(xPos, yPos) {
                 }, this);
             }
         } else if (this.closedPoints[i][1] && this.closedPoints[i][0] === this.DOWN) {
-            let tmp = this.game.g.cells[xPos][yPos + 1];
+            let tmp = this._game.g.cells[xPos][yPos + 1];
 
             if (tmp.occupied && tmp.occupied instanceof Walkway) {
                 tmp.occupied.openPoints.forEach(c => {
@@ -480,7 +483,7 @@ Walkway.prototype.changeForm = function(xPos, yPos) {
                 }, this);
             }
         } else if (this.closedPoints[i][1] && this.closedPoints[i][0] === this.LEFT) {
-            let tmp = this.game.g.cells[xPos - 1][yPos];
+            let tmp = this._game.g.cells[xPos - 1][yPos];
 
             if (tmp.occupied && tmp.occupied instanceof Walkway) {
                 tmp.occupied.openPoints.forEach(c => {
@@ -521,8 +524,8 @@ Walkway.prototype.changeForm = function(xPos, yPos) {
 /**
  *  Inherits from Building
  */
-function CommandCenter(game, w, h, key, frame) {
-    Building.call(this, game, w, h, key, frame);
+function CommandCenter(_game, w, h, key, frame) {
+    Building.call(this, _game, w, h, key, frame);
 
     this.connections.push([1, 0, this.UP]);
     this.connections.push([2, 1, this.RIGHT]);
@@ -535,17 +538,17 @@ CommandCenter.prototype = Object.create(Building.prototype);
 CommandCenter.prototype.constructor = CommandCenter;
 
 CommandCenter.prototype.updateResources = function() {
-    this.game.time.events.loop(10000, function() {
-        this.game.resources.food.add(1);
-        this.game.resources.water.add(1);
+    this._game.time.events.loop(10000, function() {
+        this._game.resources.food.add(1);
+        this._game.resources.water.add(1);
     }, this);
 };
 
 /**
  *  Inherits from Building
  */
-function Habitation2x2(game, w, h, key, frame) {
-    Building.call(this, game, w, h, key, frame);
+function Habitation2x2(_game, w, h, key, frame) {
+    Building.call(this, _game, w, h, key, frame);
 
     this.connections.push([0, 0, this.LEFT]);
     this.connections.push([1, 0, this.UP]);
@@ -560,14 +563,14 @@ Habitation2x2.prototype = Object.create(Building.prototype);
 Habitation2x2.prototype.constructor = Habitation2x2;
 
 Habitation2x2.prototype.updateResources = function() {
-    this.game.resources.house.increaseStorage(25);
+    this._game.resources.house.increaseStorage(25);
 };
 
 /**
  *  Inherits from RotatableBuilding + Building
  */
-function Habitation2x1(game, w, h, key, frame, otherFrames) {
-    RotatableBuilding.call(this, game, w, h, key, frame, otherFrames);
+function Habitation2x1(_game, w, h, key, frame, otherFrames) {
+    RotatableBuilding.call(this, _game, w, h, key, frame, otherFrames);
 
     this.connections.push([0, 0, this.DOWN]);
     this.connections.push([1, 0, this.UP]);
@@ -581,7 +584,7 @@ Habitation2x1.prototype = Object.create(RotatableBuilding.prototype);
 Habitation2x1.prototype.constructor = Habitation2x1;
 
 Habitation2x1.prototype.updateResources = function() {
-    this.game.resources.house.increaseStorage(12);
+    this._game.resources.house.increaseStorage(12);
 };
 
 Habitation2x1.prototype.rotate = function() {
@@ -600,8 +603,8 @@ Habitation2x1.prototype.rotate = function() {
 /**
  *  Inherits from RotatableBuilding and Building
  */
-function Habitation1x1(game, w, h, key, frame, otherFrames) {
-    RotatableBuilding.call(this, game, w, h, key, frame, otherFrames);
+function Habitation1x1(_game, w, h, key, frame, otherFrames) {
+    RotatableBuilding.call(this, _game, w, h, key, frame, otherFrames);
 
     this.connections.push([0, 0, this.DOWN]);
     this.cost = {
@@ -613,7 +616,7 @@ Habitation1x1.prototype = Object.create(RotatableBuilding.prototype);
 Habitation1x1.prototype.constructor = Habitation1x1;
 
 Habitation1x1.prototype.updateResources = function() {
-    this.game.resources.house.increaseStorage(5);
+    this._game.resources.house.increaseStorage(5);
 };
 
 Habitation1x1.prototype.rotate = function() {
@@ -626,8 +629,8 @@ Habitation1x1.prototype.rotate = function() {
     }
 };
 
-function WaterTank2x1(game, w, h, key, frame) {
-    RotatableBuilding.call(this, game, w, h, key, frame);
+function WaterTank2x1(_game, w, h, key, frame) {
+    RotatableBuilding.call(this, _game, w, h, key, frame);
     this.connections.push([0, 0, this.LEFT]);
     this.connections.push([1, 0, this.RIGHT]);
     this.orient = {
@@ -644,14 +647,14 @@ WaterTank2x1.prototype = Object.create(RotatableBuilding.prototype);
 WaterTank2x1.prototype.constructor = WaterTank2x1;
 
 WaterTank2x1.prototype.updateResources = function() {
-    this.game.resources.water.increaseStorage(15);
+    this._game.resources.water.increaseStorage(15);
 };
 
 WaterTank2x1.prototype.updateFrame = function() {
     this.angle = 0;
     this.anchor.set(0);
-    var waterCurrent = this.game.resources.water.currentAmount;
-    var waterMax = this.game.resources.water.storage;
+    var waterCurrent = this._game.resources.water.currentAmount;
+    var waterMax = this._game.resources.water.storage;
     this.ratio = waterCurrent / waterMax;
     this.ratio = Math.floor(this.ratio * 9);
     this.frameName = (this.rotated > 0 ? 'WaterTankLeftRight' : 'WaterTankUpDown') + this.ratio;
@@ -674,8 +677,8 @@ WaterTank2x1.prototype.rotate = function() {
     }
 };
 
-function WaterRecycler2x1(game, w, h, key, frame, otherFrames) {
-    RotatableBuilding.call(this, game, w, h, key, frame, otherFrames);
+function WaterRecycler2x1(_game, w, h, key, frame, otherFrames) {
+    RotatableBuilding.call(this, _game, w, h, key, frame, otherFrames);
     this.connections.push([0, 0, this.LEFT]);
     this.connections.push([1, 0, this.RIGHT]);
     this.rotated = 1;
@@ -688,8 +691,8 @@ WaterRecycler2x1.prototype = Object.create(RotatableBuilding.prototype);
 WaterRecycler2x1.prototype.constructor = WaterRecycler2x1;
 
 WaterRecycler2x1.prototype.updateResources = function() {
-    this.game.time.events.loop(4000, function() {
-        this.game.resources.water.add(2);
+    this._game.time.events.loop(4000, function() {
+        this._game.resources.water.add(2);
     }, this);
 };
 
@@ -705,8 +708,8 @@ WaterRecycler2x1.prototype.rotate = function() {
     }
 };
 
-function PowerStorage2x1(game, w, h, key, frame, otherFrames) {
-    RotatableBuilding.call(this, game, w, h, key, frame, otherFrames);
+function PowerStorage2x1(_game, w, h, key, frame, otherFrames) {
+    RotatableBuilding.call(this, _game, w, h, key, frame, otherFrames);
     this.connections.push([0, 0, this.DOWN]);
     this.connections.push([1, 0, this.UP]);
     this.rotated = 1;
@@ -719,7 +722,7 @@ PowerStorage2x1.prototype = Object.create(RotatableBuilding.prototype);
 PowerStorage2x1.prototype.constructor = PowerStorage2x1;
 
 PowerStorage2x1.prototype.updateResources = function() {
-    this.game.resources.power.increaseStorage(5);
+    this._game.resources.power.increaseStorage(5);
 };
 
 PowerStorage2x1.prototype.rotate = function() {
@@ -733,8 +736,8 @@ PowerStorage2x1.prototype.rotate = function() {
     }
 };
 
-function SolarPanel1x1(game, w, h, key, frame) {
-    RotatableBuilding.call(this, game, w, h, key, frame);
+function SolarPanel1x1(_game, w, h, key, frame) {
+    RotatableBuilding.call(this, _game, w, h, key, frame);
     this.connections.push([0, 0, this.DOWN]);
     this.orient = {
         x: 0,
@@ -749,8 +752,8 @@ SolarPanel1x1.prototype = Object.create(RotatableBuilding.prototype);
 SolarPanel1x1.prototype.constructor = SolarPanel1x1;
 
 SolarPanel1x1.prototype.updateResources = function() {
-    this.game.time.events.loop(20000, function() {
-        this.game.resources.power.add(1);
+    this._game.time.events.loop(20000, function() {
+        this._game.resources.power.add(1);
     }, this);
 };
 
@@ -767,8 +770,8 @@ SolarPanel1x1.prototype.rotate = function() {
     }
 };
 
-function LandingPad3x3(game, w, h, key, frame) {
-    Building.call(this, game, w, h, key, frame);
+function LandingPad3x3(_game, w, h, key, frame) {
+    Building.call(this, _game, w, h, key, frame);
     this.connections.push([1, 0, this.UP]);
     this.connections.push([2, 1, this.RIGHT]);
     this.connections.push([1, 2, this.DOWN]);
@@ -781,8 +784,8 @@ function LandingPad3x3(game, w, h, key, frame) {
 LandingPad3x3.prototype = Object.create(Building.prototype);
 LandingPad3x3.prototype.constructor = LandingPad3x3;
 
-function Hydroponics2x2(game, w, h, key, frame) {
-    Building.call(this, game, w, h, key, frame);
+function Hydroponics2x2(_game, w, h, key, frame) {
+    Building.call(this, _game, w, h, key, frame);
     this.connections.push([0, 0, this.LEFT]);
     this.connections.push([0, 1, this.DOWN]);
     this.connections.push([1, 0, this.UP]);
@@ -796,13 +799,13 @@ Hydroponics2x2.prototype = Object.create(Building.prototype);
 Hydroponics2x2.prototype.constructor = Hydroponics2x2;
 
 Hydroponics2x2.prototype.updateResources = function() {
-    this.game.time.events.loop(4000, function() {
-        this.game.resources.food.add(2);
+    this._game.time.events.loop(4000, function() {
+        this._game.resources.food.add(2);
     }, this);
 };
 
-function Storage1x1(game, w, h, key, frame, otherFrames) {
-    RotatableBuilding.call(this, game, w, h, key, frame, otherFrames);
+function Storage1x1(_game, w, h, key, frame, otherFrames) {
+    RotatableBuilding.call(this, _game, w, h, key, frame, otherFrames);
     this.connections.push([0, 0, this.DOWN]);
     this.cost = {
         mat: 8
@@ -813,8 +816,8 @@ Storage1x1.prototype = Object.create(RotatableBuilding.prototype);
 Storage1x1.prototype.constructor = Storage1x1;
 
 Storage1x1.prototype.updateResources = function() {
-    this.game.resources.food.increaseStorage(5);
-    this.game.resources.mat.increaseStorage(10);
+    this._game.resources.food.increaseStorage(5);
+    this._game.resources.mat.increaseStorage(10);
 };
 
 Storage1x1.prototype.rotate = function() {
@@ -827,8 +830,8 @@ Storage1x1.prototype.rotate = function() {
     }
 };
 
-function Storage2x2(game, w, h, key, frame) {
-    Building.call(this, game, w, h, key, frame);
+function Storage2x2(_game, w, h, key, frame) {
+    Building.call(this, _game, w, h, key, frame);
     this.connections.push([0, 0, this.LEFT]);
     this.connections.push([0, 1, this.DOWN]);
     this.connections.push([1, 0, this.UP]);
@@ -842,20 +845,20 @@ Storage2x2.prototype = Object.create(Building.prototype);
 Storage2x2.prototype.constructor = Storage2x2;
 
 Storage2x2.prototype.updateResources = function() {
-    this.game.resources.food.increaseStorage(20);
-    this.game.resources.mat.increaseStorage(40);
+    this._game.resources.food.increaseStorage(20);
+    this._game.resources.mat.increaseStorage(40);
 };
 
 Storage2x2.prototype.updateFrame = function() {
-    var storageCurrent = this.game.resources.food.currentAmount + this.game.resources.mat.currentAmount;
-    var storageMax = this.game.resources.food.storage + this.game.resources.mat.storage;
+    var storageCurrent = this._game.resources.food.currentAmount + this._game.resources.mat.currentAmount;
+    var storageMax = this._game.resources.food.storage + this._game.resources.mat.storage;
     this.ratio = storageCurrent / storageMax;
     this.ratio = Math.floor(this.ratio * 17);
     this.frameName = 'Storage' + this.ratio;
 };
 
-function BrickMine2x2(game, w, h, key, frame) {
-    RotatableBuilding.call(this, game, w, h, key, frame);
+function BrickMine2x2(_game, w, h, key, frame) {
+    RotatableBuilding.call(this, _game, w, h, key, frame);
     this.connections.push([0, 1, this.DOWN]);
     this.orient = {
         x: 0,
@@ -884,13 +887,13 @@ BrickMine2x2.prototype.rotate = function() {
 };
 
 BrickMine2x2.prototype.updateResources = function() {
-    this.game.time.events.loop(6000, function() {
-        this.game.resources.mat.add(4);
+    this._game.time.events.loop(6000, function() {
+        this._game.resources.mat.add(4);
     }, this);
 };
 
-function IceMine2x2(game, w, h, key, frame) {
-    RotatableBuilding.call(this, game, w, h, key, frame);
+function IceMine2x2(_game, w, h, key, frame) {
+    RotatableBuilding.call(this, _game, w, h, key, frame);
     this.connections.push([0, 1, this.DOWN]);
     this.orient = {
         x: 0,
@@ -905,8 +908,8 @@ IceMine2x2.prototype = Object.create(RotatableBuilding.prototype);
 IceMine2x2.prototype.constructor = IceMine2x2;
 
 IceMine2x2.prototype.updateResources = function() {
-    this.game.time.events.loop(6000, function() {
-        this.game.resources.water.add(2);
+    this._game.time.events.loop(6000, function() {
+        this._game.resources.water.add(2);
     }, this);
 };
 

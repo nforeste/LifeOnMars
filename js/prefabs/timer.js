@@ -1,7 +1,7 @@
 'use strict';
 
 /*
- * @param {Phaser.Game} game -- reference to the current game instance
+ * @param {Phaser.Game} _game -- reference to the current _game instance
  * @param {number} min -- starting time (minutes)
  * @param {number} sec -- starting time (seconds)
  * @param {number} xpos -- starting x coordinate of the timer image
@@ -11,9 +11,9 @@
  */
 
 // creates a timer image and numerical timer with text that appears upon being hovered over 
-function Timer(game, min, sec, xpos, ypos, key, frame) {
-    Phaser.Sprite.call(this, game, xpos, ypos, key, frame);
-    this.game = game;
+function Timer(_game, min, sec, xpos, ypos, key, frame) {
+    Phaser.Sprite.call(this, _game.game, xpos, ypos, key, frame);
+    this._game = _game;
     this.min = min;
     this.sec = sec;
     this.x = xpos;
@@ -25,7 +25,7 @@ function Timer(game, min, sec, xpos, ypos, key, frame) {
     //anchor the sprite at the center
     this.anchor.set(.5);
 
-    game.add.existing(this);
+    _game.add.existing(this);
 
     //enable event listeners on the sprite
     this.inputEnabled = true;
@@ -39,14 +39,14 @@ function Timer(game, min, sec, xpos, ypos, key, frame) {
     };
 
     //displays the numerical timer
-    this.text = game.add.text(this.x + 16, this.y - 12, '0' + this.min + ':' + '0' + this.sec, style);
+    this.text = _game.add.text(this.x + 16, this.y - 12, '0' + this.min + ':' + '0' + this.sec, style);
     this.text.fixedToCamera = true;
 
     //change the font size smaller for the subtext
     style.font = '18px Helvetica Neue';
 
     //displays additional timer information
-    this.timerText = game.add.text(this.x - 5, this.y + 15, 'Resource Update in ' +
+    this.timerText = _game.add.text(this.x - 5, this.y + 15, 'Resource Update in ' +
         (this.resourceInterval * 60) + ' seconds', style);
     this.timerText.alpha = 0;
     this.timerText.fixedToCamera = true;
@@ -56,7 +56,7 @@ function Timer(game, min, sec, xpos, ypos, key, frame) {
     this.events.onInputOut.add(this.endHover, this);
 
     //every second increment the timer
-    this.game.time.events.loop(1000, this.increaseTimer, this);
+    this._game.time.events.loop(1000, this.increaseTimer, this);
 }
 
 Timer.prototype = Object.create(Phaser.Sprite.prototype);
@@ -70,7 +70,7 @@ Timer.prototype.increaseTimer = function() {
 
     //if it has been the necessary number of minutes, more people arrive from earth
     if (this.sec === this.resourceInterval) {
-        this.game.peopleArrive();
+        this._game.peopleArrive();
         this.sec = 0;
     }
 
