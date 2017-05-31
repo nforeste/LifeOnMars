@@ -53,8 +53,21 @@ Building.prototype.purchased = function() {
 Building.prototype.place = function(xPosition, yPosition) {
     this.held = false;
 
+    //update the resources for each building (or start the loop to do so)
+    this.updateResources();
+
     this.game.UIObjects.remove(this);
-    this.game.gameObjects.add(this);
+
+    //check to see if the building is a storage container with animated frames
+    if (this instanceof WaterTank2x1 || this instanceof Storage2x2) {
+        this.game.storageBuildings.add(this);
+        this.updateFrame();
+        this.angle = 0;
+        this.orient.x = 0;
+        this.orient.y = 0;
+    } else {
+        this.game.gameObjects.add(this);
+    }
 
     //this.orient only applies to buildings that 
     //rotate without new frames, otherwise it should set to 0
@@ -73,9 +86,6 @@ Building.prototype.place = function(xPosition, yPosition) {
     Object.entries(this.cost).forEach(([key, value]) => {
         this.game.resources[key].subtract(value);
     }, this);
-
-    //update the resources for each building (or start the loop to do so)
-    this.updateResources();
 
     var xPos = (this.game.g.xStart + this.game.g.upperLeftRow) || xPosition;
     var yPos = (this.game.g.yStart + this.game.g.upperLeftColumn) || yPosition;
@@ -526,8 +536,8 @@ CommandCenter.prototype.constructor = CommandCenter;
 
 CommandCenter.prototype.updateResources = function() {
     this.game.time.events.loop(10000, function() {
-        this.game.resources.food.add(3);
-        this.game.resources.water.add(3);
+        this.game.resources.food.add(1);
+        this.game.resources.water.add(1);
     }, this);
 };
 
@@ -637,6 +647,16 @@ WaterTank2x1.prototype.updateResources = function() {
     this.game.resources.water.increaseStorage(15);
 };
 
+WaterTank2x1.prototype.updateFrame = function() {
+    this.angle = 0;
+    this.anchor.set(0);
+    var waterCurrent = this.game.resources.water.currentAmount;
+    var waterMax = this.game.resources.water.storage;
+    this.ratio = waterCurrent / waterMax;
+    this.ratio = Math.floor(this.ratio * 9);
+    this.frameName = (this.rotated > 0 ? 'WaterTankLeftRight' : 'WaterTankUpDown') + this.ratio;
+};
+
 WaterTank2x1.prototype.rotate = function() {
     if (this.held) {
         this.angle += 90 * this.rotated;
@@ -670,12 +690,6 @@ WaterRecycler2x1.prototype.constructor = WaterRecycler2x1;
 WaterRecycler2x1.prototype.updateResources = function() {
     this.game.time.events.loop(4000, function() {
         this.game.resources.water.add(2);
-        var waterCurrent = this.game.resource.water.currentAmount;
-        var waterMax = this.game.resource.water.storage;
-        this.ratio = waterCurrent / waterMax;
-        this.ratio = Math.floor(this.ratio * 9);
-
-        this.frameName = (this.rotated === 1? 'WaterTankLeftRight': 'WaterTankUpDown') + this.ratio;
     }, this);
 };
 
@@ -816,12 +830,12 @@ Storage1x1.prototype.rotate = function() {
 function Storage2x2(game, w, h, key, frame) {
     Building.call(this, game, w, h, key, frame);
     this.connections.push([0, 0, this.LEFT]);
-    this.connections.push([0, 1, this.Down]);
+    this.connections.push([0, 1, this.DOWN]);
     this.connections.push([1, 0, this.UP]);
     this.connections.push([1, 1, this.RIGHT]);
     this.cost = {
         mat: 25
-    }
+    };
 }
 
 Storage2x2.prototype = Object.create(Building.prototype);
@@ -830,11 +844,13 @@ Storage2x2.prototype.constructor = Storage2x2;
 Storage2x2.prototype.updateResources = function() {
     this.game.resources.food.increaseStorage(20);
     this.game.resources.mat.increaseStorage(40);
-    var storageCurrent = this.game.resource.food.currentAmount + this.game.resources.mat.currentAmount;
-    var storageMax = this.game.resource.food.storage + this.game.resources.mat.storage;
+};
+
+Storage2x2.prototype.updateFrame = function() {
+    var storageCurrent = this.game.resources.food.currentAmount + this.game.resources.mat.currentAmount;
+    var storageMax = this.game.resources.food.storage + this.game.resources.mat.storage;
     this.ratio = storageCurrent / storageMax;
     this.ratio = Math.floor(this.ratio * 17);
-    
     this.frameName = 'Storage' + this.ratio;
 };
 

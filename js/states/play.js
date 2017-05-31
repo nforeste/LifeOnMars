@@ -20,7 +20,6 @@ Play.prototype = {
         //temporary... move to Load state
         this.load.path = 'assets/img/';
         this.load.atlas('buildings', 'inProgressAtlas.png', 'inProgressAtlas.json');
-        this.load.image('toolbarTabs', 'ToolbarTabs.png');
 
         console.log('Play: preload()');
     },
@@ -36,24 +35,28 @@ Play.prototype = {
         this.allObjects = this.add.group();
         //parent group of every gameObject
         this.gameObjects = this.add.group();
+        //group containing all of the storage buildings (with animated frames)
+        this.storageBuildings = this.add.group();
+        this.gameObjects.add(this.storageBuildings);
+
         this.UIObjects = this.add.group();
 
         this.allObjects.add(this.gameObjects);
         this.allObjects.add(this.UIObjects);
 
         this.resources = {
-            water: new Resource(this, 50, 150, 415, 32, 'buildings', 'WaterIcon'),
-            food: new Resource(this, 50, 150, 500, 32, 'buildings', 'FoodIcon'),
-            house: new Resource(this, 5, 5, 585, 32, 'buildings', 'HousingIcon'),
-            power: new Resource(this, 5, 10, 650, 32, 'buildings', 'PowerIcon'),
-            mat: new Resource(this, 150, 300, 720, 32, 'buildings', 'WaterIcon')
+            water: new Resource(this, 50, 50, 350, 32, 'buildings', 'WaterIcon'),
+            food: new Resource(this, 50, 50, 445, 32, 'buildings', 'FoodIcon'),
+            house: new Resource(this, 5, 5, 540, 32, 'buildings', 'HousingIcon'),
+            power: new Resource(this, 5, 5, 635, 32, 'buildings', 'PowerIcon'),
+            mat: new Resource(this, 150, 150, 730, 32, 'buildings', 'BrickIcon')
         };
 
         //initiates the UI
         this.UI = new UserInterface(this, this.camera);
 
         //initiates the population update timer
-        this.Timer = new Timer(this, 0, 0, 24, 32, 'buildings', 'WaterIcon');
+        this.gameTimer = new Timer(this, 0, 0, 24, 32, 'buildings', 'WaterIcon');
 
         //.bind(this) used to access 'this' scope within callback
         this.input.mouse.mouseWheelCallback = function(event) {
@@ -66,6 +69,13 @@ Play.prototype = {
                 this.zoomOut();
             }
         }.bind(this);
+
+        //game loop that decreases food and water over time based on population
+        //delay is arbitrary right now ... needs testing
+        this.time.events.loop(5000 / Math.log(this.resources.house.currentAmount), function() {
+            this.resources.food.subtract(1);
+            this.resources.water.subtract(1);
+        }, this);
 
         //get the x and y position to place the starting command center
         //they will be random at least 500 px from the world edge
@@ -127,7 +137,8 @@ Play.prototype = {
         };
 
         //create text, centered and fixed to camera, at 1/4 scale
-        let text = this.add.text(this.camera.width / 2, 100, this.newPeople + ' more people arriving', style);
+        let text = this.add.text(this.camera.width / 2, 100, this.newPeople + ' more people arriving',
+            style);
         text.fixedToCamera = true;
         text.anchor.set(.5);
         text.scale.set(.25);
@@ -181,7 +192,7 @@ Play.prototype = {
         if (this.input.x > this.camera.view.width - this.panDistance) {
             this.camera.x += this.scrollSpeed;
         }
-        if (this.input.x < this.panDistance ) {
+        if (this.input.x < this.panDistance) {
             this.camera.x -= this.scrollSpeed;
         }
         if (this.input.y > this.camera.view.height - this.panDistance && !this.UI.hovering) {
@@ -208,8 +219,10 @@ Play.prototype = {
             this.g.gridsSpr[this.zoomLevel].kill();
 
             //move the camera slightly towards the mouse from the center of the screen
-            var offsetX = Math.round((this.input.x - (this.camera.width / 2)) / (this.camera.width / 250));
-            var offsetY = Math.round((this.input.y - (this.camera.height / 2)) / (this.camera.height / 250));
+            var offsetX = Math.round((this.input.x - (this.camera.width / 2)) / (this.camera.width /
+                250));
+            var offsetY = Math.round((this.input.y - (this.camera.height / 2)) / (this.camera.height /
+                250));
 
             //arbitrary, looks pretty good though
             var focalMult = this.worldScale === 1.5 ? 1.5 : 1.35;
@@ -242,51 +255,52 @@ Play.prototype = {
         }
     },
     zoomOut: function() {
-        if (this.worldScale > 1) {
-            //store the current camera position
-            var oldCameraPosX = this.camera.x;
-            var oldCameraPosY = this.camera.y;
+            if (this.worldScale > 1) {
+                //store the current camera position
+                var oldCameraPosX = this.camera.x;
+                var oldCameraPosY = this.camera.y;
 
-            //decrease the world scale by a factor of 50%
-            this.worldScale -= .5;
+                //decrease the world scale by a factor of 50%
+                this.worldScale -= .5;
 
-            //decrease the size of the world by 50%
-            this.world.setBounds(0, 0, this.worldSize * this.worldScale, this.worldSize * this.worldScale);
+                //decrease the size of the world by 50%
+                this.world.setBounds(0, 0, this.worldSize * this.worldScale, this.worldSize * this.worldScale);
 
-            //clear the current grid
-            this.g.bmdOverlay.clear();
-            this.g.gridsSpr[this.zoomLevel].kill();
-            this.zoomLevel--;
+                //clear the current grid
+                this.g.bmdOverlay.clear();
+                this.g.gridsSpr[this.zoomLevel].kill();
+                this.zoomLevel--;
 
-            //arbitrary right now, looks ok though
-            var focalMult = this.worldScale === 1.5 ? 1.35 : 1.5;
-            this.camera.focusOnXY(this.camera.view.centerX / focalMult, this.camera.view.centerY / focalMult);
+                //arbitrary right now, looks ok though
+                var focalMult = this.worldScale === 1.5 ? 1.35 : 1.5;
+                this.camera.focusOnXY(this.camera.view.centerX / focalMult, this.camera.view.centerY /
+                    focalMult);
 
-            //move the grid by the amount the camera moved in the opposite direction
-            if (oldCameraPosX !== this.camera.x || oldCameraPosY !== this.camera.y) {
-                this.g.gridsSpr[this.zoomLevel].tilePosition.x += oldCameraPosX - this.camera.x;
-                this.g.gridsSpr[this.zoomLevel].tilePosition.y += oldCameraPosY - this.camera.y;
+                //move the grid by the amount the camera moved in the opposite direction
+                if (oldCameraPosX !== this.camera.x || oldCameraPosY !== this.camera.y) {
+                    this.g.gridsSpr[this.zoomLevel].tilePosition.x += oldCameraPosX - this.camera.x;
+                    this.g.gridsSpr[this.zoomLevel].tilePosition.y += oldCameraPosY - this.camera.y;
+                }
+
+                //Make the new grid visible
+                this.g.gridsSpr[this.zoomLevel].revive();
+
+                //Acutally scale all scalable objects
+                this.gameObjects.scale.set(this.worldScale);
+
+                if (this.holdingBuilding) {
+                    this.holdingBuilding.scale.set(this.worldScale / 2);
+                }
+
+                //this.gameObjects.forEach(this.setScale, this, true, this.child);
             }
-
-            //Make the new grid visible
-            this.g.gridsSpr[this.zoomLevel].revive();
-
-            //Acutally scale all scalable objects
-            this.gameObjects.scale.set(this.worldScale);
-
-            if (this.holdingBuilding) {
-                this.holdingBuilding.scale.set(this.worldScale / 2);
-            }
-
-            //this.gameObjects.forEach(this.setScale, this, true, this.child);
         }
-    }
-    /*setScale: function(child){
-    	console.log();
+        /*setScale: function(child){
+        	console.log();
 
-    	//child.scale.set(0.5);
-    	if(child != this.UI.toolbar){
-    		child.scale.set(this.worldScale);
-    	}
-    }*/
+        	//child.scale.set(0.5);
+        	if(child != this.UI.toolbar){
+        		child.scale.set(this.worldScale);
+        	}
+        }*/
 };

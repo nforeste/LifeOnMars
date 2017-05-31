@@ -8,7 +8,7 @@ function Resource(game, currentAmount, storage, xpos, ypos, key, frame) {
     this.x = xpos;
     this.y = ypos;
 
-    this.anchor.set(.5);
+    this.anchor.set(1, .5);
 
     this.income = 0;
     this.outcome = 0;
@@ -25,11 +25,12 @@ function Resource(game, currentAmount, storage, xpos, ypos, key, frame) {
         wordWrap: false
     };
 
-    this.text = game.add.text(this.x + 18, this.y - 8, this.currentAmount + '/' + this.storage, style);
+    this.text = game.add.text(this.x + 30, this.y - 8, this.currentAmount + '/' + this.storage, style);
+    this.text.anchor.set(.5, 0);
     this.text.fixedToCamera = true;
 
-    this.incomeText = game.add.text(this.x, this.y + 15, 'Income here', style);
-    this.outcomeText = game.add.text(this.x, this.y + 30, 'Expences here', style);
+    this.incomeText = game.add.text(this.x - this.width / 2, this.y + 15, 'Income here', style);
+    this.outcomeText = game.add.text(this.x - this.width / 2, this.y + 30, 'Expences here', style);
 
     this.incomeText.anchor.set(.5, 0);
     this.outcomeText.anchor.set(.5, 0);
@@ -63,6 +64,10 @@ Resource.prototype.add = function(amount) {
     this.currentAmount += amount;
     this.currentAmount = Phaser.Math.clamp(this.currentAmount, 0, this.storage);
     this.text.setText(this.currentAmount + '/' + this.storage);
+
+    this.game.storageBuildings.forEach(b => {
+        b.updateFrame();
+    }, this);
 };
 
 Resource.prototype.increaseStorage = function(amount) {
@@ -74,4 +79,8 @@ Resource.prototype.subtract = function(amount) {
     this.currentAmount -= amount;
     this.currentAmount = Phaser.Math.clamp(this.currentAmount, 0, this.storage);
     this.text.setText(this.currentAmount + '/' + this.storage);
+
+    this.game.storageBuildings.forEach(b => {
+        b.updateFrame();
+    }, this);
 };
