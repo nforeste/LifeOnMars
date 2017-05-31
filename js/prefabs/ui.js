@@ -1,6 +1,6 @@
-function UserInterface(game, camera) {
-    //Phaser.Group.call(game);
-    this.game = game;
+function UserInterface(_game, camera) {
+    //Phaser.Group.call(_game);
+    this._game = _game;
     this.camera = camera;
 
     this.buttonBuilding = null;
@@ -12,13 +12,13 @@ function UserInterface(game, camera) {
     this.hovering = false;
 
     // Creates the visual toolbar located at the bottom of the screen.
-    this.toolbar = this.game.add.sprite(0, this.camera.y + this.camera.height, 'buildings', 'Toolbar1');
+    this.toolbar = this._game.add.sprite(0, this.camera.y + this.camera.height, 'buildings', 'Toolbar1');
     //this.toolbar.alpha = 0.7;
     this.toolbar.scale.y = .7;
     this.toolbar.anchor.setTo(.5, 1);
     this.toolbar.inputEnabled = true;
 
-    this.game.UIObjects.add(this.toolbar);
+    this._game.UIObjects.add(this.toolbar);
 
     this.toolbarLength = 3;
 
@@ -33,11 +33,11 @@ function UserInterface(game, camera) {
     this.toolbar.y += this.yDisplace;
 
     // These are the sections of the UI that pertain to walkways.
-    this.toolbarWalkway = this.game.add.sprite(0, this.toolbar.y - this.yDisplace, 'buildings', 'ToolbarTabs');
+    this.toolbarWalkway = this._game.add.sprite(0, this.toolbar.y - this.yDisplace, 'buildings', 'ToolbarTabs');
     this.toolbarWalkway.anchor.setTo(.5, 1);
     this.toolbarWalkway.scale.y = .75;
 
-    this.game.UIObjects.add(this.toolbarWalkway);
+    this._game.UIObjects.add(this.toolbarWalkway);
 
     // Boolean to test whether or not the player has the toolbar enabled.
     this.menuActive = false;
@@ -63,7 +63,7 @@ function UserInterface(game, camera) {
         'Storage1x1Down', 'Storage2x2', 'Hydroponics2x2', 'WaterTank2x1', 'WaterRecycler2x1LeftRight',
         'SolarPanel1x1', 'PowerStorage2x1LeftRight', 'LandingPad3x3'
     ];
-    this.icons = this.game.add.group();
+    this.icons = this._game.add.group();
     this.icons.classType = Phaser.Button;
 
     this.icons.x = this.camera.x + this.camera.width / 2;
@@ -75,7 +75,7 @@ function UserInterface(game, camera) {
     this.closeTag = 'Press E to close Inventory';
     this.tag = this.openTag;
 
-    this.WalkwayLeft = this.game.add.button(0, this.toolbarWalkway.y, 'buildings');
+    this.WalkwayLeft = this._game.add.button(0, this.toolbarWalkway.y, 'buildings');
     this.WalkwayLeft.frameName = 'WalkwayStraight';
     this.WalkwayLeft.anchor.setTo(.5, .5);
     this.WalkwayLeft.scale.setTo(.6, .6);
@@ -83,7 +83,7 @@ function UserInterface(game, camera) {
     this.WalkwayLeft.onInputOut.add(this.hoverOut, this, 0, this.WalkwayLeft, this.tag);
     this.WalkwayLeft.onInputDown.add(this.makeBuilding, this, 0, this.WalkwayLeft);
 
-    this.WalkwayRight = this.game.add.button(0, this.toolbarWalkway.y, 'buildings');
+    this.WalkwayRight = this._game.add.button(0, this.toolbarWalkway.y, 'buildings');
     this.WalkwayRight.frameName = 'WalkwayCorner';
     this.WalkwayRight.anchor.setTo(.5, .5);
     this.WalkwayRight.scale.setTo(.6, .6);
@@ -92,7 +92,7 @@ function UserInterface(game, camera) {
     this.WalkwayRight.onInputDown.add(this.makeBuilding, this, 0, this.WalkwayRight);
 
     // Visual instructions for the toolbar.
-    this.instructText = this.game.add.text(0, 0, this.openTag);
+    this.instructText = this._game.add.text(0, 0, this.openTag);
     this.instructText.anchor.setTo(.5, 1);
     this.instructText.inputEnabled = true;
     this.instructText.events.onInputDown.add(this.openMenu, this);
@@ -101,12 +101,12 @@ function UserInterface(game, camera) {
     this.instructText.addColor('#01060f', 0);
     this.instructText.fontSize = 19;
 
-    this.rotateText = this.game.add.text(0, 0, 'Rotate');
+    this.rotateText = this._game.add.text(0, 0, 'Rotate');
     this.rotateText.fontSize = 19;
     this.rotateText.inputEnabled = true;
     this.rotateText.events.onInputDown.add(this.rotBuilding, this);
 
-    this.cancelText = this.game.add.text(0, 0, 'Cancel');
+    this.cancelText = this._game.add.text(0, 0, 'Cancel');
     this.cancelText.fontSize = 19;
     this.cancelText.inputEnabled = true;
     this.cancelText.anchor.setTo(1, 0);
@@ -129,22 +129,22 @@ function UserInterface(game, camera) {
 }
 
 UserInterface.prototype.display = function() {
-    if (this.game.input.keyboard.justPressed(Phaser.Keyboard.E)) {
+    if (this._game.input.keyboard.justPressed(Phaser.Keyboard.E)) {
         this.openMenu();
     }
 
-    if (this.game.input.keyboard.justPressed(Phaser.Keyboard.A) && (this.xDisplace < 0) && this.menuActive) {
+    if (this._game.input.keyboard.justPressed(Phaser.Keyboard.A) && (this.xDisplace < 0) && this.menuActive) {
         if (this.xTween ? !this.xTween.isRunning : true) {
-            this.xTween = this.game.add.tween(this).to({
+            this.xTween = this._game.add.tween(this).to({
                 xDisplace: this.xDisplace + this.camera.width / this.toolbarLength
             }, 215, Phaser.Easing.Quadratic.InOut, true);
         }
     }
 
-    if (this.game.input.keyboard.justPressed(Phaser.Keyboard.D) && (this.xDisplace > -((this.buildingArray.length -
+    if (this._game.input.keyboard.justPressed(Phaser.Keyboard.D) && (this.xDisplace > -((this.buildingArray.length -
             this.toolbarLength) * this.camera.width) / this.toolbarLength) && this.menuActive) {
         if (this.xTween ? !this.xTween.isRunning : true) {
-            this.xTween = this.game.add.tween(this).to({
+            this.xTween = this._game.add.tween(this).to({
                 xDisplace: this.xDisplace - this.camera.width / this.toolbarLength
             }, 215, Phaser.Easing.Quadratic.InOut, true);
         }
@@ -201,7 +201,7 @@ UserInterface.prototype.display = function() {
 };
 
 UserInterface.prototype.makeBuilding = function(indivIcon) {
-    if (!this.game.holdingBuilding) {
+    if (!this._game.holdingBuilding) {
         let frame = indivIcon.frameName;
 
         //get the current building info from the 'buildings' object
@@ -216,12 +216,12 @@ UserInterface.prototype.makeBuilding = function(indivIcon) {
         }
 
         //call the building constructor directly through the window (only works on browsers)
-        this.buttonBuilding = new window[name](this.game, width, height, 'buildings', frame, buildingParams);
+        this.buttonBuilding = new window[name](this._game, width, height, 'buildings', frame, buildingParams);
 
         //if the player has enough resources, purchase the building
         if (this.buttonBuilding && this.buttonBuilding.hasResources()) {
-            this.buttonBuilding.x = this.game.input.mousePointer.x;
-            this.buttonBuilding.y = this.game.input.mousePointer.y;
+            this.buttonBuilding.x = this._game.input.mousePointer.x;
+            this.buttonBuilding.y = this._game.input.mousePointer.y;
             this.buttonBuilding.purchased();
         } else {
             this.buttonBuilding.destroy();
@@ -271,12 +271,12 @@ UserInterface.prototype.changeTag = function() {
 
 UserInterface.prototype.openMenu = function() {
     if (!this.menuActive) {
-        this.yTween = this.game.add.tween(this).to({
+        this.yTween = this._game.add.tween(this).to({
             yDisplace: 0
         }, 300, Phaser.Easing.Quadratic.InOut, true);
         this.menuActive = true;
     } else {
-        this.yTween = this.game.add.tween(this).to({
+        this.yTween = this._game.add.tween(this).to({
             yDisplace: this.yDisplaceDef
         }, 300, Phaser.Easing.Quadratic.InOut, true);
         this.menuActive = false;
@@ -286,13 +286,13 @@ UserInterface.prototype.openMenu = function() {
 };
 
 UserInterface.prototype.rotBuilding = function() {
-    if (this.game.holdingBuilding && this.buttonBuilding && this.menuActive && (this.buttonBuilding instanceof RotatableBuilding)) {
+    if (this._game.holdingBuilding && this.buttonBuilding && this.menuActive && (this.buttonBuilding instanceof RotatableBuilding)) {
         this.buttonBuilding.rotate();
     }
 };
 
 UserInterface.prototype.canBuilding = function() {
-    if (this.game.holdingBuilding && this.buttonBuilding && this.menuActive) {
+    if (this._game.holdingBuilding && this.buttonBuilding && this.menuActive) {
         this.buttonBuilding.cancelPlacement();
     }
 };

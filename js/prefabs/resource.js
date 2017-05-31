@@ -1,60 +1,49 @@
 'use strict';
 
-function Resource(game, currentAmount, storage, xpos, ypos, key, frame) {
-    Phaser.Sprite.call(this, game, xpos, ypos, key, frame);
+function Resource(_game, currentAmount, storage, xpos, ypos, key, frame) {
+    Phaser.Sprite.call(this, _game.game, xpos, ypos, key, frame);
     this.name = name;
     this.currentAmount = currentAmount;
     this.storage = storage;
     this.x = xpos;
     this.y = ypos;
+    this._game = _game;
 
     this.anchor.set(1, .5);
 
     this.income = 0;
     this.outcome = 0;
 
-    game.add.existing(this);
+    _game.add.existing(this);
 
     this.inputEnabled = true;
     this.fixedToCamera = true;
 
-    //var style={font:"12px Arial"}
     var style = {
         font: '16px Helvetica Neue',
         fill: 'lightgray',
         wordWrap: false
     };
 
-    this.text = game.add.text(this.x + 30, this.y - 8, this.currentAmount + '/' + this.storage, style);
+    this.text = _game.add.text(this.x + 30, this.y - 8, this.currentAmount + '/' + this.storage, style);
     this.text.anchor.set(.5, 0);
     this.text.fixedToCamera = true;
 
-    this.incomeText = game.add.text(this.x - this.width / 2, this.y + 15, 'Income here', style);
-    this.outcomeText = game.add.text(this.x - this.width / 2, this.y + 30, 'Expences here', style);
-
-    this.incomeText.anchor.set(.5, 0);
-    this.outcomeText.anchor.set(.5, 0);
-    this.incomeText.alpha = 0;
-    this.outcomeText.alpha = 0;
-    this.incomeText.fixedToCamera = true;
-    this.outcomeText.fixedToCamera = true;
-
-    this.events.onInputOver.add(this.hover, this);
-    this.events.onInputOut.add(this.endHover, this);
+    //Possibly replace this style with something more stylish :)
+    //REMEMBER: when updating the context text need to update position to account for changed width
+    let context = new Phaser.Text(_game.game, 2.5, 2.5, 'Income here\nOutput here', style);
+    this.tooltip = new Phasetips(_game.game, {
+        targetObject: this,
+        context: context,
+        fixedToCamera: true,
+        padding: 5,
+        x: this.x - (this.width / 2) - (context.width / 2),
+        y: this.y + (this.height / 2) + 10,
+    });
 }
 
 Resource.prototype = Object.create(Phaser.Sprite.prototype);
 Resource.prototype.constructor = Resource;
-
-Resource.prototype.hover = function() {
-    this.incomeText.alpha = .99;
-    this.outcomeText.alpha = .99;
-};
-
-Resource.prototype.endHover = function() {
-    this.incomeText.alpha = 0;
-    this.outcomeText.alpha = 0;
-};
 
 Resource.prototype.update = function() {
 
@@ -65,7 +54,7 @@ Resource.prototype.add = function(amount) {
     this.currentAmount = Phaser.Math.clamp(this.currentAmount, 0, this.storage);
     this.text.setText(this.currentAmount + '/' + this.storage);
 
-    this.game.storageBuildings.forEach(b => {
+    this._game.storageBuildings.forEach(b => {
         b.updateFrame();
     }, this);
 };
@@ -80,7 +69,7 @@ Resource.prototype.subtract = function(amount) {
     this.currentAmount = Phaser.Math.clamp(this.currentAmount, 0, this.storage);
     this.text.setText(this.currentAmount + '/' + this.storage);
 
-    this.game.storageBuildings.forEach(b => {
+    this._game.storageBuildings.forEach(b => {
         b.updateFrame();
     }, this);
 };
