@@ -8,18 +8,19 @@
  * @param {string} frame -- (optional) image frame in a texture atlas/spritesheet
  */
 
- var style1 = {
-        font: '32px Helvetica Neue',
-        fill: '#009900',
-        wordWrap: false,
-        fontWeight: 'bold'
-    };
-     var style2 = {
-        font: '18px Helvetica Neue',
-        fill: '#ff0000',
-        wordWrap: false,
-        fontWeight: 'bold'   
-    };
+var style1 = {
+    font: '32px Helvetica Neue',
+    fill: '#009900',
+    wordWrap: false,
+    fontWeight: 'bold'
+};
+var style2 = {
+    font: '18px Helvetica Neue',
+    fill: '#ff0000',
+    wordWrap: false,
+    fontWeight: 'bold'
+};
+
 function Building(_game, w, h, key, frame) {
     Phaser.Sprite.call(this, _game.game, 0, 0, key, frame);
 
@@ -549,25 +550,27 @@ function CommandCenter(_game, w, h, key, frame) {
 CommandCenter.prototype = Object.create(Building.prototype);
 CommandCenter.prototype.constructor = CommandCenter;
 
-CommandCenter.prototype.updateResources = function() { 
+CommandCenter.prototype.updateResources = function() {
     this._game.time.events.loop(5000, function() {
-        this.text = this._game.add.text(this.x, this.y, "+1", style1);// here!
-        this.text.alpha=0;
-        this.text2 = this._game.add.text(this.x+this.text.width, this.y, "+1", style1);
-        this.text.alpha=0;
-        console.log(this.text);
-        console.log(this);
-        this._game.add.tween(this.text).to({alpha:1, y:this.y-32},1000,Phaser.Easing.Quadratic.InOut,true);
-        this._game.add.tween(this.text2).to({alpha:1, y:this.y-32},1000,Phaser.Easing.Quadratic.InOut,true);
-        console.log('aftertween');
+        this.text = this._game.add.text(this.x, this.y, '+1', style1); // here!
+        this.text.alpha = 0;
+        this.text2 = this._game.add.text(this.x + this.text.width, this.y, '+1', style1);
+        this.text.alpha = 0;
+        this._game.add.tween(this.text).to({
+            alpha: 1,
+            y: this.y - 32
+        }, 1000, Phaser.Easing.Quadratic.InOut, true);
+        this._game.add.tween(this.text2).to({
+            alpha: 1,
+            y: this.y - 32
+        }, 1000, Phaser.Easing.Quadratic.InOut, true);
         this._game.resources.food.add(1);
         this._game.resources.water.add(1);
         this._game.time.events.add(1300, function() {
-           this.text.destroy();
-           this.text2.destroy();
-           console.log('innerloop');
+            this.text.destroy();
+            this.text2.destroy();
         }, this);
-    };
+    }, this);
 };
 
 /**
@@ -589,11 +592,14 @@ Habitation2x2.prototype = Object.create(Building.prototype);
 Habitation2x2.prototype.constructor = Habitation2x2;
 
 Habitation2x2.prototype.updateResources = function() {
-    this.text = this._game.add.text(this.x, this.y, "+25", style1);// here!
-    this.text.alpha=0;
-    this._game.add.tween(this.text).to({alpha:1, y:this.y-32},1000,Phaser.Easing.Quadratic.InOut,true);
+    this.text = this._game.add.text(this.x, this.y, '+25', style1); // here!
+    this.text.alpha = 0;
+    this._game.add.tween(this.text).to({
+        alpha: 1,
+        y: this.y - 32
+    }, 1000, Phaser.Easing.Quadratic.InOut, true);
     this._game.time.events.add(1300, function() {
-       this.text.destroy();
+        this.text.destroy();
     }, this);
     this._game.resources.house.increaseStorage(25);
 };
@@ -616,11 +622,14 @@ Habitation2x1.prototype = Object.create(RotatableBuilding.prototype);
 Habitation2x1.prototype.constructor = Habitation2x1;
 
 Habitation2x1.prototype.updateResources = function() {
-    this.text = this._game.add.text(this.x, this.y, "+12", style1);// here!
-    this.text.alpha=0;
-    this._game.add.tween(this.text).to({alpha:1, y:this.y-32},1000,Phaser.Easing.Quadratic.InOut,true);
+    this.text = this._game.add.text(this.x, this.y, '+12', style1); // here!
+    this.text.alpha = 0;
+    this._game.add.tween(this.text).to({
+        alpha: 1,
+        y: this.y - 32
+    }, 1000, Phaser.Easing.Quadratic.InOut, true);
     this._game.time.events.add(1300, function() {
-       this.text.destroy();
+        this.text.destroy();
     }, this);
     this._game.resources.house.increaseStorage(12);
 };
@@ -654,11 +663,14 @@ Habitation1x1.prototype = Object.create(RotatableBuilding.prototype);
 Habitation1x1.prototype.constructor = Habitation1x1;
 
 Habitation1x1.prototype.updateResources = function() {
-    this.text = this._game.add.text(this.x, this.y, "+5", style1);// here!
-    this.text.alpha=0;
-    this._game.add.tween(this.text).to({alpha:1, y:this.y-32},1000,Phaser.Easing.Quadratic.InOut,true);
+    this.text = this._game.add.text(this.x, this.y, '+5', style1); // here!
+    this.text.alpha = 0;
+    this._game.add.tween(this.text).to({
+        alpha: 1,
+        y: this.y - 32
+    }, 1000, Phaser.Easing.Quadratic.InOut, true);
     this._game.time.events.add(1300, function() {
-       this.text.destroy();
+        this.text.destroy();
     }, this);
     this._game.resources.house.increaseStorage(5);
 };
@@ -691,11 +703,14 @@ WaterTank2x1.prototype = Object.create(RotatableBuilding.prototype);
 WaterTank2x1.prototype.constructor = WaterTank2x1;
 
 WaterTank2x1.prototype.updateResources = function() {
-    this.text = this._game.add.text(this.x, this.y, "+15", style1);// here!
-    this.text.alpha=0;
-    this._game.add.tween(this.text).to({alpha:1, y:this.y-32},1000,Phaser.Easing.Quadratic.InOut,true);
+    this.text = this._game.add.text(this.x, this.y, '+15', style1); // here!
+    this.text.alpha = 0;
+    this._game.add.tween(this.text).to({
+        alpha: 1,
+        y: this.y - 32
+    }, 1000, Phaser.Easing.Quadratic.InOut, true);
     this._game.time.events.add(1300, function() {
-       this.text.destroy();
+        this.text.destroy();
     }, this);
     this._game.resources.water.increaseStorage(15);
 };
@@ -741,12 +756,15 @@ WaterRecycler2x1.prototype = Object.create(RotatableBuilding.prototype);
 WaterRecycler2x1.prototype.constructor = WaterRecycler2x1;
 
 WaterRecycler2x1.prototype.updateResources = function() {
-    this._game.time.events.loop(4000, function() {
-        this.text = this._game.add.text(this.x, this.y, "+2", style1);// here!
-        this.text.alpha=0;
-        this._game.add.tween(this.text).to({alpha:1, y:this.y-32},1000,Phaser.Easing.Quadratic.InOut,true);
+    this._game.time.events.loop(6000, function() {
+        this.text = this._game.add.text(this.x, this.y, '+2', style1); // here!
+        this.text.alpha = 0;
+        this._game.add.tween(this.text).to({
+            alpha: 1,
+            y: this.y - 32
+        }, 1000, Phaser.Easing.Quadratic.InOut, true);
         this._game.time.events.add(1300, function() {
-           this.text.destroy();
+            this.text.destroy();
         }, this);
         this._game.resources.water.add(2);
     }, this);
@@ -778,11 +796,14 @@ PowerStorage2x1.prototype = Object.create(RotatableBuilding.prototype);
 PowerStorage2x1.prototype.constructor = PowerStorage2x1;
 
 PowerStorage2x1.prototype.updateResources = function() {
-    this.text = this._game.add.text(this.x, this.y, "+5", style1);// here!
-    this.text.alpha=0;
-    this._game.add.tween(this.text).to({alpha:1, y:this.y-32},1000,Phaser.Easing.Quadratic.InOut,true);
+    this.text = this._game.add.text(this.x, this.y, '+5', style1); // here!
+    this.text.alpha = 0;
+    this._game.add.tween(this.text).to({
+        alpha: 1,
+        y: this.y - 32
+    }, 1000, Phaser.Easing.Quadratic.InOut, true);
     this._game.time.events.add(1300, function() {
-       this.text.destroy();
+        this.text.destroy();
     }, this);
     this._game.resources.power.increaseStorage(5);
 };
@@ -815,11 +836,14 @@ SolarPanel1x1.prototype.constructor = SolarPanel1x1;
 
 SolarPanel1x1.prototype.updateResources = function() {
     this._game.time.events.loop(20000, function() {
-        this.text = this._game.add.text(this.x, this.y, "+1", style1);// here!
-        this.text.alpha=0;
-        this._game.add.tween(this.text).to({alpha:1, y:this.y-32},1000,Phaser.Easing.Quadratic.InOut,true);
+        this.text = this._game.add.text(this.x, this.y, '+1', style1); // here!
+        this.text.alpha = 0;
+        this._game.add.tween(this.text).to({
+            alpha: 1,
+            y: this.y - 32
+        }, 1000, Phaser.Easing.Quadratic.InOut, true);
         this._game.time.events.add(1300, function() {
-           this.text.destroy();
+            this.text.destroy();
         }, this);
         this._game.resources.power.add(1);
     }, this);
@@ -868,11 +892,14 @@ Hydroponics2x2.prototype.constructor = Hydroponics2x2;
 
 Hydroponics2x2.prototype.updateResources = function() {
     this._game.time.events.loop(4000, function() {
-        this.text = this._game.add.text(this.x, this.y, "+2", style1);// here!
-        this.text.alpha=0;
-        this._game.add.tween(this.text).to({alpha:1, y:this.y-32},1000,Phaser.Easing.Quadratic.InOut,true);
+        this.text = this._game.add.text(this.x, this.y, '+2', style1); // here!
+        this.text.alpha = 0;
+        this._game.add.tween(this.text).to({
+            alpha: 1,
+            y: this.y - 32
+        }, 1000, Phaser.Easing.Quadratic.InOut, true);
         this._game.time.events.add(1300, function() {
-           this.text.destroy();
+            this.text.destroy();
         }, this);
         this._game.resources.food.add(2);
     }, this);
@@ -890,18 +917,24 @@ Storage1x1.prototype = Object.create(RotatableBuilding.prototype);
 Storage1x1.prototype.constructor = Storage1x1;
 
 Storage1x1.prototype.updateResources = function() {
-    this.text = this._game.add.text(this.x, this.y, "+5", style1);// here!
-    this.text.alpha=0;
-    this.text2 = this._game.add.text(this.x+this.text.width, this.y, "+10", style1);
-    this.text.alpha=0;;
-    this._game.add.tween(this.text).to({alpha:1, y:this.y-32},1000,Phaser.Easing.Quadratic.InOut,true);
-    this._game.add.tween(this.text2).to({alpha:1, y:this.y-32},1000,Phaser.Easing.Quadratic.InOut,true);
+    this.text = this._game.add.text(this.x, this.y, '+5', style1); // here!
+    this.text.alpha = 0;
+    this.text2 = this._game.add.text(this.x + this.text.width, this.y, '+10', style1);
+    this.text.alpha = 0;
+    this._game.add.tween(this.text).to({
+        alpha: 1,
+        y: this.y - 32
+    }, 1000, Phaser.Easing.Quadratic.InOut, true);
+    this._game.add.tween(this.text2).to({
+        alpha: 1,
+        y: this.y - 32
+    }, 1000, Phaser.Easing.Quadratic.InOut, true);
     this._game.resources.food.add(3);
     this._game.resources.water.add(3);
     this._game.time.events.add(1300, function() {
-       this.text.destroy();
-       this.text2.destroy();
-    }, this);   
+        this.text.destroy();
+        this.text2.destroy();
+    }, this);
     this._game.resources.food.increaseStorage(5);
     this._game.resources.mat.increaseStorage(10);
 };
@@ -931,12 +964,18 @@ Storage2x2.prototype = Object.create(Building.prototype);
 Storage2x2.prototype.constructor = Storage2x2;
 
 Storage2x2.prototype.updateResources = function() {
-    this.text = this._game.add.text(this.x, this.y, "+20", style1);// here!
-    this.text.alpha=0;
-    this.text2 = this._game.add.text(this.x+this.text.width, this.y, "+40", style1);
-    this.text.alpha=0;
-    this._game.add.tween(this.text).to({alpha:1, y:this.y-32},1000,Phaser.Easing.Quadratic.InOut,true);
-    this._game.add.tween(this.text2).to({alpha:1, y:this.y-32},1000,Phaser.Easing.Quadratic.InOut,true);
+    this.text = this._game.add.text(this.x, this.y, '+20', style1); // here!
+    this.text.alpha = 0;
+    this.text2 = this._game.add.text(this.x + this.text.width, this.y, '+40', style1);
+    this.text.alpha = 0;
+    this._game.add.tween(this.text).to({
+        alpha: 1,
+        y: this.y - 32
+    }, 1000, Phaser.Easing.Quadratic.InOut, true);
+    this._game.add.tween(this.text2).to({
+        alpha: 1,
+        y: this.y - 32
+    }, 1000, Phaser.Easing.Quadratic.InOut, true);
     this._game.resources.food.add(3);
     this._game.resources.water.add(3);
     this._game.time.events.add(1300, function() {
@@ -986,12 +1025,14 @@ BrickMine2x2.prototype.rotate = function() {
 
 BrickMine2x2.prototype.updateResources = function() {
     this._game.time.events.loop(6000, function() {
-        this._game.time.events.loop(4000, function() {
-        this.text = this._game.add.text(this.x, this.y, "+4", style1);// here!
-        this.text.alpha=0;
-        this._game.add.tween(this.text).to({alpha:1, y:this.y-32},1000,Phaser.Easing.Quadratic.InOut,true);
+        this.text = this._game.add.text(this.x, this.y, '+4', style1); // here!
+        this.text.alpha = 0;
+        this._game.add.tween(this.text).to({
+            alpha: 1,
+            y: this.y - 32
+        }, 1000, Phaser.Easing.Quadratic.InOut, true);
         this._game.time.events.add(1300, function() {
-           this.text.destroy();
+            this.text.destroy();
         }, this);
         this._game.resources.mat.add(4);
     }, this);
@@ -1010,16 +1051,19 @@ function IceMine2x2(_game, w, h, key, frame) {
 }
 
 IceMine2x2.prototype = Object.create(RotatableBuilding.prototype);
-IceMine2x2.prototype.constructor = IceMine2x2;
+IceMine2x2.prototype.constructor =
+    IceMine2x2;
 
 IceMine2x2.prototype.updateResources = function() {
     this._game.time.events.loop(6000, function() {
-        this._game.time.events.loop(4000, function() {
-        this.text = this._game.add.text(this.x, this.y, "+2", style1);// here!
-        this.text.alpha=0;
-        this._game.add.tween(this.text).to({alpha:1, y:this.y-32},1000,Phaser.Easing.Quadratic.InOut,true);
+        this.text = this._game.add.text(this.x, this.y, '+2', style1); // here!
+        this.text.alpha = 0;
+        this._game.add.tween(this.text).to({
+            alpha: 1,
+            y: this.y - 32
+        }, 1000, Phaser.Easing.Quadratic.InOut, true);
         this._game.time.events.add(1300, function() {
-           this.text.destroy();
+            this.text.destroy();
         }, this);
         this._game.resources.water.add(2);
     }, this);
