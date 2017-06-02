@@ -20,6 +20,8 @@ Play.prototype = {
         //temporary... move to Load state
         this.load.path = 'assets/img/';
         this.load.atlas('buildings', 'inProgressAtlas.png', 'inProgressAtlas.json');
+        this.load.image('toolbarTabs', 'ToolbarTabs.png');
+        this.load.image('arrow', 'Arrow_Left.png');
 
         console.log('Play: preload()');
     },
@@ -167,8 +169,8 @@ Play.prototype = {
     dragCam: function() {
         if (this.input.activePointer.isDown) {
             if (this.origDragPoint) {
-                var moveX = Math.round(this.origDragPoint.x - this.input.x);
-                var moveY = Math.round(this.origDragPoint.y - this.input.y);
+                var moveX = Math.floor(this.origDragPoint.x - this.input.x);
+                var moveY = Math.floor(this.origDragPoint.y - this.input.y);
 
                 this.camera.x += moveX;
                 this.camera.y += moveY;

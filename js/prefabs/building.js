@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * @param {Phaser.Game} _game -- reference to the current game instance
+ * @param {Phaser.Game} _game -- reference to the current _game instance
  * @param {number} w -- width of the building (in grid cells)
  * @param {number} h -- height of the building (in grid cells)
  * @param {string} key -- the cached key of the building sprite
@@ -57,7 +57,7 @@ Building.prototype.purchased = function() {
     this.anchor.set(.5);
     this.scale.set(this._game.worldScale / 2);
 
-    this.events.onInputDown.addOnce(Building.prototype.place, this);
+    this.events.onInputDown.add(Building.prototype.place, this);
 };
 
 /**
@@ -65,6 +65,9 @@ Building.prototype.purchased = function() {
  * @param  {number} yPosition -- (optional) y position to put the building
  */
 Building.prototype.place = function(xPosition, yPosition) {
+    if(this._game.UI.hovering){
+        return false;
+    }
     this.held = false;
 
     //update the resources for each building (or start the loop to do so)
@@ -135,7 +138,7 @@ Building.prototype.place = function(xPosition, yPosition) {
     }
 
     this._game.g.bmdOverlay.clear();
-    this.events.onInputDown.add(Building.prototype.getInfo, this);
+    this.events.onInputDown.addOnce(Building.prototype.getInfo, this);
 };
 
 Building.prototype.getInfo = function() {

@@ -5,7 +5,6 @@ function UserInterface(_game, camera) {
 
     this.buttonBuilding = null;
 
-
     // Determines whether or not the user's cursor is hovering over the toolbar. Hovering determines whether or not
     // the user is hovering over a button.
     this.canDrag = true;
@@ -59,6 +58,7 @@ function UserInterface(_game, camera) {
         'WaterRecycler2x1LeftRight': ['WaterRecycler2x1', 2, 1, 'WaterRecycler2x1UpDown'],
         'LandingPad3x3': ['LandingPad3x3', 3, 3]
     };
+
     this.buildingArray = ['BrickMine2x2', 'IceMine2x2', 'Habitation1x1Down', 'Habitation2x1LeftRight', 'Habitation2x2',
         'Storage1x1Down', 'Storage2x2', 'Hydroponics2x2', 'WaterTank2x1', 'WaterRecycler2x1LeftRight',
         'SolarPanel1x1', 'PowerStorage2x1LeftRight', 'LandingPad3x3'
@@ -66,8 +66,16 @@ function UserInterface(_game, camera) {
     this.icons = this._game.add.group();
     this.icons.classType = Phaser.Button;
 
+    this.iconsText = this._game.add.group();
+    this.iconsText.classType = Phaser.Text;
+
     this.icons.x = this.camera.x + this.camera.width / 2;
-    this.icons.y = this.toolbar.y + this.toolbar.height / 2; //this.camera.y + this.camera.height - this.yDisplaceDef;
+    this.icons.y = this.toolbar.y + this.toolbar.height / 3; //this.camera.y + this.camera.height - this.yDisplaceDef;
+
+    this.iconsText.x = this.icons.x;
+    this.iconsText.y = this.icons.y;
+
+    this.iconsTextStyle = {font: "17px Arial", fontWeight: 'bold', fill: '#01060f', align: 'center', boundsAlignH: 'center', boundsAlignV: 'top', wordWrap: 'true'};
 
     this.scaleFactor = 1.15;
 
@@ -112,19 +120,32 @@ function UserInterface(_game, camera) {
     this.cancelText.anchor.setTo(1, 0);
     this.cancelText.events.onInputDown.add(this.canBuilding, this);
 
+    this.rightArrow = this._game.add.button(0, 0, 'arrow');
+    this.rightArrow.anchor.setTo(.5, .5);
+    this.rightArrow.scale.setTo(-.7, 1.1);
+    this.rightArrow.onInputDown.add(this.scroll, this, 0, 'right');
+
+    this.leftArrow = this._game.add.button(0, 0, 'arrow');
+    this.leftArrow.anchor.setTo(.5, .5);
+    this.leftArrow.scale.setTo(.7, 1.1);
+    this.leftArrow.onInputDown.add(this.scroll, this, 0, 'left');
+
     for (let i = 0; i < this.buildingArray.length; i++) {
         let indivIcon = this.icons.create(2 * (i - Math.floor(this.toolbarLength / 2)) * (this.camera.width /
             (this.toolbarLength * 2)), 0, 'buildings');
         indivIcon.frameName = this.buildingArray[i];
-
-        indivIcon.onInputDown.add(this.makeBuilding, this, 0, indivIcon);
-        indivIcon.onInputOver.add(this.hoverOver, this, 0, indivIcon, this.tag);
-        indivIcon.onInputOut.add(this.hoverOut, this, 0, indivIcon, this.tag);
-
         indivIcon.y += (this.toolbar.height * this.toolbar.scale.y) / 2;
         indivIcon.anchor.setTo(.5, .5);
         indivIcon.scale.x = (this.toolbar.height * this.toolbar.scale.y) / (indivIcon.width * 1.5);
         indivIcon.scale.y = indivIcon.scale.x;
+
+        let indivIconText = this.iconsText.create(Math.round(indivIcon.x), Math.round(indivIcon.y), indivIcon.frameName, this.iconsTextStyle);
+        indivIconText.setTextBounds(-indivIcon.width/2, this.toolbar.height/4, indivIcon.width, indivIcon.height);
+        indivIconText.wordWrapWidth = this.camera.width / (this.toolbarLength * 3);
+
+        indivIcon.onInputDown.add(this.makeBuilding, this, 0, indivIcon);
+        indivIcon.onInputOver.add(this.hoverOver, this, 0, indivIcon);
+        indivIcon.onInputOut.add(this.hoverOut, this, 0, indivIcon);
     }
 }
 
@@ -133,71 +154,69 @@ UserInterface.prototype.display = function() {
         this.openMenu();
     }
 
-    if (this._game.input.keyboard.justPressed(Phaser.Keyboard.A) && (this.xDisplace < 0) && this.menuActive) {
-        if (this.xTween ? !this.xTween.isRunning : true) {
-            this.xTween = this._game.add.tween(this).to({
-                xDisplace: this.xDisplace + this.camera.width / this.toolbarLength
-            }, 215, Phaser.Easing.Quadratic.InOut, true);
-        }
-    }
-
-    if (this._game.input.keyboard.justPressed(Phaser.Keyboard.D) && (this.xDisplace > -((this.buildingArray.length -
-            this.toolbarLength) * this.camera.width) / this.toolbarLength) && this.menuActive) {
-        if (this.xTween ? !this.xTween.isRunning : true) {
-            this.xTween = this._game.add.tween(this).to({
-                xDisplace: this.xDisplace - this.camera.width / this.toolbarLength
-            }, 215, Phaser.Easing.Quadratic.InOut, true);
-        }
+    if (this._game.input.keyboard.justPressed(Phaser.Keyboard.A)) {
+    	if (this._game.input.keyboard.justPressed(Phaser.Keyboard.D)){
+    		this.scroll(null, null, 'neither');
+    	} else {
+    		this.scroll(null, null, 'left');
+    	}
+    } else if(this._game.input.keyboard.justPressed(Phaser.Keyboard.D)){
+    	this.scroll(null, null, 'right');
     }
 
     this.icons.x = this.camera.x + this.camera.width / 2 + this.xDisplace;
-    this.icons.y = this.camera.y + this.camera.height - (this.yDisplaceDef - this.yDisplace) + this.toolbar.height /
-        8;
+    this.icons.y = this.camera.y + this.camera.height - (this.yDisplaceDef - this.yDisplace) + this.toolbar.height/8;
 
-    // Setting the toolbar and instruction text in the correct locations.
-    this.toolbar.x = this.camera.x + this.camera.width / 2;
-    this.toolbar.y = this.camera.y + this.camera.height + this.yDisplace;
-    this.toolbarWalkway.x = this.toolbar.x;
-    this.toolbarWalkway.y = this.toolbar.y - this.toolbar.height;
-    this.instructText.x = this.toolbar.x;
-    this.instructText.y = this.toolbar.y - this.toolbar.height;
+    this.iconsText.x = Math.round(this.icons.x);
+    this.iconsText.y = Math.round(this.icons.y);
 
-    this.WalkwayLeft.x = this.toolbarWalkway.x - 10.25 * (this.camera.width / 25); // The number is somewhat arbitrary, but it works.
-    this.WalkwayRight.x = this.toolbarWalkway.x + 10.25 * (this.camera.width / 25);
-    this.WalkwayLeft.y = this.toolbarWalkway.y - .55 * this.WalkwayLeft.height;
-    this.WalkwayRight.y = this.toolbarWalkway.y - .55 * this.WalkwayRight.height;
+	// Setting the toolbar and instruction text in the correct locations.
+	this.toolbar.x = this.camera.x + this.camera.width/2;
+	this.toolbar.y = this.camera.y + this.camera.height + this.yDisplace;
+	this.toolbarWalkway.x = this.toolbar.x;
+	this.toolbarWalkway.y = this.toolbar.y - this.toolbar.height;
+	this.instructText.x = Math.round(this.toolbar.x);
+	this.instructText.y = Math.round(this.toolbar.y - this.toolbar.height);
 
-    if (this.toolbar.input.pointerOver()) {
-        this.canDrag = false;
-    } else {
-        if (this.hovering) {
-            this.canDrag = false;
-        } else {
-            this.canDrag = true;
-        }
-    }
+	this.leftArrow.x = this.toolbar.x - .45*(this.camera.width);
+	this.leftArrow.y = this.toolbar.y - this.toolbar.height/2;
+	this.rightArrow.x = this.toolbar.x + .45*(this.camera.width);
+	this.rightArrow.y = this.toolbar.y - this.toolbar.height/2;
 
-    this.rotateText.position.x = this.camera.x + 4.5 * (this.camera.width / 7);
-    this.rotateText.position.y = this.camera.y + 15.75 * (this.camera.height / 20);
+	this.WalkwayLeft.x = this.toolbarWalkway.x - 10.25*(this.camera.width/25); // The number is somewhat arbitrary, but it works.
+	this.WalkwayRight.x = this.toolbarWalkway.x + 10.25*(this.camera.width/25);
+	this.WalkwayLeft.y = this.toolbarWalkway.y - .55*this.WalkwayLeft.height;
+	this.WalkwayRight.y = this.toolbarWalkway.y - .55*this.WalkwayRight.height;
+	
+	if(this.toolbar.input.pointerOver()){
+		this.canDrag = false;
+		this.hovering = true;
+	} else {
+		this.hovering = false;
+		this.canDrag = true;
+	}
 
-    this.cancelText.position.x = this.camera.x + 2.5 * (this.camera.width / 7);
-    this.cancelText.position.y = this.rotateText.y;
+	this.rotateText.position.x = Math.round(this.camera.x + 4.5*(this.camera.width/7));
+	this.rotateText.position.y = Math.round(this.camera.y + 15.75*(this.camera.height/20));
 
-    if (this.yTween) {
-        if (this.yTween.isRunning || !this.menuActive) {
-            this.rotateText.visible = false;
-            this.cancelText.visible = false;
-        } else {
-            this.rotateText.visible = true;
-            this.cancelText.visible = true;
-        }
-    } else if (this.menuActive) {
-        this.rotateText.visible = true;
-        this.cancelText.visible = true;
-    } else {
-        this.rotateText.visible = false;
-        this.cancelText.visible = false;
-    }
+	this.cancelText.position.x = Math.round(this.camera.x + 2.5*(this.camera.width/7));
+	this.cancelText.position.y = Math.round(this.rotateText.y);
+
+	if (this.yTween != null){
+		if(this.yTween.isRunning || !this.menuActive){
+			this.rotateText.visible = false;
+			this.cancelText.visible = false;
+		} else {
+			this.rotateText.visible = true;
+			this.cancelText.visible = true;
+		}
+	} else if (this.menuActive){
+		this.rotateText.visible = true;
+		this.cancelText.visible = true;
+	} else {
+		this.rotateText.visible = false;
+		this.cancelText.visible = false;
+	}
 };
 
 UserInterface.prototype.makeBuilding = function(indivIcon) {
@@ -291,8 +310,28 @@ UserInterface.prototype.rotBuilding = function() {
     }
 };
 
-UserInterface.prototype.canBuilding = function() {
-    if (this._game.holdingBuilding && this.buttonBuilding && this.menuActive) {
-        this.buttonBuilding.cancelPlacement();
+UserInterface.prototype.canBuilding = function(){
+	if(this._game.holdingBuilding && this.buttonBuilding != null && this.menuActive){
+		this.buttonBuilding.cancelPlacement();
+	}
+};
+
+UserInterface.prototype.scroll = function(button, pointer, dir){
+	if(dir == 'left'){
+		this.targetSign = 1;
+		this.boundsBool = this.xDisplace < 0;
+	} else if(dir == 'right'){
+		this.targetSign = -1;
+		this.boundsBool = (this.xDisplace > -((this.buildingArray.length - this.toolbarLength) * this.camera.width) / this.toolbarLength);
+	} else {
+		this.targetSign = 0;
+		this.boundsBool = false;
+	}
+
+
+	if (this.menuActive && this.boundsBool) {
+        if ( this.xTween==null ? true : !this.xTween.isRunning) {
+        	this.xTween = this._game.add.tween(this).to( {xDisplace: this.xDisplace + this.targetSign*(this.camera.width / this.toolbarLength)} , 215, Phaser.Easing.Quadratic.InOut, true);
+        }
     }
 };
