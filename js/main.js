@@ -7,5 +7,6 @@ window.onload = function() {
     game = new Phaser.Game(800, 600, Phaser.CANVAS);
     game.state.add('Menu', Menu);
     game.state.add('Play', Play);
+    game.state.add('GameOver', GameOver);
     game.state.start('Menu');
 };

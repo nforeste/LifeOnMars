@@ -4,6 +4,8 @@
 Play is the state containing the main game loop
 */
 
+var backMusic2;
+
 var Play = function(game) {
     this.game = game;
 };
@@ -22,6 +24,9 @@ Play.prototype = {
         this.load.atlas('buildings', 'inProgressAtlas.png', 'inProgressAtlas.json');
         this.load.image('toolbarTabs', 'ToolbarTabs.png');
         this.load.image('arrow', 'Arrow_Left.png');
+        this.load.path = 'assets/audio/';
+        this.load.audio('backgroundmusic2', 'spacemusic2.mp3');
+        this.load.path = 'assets/img/';
 
         console.log('Play: preload()');
     },
@@ -59,6 +64,10 @@ Play.prototype = {
 
         //initiates the population update timer
         this.gameTimer = new Timer(this, 0, 0, 24, 32, 'buildings', 'WaterIcon');
+
+        //plays background music
+        backMusic2 = this.game.add.audio('backgroundmusic2');
+        backMusic2.play('', 0, 1, true, true);
 
         //.bind(this) used to access 'this' scope within callback
         this.input.mouse.mouseWheelCallback = function(event) {
@@ -154,6 +163,8 @@ Play.prototype = {
         //check to make sure the player has enough housing to support the new people
         if (this.resources.house.storage < this.resources.house.currentAmount + this.newPeople) {
             console.log('YOU LOSE BITCH');
+            backMusic2.stop();
+            this.state.start('GameOver');
             //Do game over stuff here?
         }
 
@@ -296,13 +307,13 @@ Play.prototype = {
 
                 //this.gameObjects.forEach(this.setScale, this, true, this.child);
             }
-        }
-        /*setScale: function(child){
-        	console.log();
+    }
+    /*setScale: function(child){
+    	console.log();
 
-        	//child.scale.set(0.5);
-        	if(child != this.UI.toolbar){
-        		child.scale.set(this.worldScale);
-        	}
-        }*/
+    	//child.scale.set(0.5);
+    	if(child != this.UI.toolbar){
+    		child.scale.set(this.worldScale);
+    	}
+    }*/
 };
