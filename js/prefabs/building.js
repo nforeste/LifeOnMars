@@ -57,7 +57,7 @@ Building.prototype.purchased = function() {
     this.anchor.set(.5);
     this.scale.set(this._game.worldScale / 2);
 
-    this.events.onInputDown.add(Building.prototype.place, this);
+    this.events.onInputDown.addOnce(Building.prototype.place, this);
 };
 
 /**
@@ -65,7 +65,7 @@ Building.prototype.purchased = function() {
  * @param  {number} yPosition -- (optional) y position to put the building
  */
 Building.prototype.place = function(xPosition, yPosition) {
-    if(this._game.UI.hovering){
+    if (this._game.UI.hovering) {
         return false;
     }
     this.held = false;
@@ -222,13 +222,30 @@ Building.prototype.update = function() {
         if (xPos && yPos) {
             //check to see if the building is hovering over
             //any occupied squares, and if so mark it as blocked
+            //also make sure nothing can be placed on water/iron except the mines
+            //and the mines can only be placed on their respective terrain
+            let brick = this instanceof BrickMine2x2;
+            let water = this instanceof IceMine2x2;
+            let findResources = false;
             for (let i = xPos; i < xPos + this.w; i++) {
                 for (let j = yPos; j < yPos + this.h; j++) {
+                    let tile = this._game.g.cells[i][j].tile;
+
                     if (this._game.g.cells[i][j].occupied) {
                         blocked = true;
                         break;
                     }
+
+                    if (tile === 'iron' || tile === 'water') {
+                        findResources = true;
+                    }
                 }
+            }
+
+            //building is also blocked if it is a resource drill not on resources,
+            //or not a resource drill on resources
+            if ((!findResources && (brick || water)) || (findResources && !(brick || water))) {
+                blocked = true;
             }
 
             //if the building isn't blocked by another building,
@@ -237,6 +254,8 @@ Building.prototype.update = function() {
             //Additionally, a building cannot be placed directly next to another building
             //(need to place at least one walkway in between)
             if (!blocked) {
+                let solar = this instanceof SolarPanel1x1;
+                let walkway = this instanceof Walkway;
                 for (let i = 0; i < this.connections.length; i++) {
                     let x = this.connections[i][0];
                     let y = this.connections[i][1];
@@ -244,7 +263,11 @@ Building.prototype.update = function() {
                     if (this.connections[i][2] === this.UP) {
                         let tmp = this._game.g.cells[x + xPos][y + yPos - 1];
 
-                        if (!(this instanceof Walkway) && tmp.occupied && !(tmp.occupied instanceof Walkway)) {
+                        if (solar && tmp.occupied && !(tmp.occupied instanceof PowerStorage2x1)) {
+                            continue;
+                        }
+
+                        if (!walkway && !solar && tmp.occupied && !(tmp.occupied instanceof Walkway)) {
                             continue;
                         }
 
@@ -258,7 +281,11 @@ Building.prototype.update = function() {
                     } else if (this.connections[i][2] === this.DOWN) {
                         let tmp = this._game.g.cells[x + xPos][y + yPos + 1];
 
-                        if (!(this instanceof Walkway) && tmp.occupied && !(tmp.occupied instanceof Walkway)) {
+                        if (solar && tmp.occupied && !(tmp.occupied instanceof PowerStorage2x1)) {
+                            continue;
+                        }
+
+                        if (!walkway && !solar && tmp.occupied && !(tmp.occupied instanceof Walkway)) {
                             continue;
                         }
 
@@ -272,7 +299,11 @@ Building.prototype.update = function() {
                     } else if (this.connections[i][2] === this.LEFT) {
                         let tmp = this._game.g.cells[x + xPos - 1][y + yPos];
 
-                        if (!(this instanceof Walkway) && tmp.occupied && !(tmp.occupied instanceof Walkway)) {
+                        if (solar && tmp.occupied && !(tmp.occupied instanceof PowerStorage2x1)) {
+                            continue;
+                        }
+
+                        if (!walkway && !solar && tmp.occupied && !(tmp.occupied instanceof Walkway)) {
                             continue;
                         }
 
@@ -286,7 +317,11 @@ Building.prototype.update = function() {
                     } else {
                         let tmp = this._game.g.cells[x + xPos + 1][y + yPos];
 
-                        if (!(this instanceof Walkway) && tmp.occupied && !(tmp.occupied instanceof Walkway)) {
+                        if (solar && tmp.occupied && !(tmp.occupied instanceof PowerStorage2x1)) {
+                            continue;
+                        }
+
+                        if (!walkway && !solar && tmp.occupied && !(tmp.occupied instanceof Walkway)) {
                             continue;
                         }
 
@@ -788,7 +823,11 @@ WaterRecycler2x1.prototype.rotate = function() {
 function PowerStorage2x1(_game, w, h, key, frame, otherFrames) {
     RotatableBuilding.call(this, _game, w, h, key, frame, otherFrames);
     this.connections.push([0, 0, this.DOWN]);
+    this.connections.push([0, 0, this.LEFT]);
+    this.connections.push([0, 0, this.UP]);
     this.connections.push([1, 0, this.UP]);
+    this.connections.push([1, 0, this.RIGHT]);
+    this.connections.push([1, 0, this.DOWN]);
     this.rotated = 1;
     this.cost = {
         mat: 15
@@ -816,7 +855,7 @@ PowerStorage2x1.prototype.rotate = function() {
     if (this.held) {
         this.connections.forEach(c => {
             [c[0], c[1]] = [c[1], c[0]];
-            c[2] += this.rotated;
+            c[2] = (c[2] + this.rotated + 4) % 4;
         }, this);
         this.rotated *= -1;
     }
@@ -838,18 +877,16 @@ SolarPanel1x1.prototype = Object.create(RotatableBuilding.prototype);
 SolarPanel1x1.prototype.constructor = SolarPanel1x1;
 
 SolarPanel1x1.prototype.updateResources = function() {
-    this._game.time.events.loop(20000, function() {
-        this.text = this._game.add.text(this.x, this.y, '+1', style1); // here!
-        this.text.alpha = 0;
-        this._game.add.tween(this.text).to({
-            alpha: 1,
-            y: this.y - 32
-        }, 1000, Phaser.Easing.Quadratic.InOut, true);
-        this._game.time.events.add(1300, function() {
-            this.text.destroy();
-        }, this);
-        this._game.resources.power.add(1);
+    this.text = this._game.add.text(this.x, this.y, '+1', style1); // here!
+    this.text.alpha = 0;
+    this._game.add.tween(this.text).to({
+        alpha: 1,
+        y: this.y - 32
+    }, 1000, Phaser.Easing.Quadratic.InOut, true);
+    this._game.time.events.add(1300, function() {
+        this.text.destroy();
     }, this);
+    this._game.resources.power.add(1);
 };
 
 

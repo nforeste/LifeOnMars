@@ -75,7 +75,15 @@ function UserInterface(_game, camera) {
     this.iconsText.x = this.icons.x;
     this.iconsText.y = this.icons.y;
 
-    this.iconsTextStyle = {font: "17px Arial", fontWeight: 'bold', fill: '#01060f', align: 'center', boundsAlignH: 'center', boundsAlignV: 'top', wordWrap: 'true'};
+    this.iconsTextStyle = {
+        font: '17px Arial',
+        fontWeight: 'bold',
+        fill: '#01060f',
+        align: 'center',
+        boundsAlignH: 'center',
+        boundsAlignV: 'top',
+        wordWrap: 'true'
+    };
 
     this.scaleFactor = 1.15;
 
@@ -139,8 +147,9 @@ function UserInterface(_game, camera) {
         indivIcon.scale.x = (this.toolbar.height * this.toolbar.scale.y) / (indivIcon.width * 1.5);
         indivIcon.scale.y = indivIcon.scale.x;
 
-        let indivIconText = this.iconsText.create(Math.round(indivIcon.x), Math.round(indivIcon.y), indivIcon.frameName, this.iconsTextStyle);
-        indivIconText.setTextBounds(-indivIcon.width/2, this.toolbar.height/4, indivIcon.width, indivIcon.height);
+        let indivIconText = this.iconsText.create(Math.round(indivIcon.x), Math.round(indivIcon.y), indivIcon.frameName,
+            this.iconsTextStyle);
+        indivIconText.setTextBounds(-indivIcon.width / 2, this.toolbar.height / 4, indivIcon.width, indivIcon.height);
         indivIconText.wordWrapWidth = this.camera.width / (this.toolbarLength * 3);
 
         indivIcon.onInputDown.add(this.makeBuilding, this, 0, indivIcon);
@@ -155,68 +164,69 @@ UserInterface.prototype.display = function() {
     }
 
     if (this._game.input.keyboard.justPressed(Phaser.Keyboard.A)) {
-    	if (this._game.input.keyboard.justPressed(Phaser.Keyboard.D)){
-    		this.scroll(null, null, 'neither');
-    	} else {
-    		this.scroll(null, null, 'left');
-    	}
-    } else if(this._game.input.keyboard.justPressed(Phaser.Keyboard.D)){
-    	this.scroll(null, null, 'right');
+        if (this._game.input.keyboard.justPressed(Phaser.Keyboard.D)) {
+            this.scroll(null, null, 'neither');
+        } else {
+            this.scroll(null, null, 'left');
+        }
+    } else if (this._game.input.keyboard.justPressed(Phaser.Keyboard.D)) {
+        this.scroll(null, null, 'right');
     }
 
     this.icons.x = this.camera.x + this.camera.width / 2 + this.xDisplace;
-    this.icons.y = this.camera.y + this.camera.height - (this.yDisplaceDef - this.yDisplace) + this.toolbar.height/8;
+    this.icons.y = this.camera.y + this.camera.height - (this.yDisplaceDef - this.yDisplace) + this.toolbar.height /
+        8;
 
     this.iconsText.x = Math.round(this.icons.x);
     this.iconsText.y = Math.round(this.icons.y);
 
-	// Setting the toolbar and instruction text in the correct locations.
-	this.toolbar.x = this.camera.x + this.camera.width/2;
-	this.toolbar.y = this.camera.y + this.camera.height + this.yDisplace;
-	this.toolbarWalkway.x = this.toolbar.x;
-	this.toolbarWalkway.y = this.toolbar.y - this.toolbar.height;
-	this.instructText.x = Math.round(this.toolbar.x);
-	this.instructText.y = Math.round(this.toolbar.y - this.toolbar.height);
+    // Setting the toolbar and instruction text in the correct locations.
+    this.toolbar.x = this.camera.x + this.camera.width / 2;
+    this.toolbar.y = this.camera.y + this.camera.height + this.yDisplace;
+    this.toolbarWalkway.x = this.toolbar.x;
+    this.toolbarWalkway.y = this.toolbar.y - this.toolbar.height;
+    this.instructText.x = Math.round(this.toolbar.x);
+    this.instructText.y = Math.round(this.toolbar.y - this.toolbar.height);
 
-	this.leftArrow.x = this.toolbar.x - .45*(this.camera.width);
-	this.leftArrow.y = this.toolbar.y - this.toolbar.height/2;
-	this.rightArrow.x = this.toolbar.x + .45*(this.camera.width);
-	this.rightArrow.y = this.toolbar.y - this.toolbar.height/2;
+    this.leftArrow.x = this.toolbar.x - .45 * (this.camera.width);
+    this.leftArrow.y = this.toolbar.y - this.toolbar.height / 2;
+    this.rightArrow.x = this.toolbar.x + .45 * (this.camera.width);
+    this.rightArrow.y = this.toolbar.y - this.toolbar.height / 2;
 
-	this.WalkwayLeft.x = this.toolbarWalkway.x - 10.25*(this.camera.width/25); // The number is somewhat arbitrary, but it works.
-	this.WalkwayRight.x = this.toolbarWalkway.x + 10.25*(this.camera.width/25);
-	this.WalkwayLeft.y = this.toolbarWalkway.y - .55*this.WalkwayLeft.height;
-	this.WalkwayRight.y = this.toolbarWalkway.y - .55*this.WalkwayRight.height;
-	
-	if(this.toolbar.input.pointerOver()){
-		this.canDrag = false;
-		this.hovering = true;
-	} else {
-		this.hovering = false;
-		this.canDrag = true;
-	}
+    this.WalkwayLeft.x = this.toolbarWalkway.x - 10.25 * (this.camera.width / 25); // The number is somewhat arbitrary, but it works.
+    this.WalkwayRight.x = this.toolbarWalkway.x + 10.25 * (this.camera.width / 25);
+    this.WalkwayLeft.y = this.toolbarWalkway.y - .55 * this.WalkwayLeft.height;
+    this.WalkwayRight.y = this.toolbarWalkway.y - .55 * this.WalkwayRight.height;
 
-	this.rotateText.position.x = Math.round(this.camera.x + 4.5*(this.camera.width/7));
-	this.rotateText.position.y = Math.round(this.camera.y + 15.75*(this.camera.height/20));
+    if (this.toolbar.input.pointerOver()) {
+        this.canDrag = false;
+        this.hovering = true;
+    } else {
+        this.hovering = false;
+        this.canDrag = true;
+    }
 
-	this.cancelText.position.x = Math.round(this.camera.x + 2.5*(this.camera.width/7));
-	this.cancelText.position.y = Math.round(this.rotateText.y);
+    this.rotateText.position.x = Math.round(this.camera.x + 4.5 * (this.camera.width / 7));
+    this.rotateText.position.y = Math.round(this.camera.y + 15.75 * (this.camera.height / 20));
 
-	if (this.yTween != null){
-		if(this.yTween.isRunning || !this.menuActive){
-			this.rotateText.visible = false;
-			this.cancelText.visible = false;
-		} else {
-			this.rotateText.visible = true;
-			this.cancelText.visible = true;
-		}
-	} else if (this.menuActive){
-		this.rotateText.visible = true;
-		this.cancelText.visible = true;
-	} else {
-		this.rotateText.visible = false;
-		this.cancelText.visible = false;
-	}
+    this.cancelText.position.x = Math.round(this.camera.x + 2.5 * (this.camera.width / 7));
+    this.cancelText.position.y = Math.round(this.rotateText.y);
+
+    if (this.yTween) {
+        if (this.yTween.isRunning || !this.menuActive) {
+            this.rotateText.visible = false;
+            this.cancelText.visible = false;
+        } else {
+            this.rotateText.visible = true;
+            this.cancelText.visible = true;
+        }
+    } else if (this.menuActive) {
+        this.rotateText.visible = true;
+        this.cancelText.visible = true;
+    } else {
+        this.rotateText.visible = false;
+        this.cancelText.visible = false;
+    }
 };
 
 UserInterface.prototype.makeBuilding = function(indivIcon) {
@@ -310,28 +320,31 @@ UserInterface.prototype.rotBuilding = function() {
     }
 };
 
-UserInterface.prototype.canBuilding = function(){
-	if(this._game.holdingBuilding && this.buttonBuilding != null && this.menuActive){
-		this.buttonBuilding.cancelPlacement();
-	}
+UserInterface.prototype.canBuilding = function() {
+    if (this._game.holdingBuilding && this.buttonBuilding != null && this.menuActive) {
+        this.buttonBuilding.cancelPlacement();
+    }
 };
 
-UserInterface.prototype.scroll = function(button, pointer, dir){
-	if(dir == 'left'){
-		this.targetSign = 1;
-		this.boundsBool = this.xDisplace < 0;
-	} else if(dir == 'right'){
-		this.targetSign = -1;
-		this.boundsBool = (this.xDisplace > -((this.buildingArray.length - this.toolbarLength) * this.camera.width) / this.toolbarLength);
-	} else {
-		this.targetSign = 0;
-		this.boundsBool = false;
-	}
+UserInterface.prototype.scroll = function(button, pointer, dir) {
+    if (dir == 'left') {
+        this.targetSign = 1;
+        this.boundsBool = this.xDisplace < 0;
+    } else if (dir == 'right') {
+        this.targetSign = -1;
+        this.boundsBool = (this.xDisplace > -((this.buildingArray.length - this.toolbarLength) * this.camera.width) /
+            this.toolbarLength);
+    } else {
+        this.targetSign = 0;
+        this.boundsBool = false;
+    }
 
 
-	if (this.menuActive && this.boundsBool) {
-        if ( this.xTween==null ? true : !this.xTween.isRunning) {
-        	this.xTween = this._game.add.tween(this).to( {xDisplace: this.xDisplace + this.targetSign*(this.camera.width / this.toolbarLength)} , 215, Phaser.Easing.Quadratic.InOut, true);
+    if (this.menuActive && this.boundsBool) {
+        if (this.xTween == null ? true : !this.xTween.isRunning) {
+            this.xTween = this._game.add.tween(this).to({
+                xDisplace: this.xDisplace + this.targetSign * (this.camera.width / this.toolbarLength)
+            }, 215, Phaser.Easing.Quadratic.InOut, true);
         }
     }
 };

@@ -1,7 +1,5 @@
 'use strict';
 
-var backMusic;
-
 var Menu = function(game) {
     this.game = game;
 };
@@ -11,7 +9,12 @@ Menu.prototype = {
     preload: function() {
         //loads image (not in spritesheet) and audio
         this.load.image('menuimage', 'assets/img/menuimage.png');
-        this.load.audio('backgroundmusic', 'assets/audio/spacemusic.mp3');
+
+        this.load.path = 'assets/audio/';
+        this.load.audio('backgroundmusic', 'spacemusic.mp3');
+        this.load.audio('backgroundmusic2', 'spacemusic2.mp3');
+        this.load.audio('powerDown', 'gameover.wav');
+        this.load.audio('angryMob', 'gameover2.wav');
         console.log('Menu: preload()');
     },
     create: function() {
@@ -23,22 +26,28 @@ Menu.prototype = {
             wordWrap: false
         };
 
-        this.titleText = this.game.add.text(30, 40, 'Life On Mars', style);
+        this.titleText = this.add.text(30, 40, 'Life On Mars', style);
 
         style.font = '24px Arial Black';
 
-        this.subText = this.game.add.text(50, 110, 'Press Enter to begin', style);
+        this.subText = this.add.text(50, 110, 'Press Enter to begin', style);
 
-        //plays background music
-        backMusic = this.game.add.audio('backgroundmusic');
-        backMusic.play('', 0, 1, true, true);
+        //load background music
+        this.game.backMusic = this.add.audio('backgroundmusic');
+        this.game.backMusic2 = this.add.audio('backgroundmusic2');
+        this.game.gameOverMusic = this.add.audio('powerDown');
+        this.game.gameOverMusic2 = this.add.audio('angryMob');
+
+        //play menu theme
+        this.game.backMusic.play('', 0, 1, true, true);
 
         console.log('Menu: create()');
     },
     update: function() {
         //checks for the enter keypress
-        if (this.game.input.keyboard.justPressed(Phaser.Keyboard.ENTER)) {
-            backMusic.stop();
+        if (this.input.keyboard.justPressed(Phaser.Keyboard.ENTER)) {
+            this.game.backMusic.stop();
+            this.game.backMusic2.play('', 0, 1, true, true);
             this.state.start('Play');
         }
     }

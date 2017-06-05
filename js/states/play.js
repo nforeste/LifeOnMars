@@ -4,8 +4,6 @@
 Play is the state containing the main game loop
 */
 
-var backMusic2;
-
 var Play = function(game) {
     this.game = game;
 };
@@ -21,12 +19,11 @@ Play.prototype = {
     preload: function() {
         //temporary... move to Load state
         this.load.path = 'assets/img/';
+        this.load.tilemap('test', 'test.json', null, Phaser.Tilemap.TILED_JSON);
+        this.load.image('terrain', 'terrain.png');
         this.load.atlas('buildings', 'inProgressAtlas.png', 'inProgressAtlas.json');
         this.load.image('toolbarTabs', 'ToolbarTabs.png');
         this.load.image('arrow', 'Arrow_Left.png');
-        this.load.path = 'assets/audio/';
-        this.load.audio('backgroundmusic2', 'spacemusic2.mp3');
-        this.load.path = 'assets/img/';
 
         console.log('Play: preload()');
     },
@@ -34,8 +31,12 @@ Play.prototype = {
         console.log('Play: create()');
         this.world.setBounds(0, 0, 4032, 4032);
 
-        //orangish brownF
-        this.stage.backgroundColor = '#c1440e';
+        //orangish brown
+        this.stage.backgroundColor = '#b66a14';
+
+        this.gen = new Generate(this);
+        this.gen.run();
+
         this.g = new Grid(this, 32, 32, 'black');
         this.g.makeGrid();
 
@@ -65,10 +66,6 @@ Play.prototype = {
         //initiates the population update timer
         this.gameTimer = new Timer(this, 0, 0, 24, 32, 'buildings', 'WaterIcon');
 
-        //plays background music
-        backMusic2 = this.game.add.audio('backgroundmusic2');
-        backMusic2.play('', 0, 1, true, true);
-
         //.bind(this) used to access 'this' scope within callback
         this.input.mouse.mouseWheelCallback = function(event) {
             event.preventDefault();
@@ -90,10 +87,14 @@ Play.prototype = {
 
         //get the x and y position to place the starting command center
         //they will be random at least 500 px from the world edge
-        let xPos = this.rnd.integerInRange(500, this.world.width - 500);
-        xPos -= xPos % 32;
-        let yPos = this.rnd.integerInRange(500, this.world.height - 500);
-        yPos -= yPos % 32;
+        do {
+            var xPos = this.rnd.integerInRange(500, this.world.width - 500);
+            xPos -= xPos % 32;
+            var yPos = this.rnd.integerInRange(500, this.world.height - 500);
+            yPos -= yPos % 32;
+
+            var cell = this.g.cells[xPos / 32][yPos / 32];
+        } while (cell.tile === 'water' || cell.tile === 'iron');
 
         //build the starting command center and place it on the location
         let commandCenter = new CommandCenter(this, 3, 3, 'buildings', 'CommandCenter3x3');
@@ -163,7 +164,7 @@ Play.prototype = {
         //check to make sure the player has enough housing to support the new people
         if (this.resources.house.storage < this.resources.house.currentAmount + this.newPeople) {
             console.log('YOU LOSE BITCH');
-            backMusic2.stop();
+            this.game.backMusic2.stop();
             this.state.start('GameOver');
             //Do game over stuff here?
         }
@@ -257,63 +258,51 @@ Play.prototype = {
 
             //Acutally scale all scalable objects
             this.gameObjects.scale.set(this.worldScale);
+            this.gen.layer1.scale.set(this.worldScale);
 
             if (this.holdingBuilding) {
                 this.holdingBuilding.scale.set(this.worldScale / 2);
             }
-
-            //this.gameObjects.forEach(this.setScale, this, true, this.child);
-
-            //console.log(this.allObjects);
         }
     },
     zoomOut: function() {
-            if (this.worldScale > 1) {
-                //store the current camera position
-                var oldCameraPosX = this.camera.x;
-                var oldCameraPosY = this.camera.y;
+        if (this.worldScale > 1) {
+            //store the current camera position
+            var oldCameraPosX = this.camera.x;
+            var oldCameraPosY = this.camera.y;
 
-                //decrease the world scale by a factor of 50%
-                this.worldScale -= .5;
+            //decrease the world scale by a factor of 50%
+            this.worldScale -= .5;
 
-                //decrease the size of the world by 50%
-                this.world.setBounds(0, 0, this.worldSize * this.worldScale, this.worldSize * this.worldScale);
+            //decrease the size of the world by 50%
+            this.world.setBounds(0, 0, this.worldSize * this.worldScale, this.worldSize * this.worldScale);
 
-                //clear the current grid
-                this.g.bmdOverlay.clear();
-                this.g.gridsSpr[this.zoomLevel].kill();
-                this.zoomLevel--;
+            //clear the current grid
+            this.g.bmdOverlay.clear();
+            this.g.gridsSpr[this.zoomLevel].kill();
+            this.zoomLevel--;
 
-                //arbitrary right now, looks ok though
-                var focalMult = this.worldScale === 1.5 ? 1.35 : 1.5;
-                this.camera.focusOnXY(this.camera.view.centerX / focalMult, this.camera.view.centerY /
-                    focalMult);
+            //arbitrary right now, looks ok though
+            var focalMult = this.worldScale === 1.5 ? 1.35 : 1.5;
+            this.camera.focusOnXY(this.camera.view.centerX / focalMult, this.camera.view.centerY /
+                focalMult);
 
-                //move the grid by the amount the camera moved in the opposite direction
-                if (oldCameraPosX !== this.camera.x || oldCameraPosY !== this.camera.y) {
-                    this.g.gridsSpr[this.zoomLevel].tilePosition.x += oldCameraPosX - this.camera.x;
-                    this.g.gridsSpr[this.zoomLevel].tilePosition.y += oldCameraPosY - this.camera.y;
-                }
-
-                //Make the new grid visible
-                this.g.gridsSpr[this.zoomLevel].revive();
-
-                //Acutally scale all scalable objects
-                this.gameObjects.scale.set(this.worldScale);
-
-                if (this.holdingBuilding) {
-                    this.holdingBuilding.scale.set(this.worldScale / 2);
-                }
-
-                //this.gameObjects.forEach(this.setScale, this, true, this.child);
+            //move the grid by the amount the camera moved in the opposite direction
+            if (oldCameraPosX !== this.camera.x || oldCameraPosY !== this.camera.y) {
+                this.g.gridsSpr[this.zoomLevel].tilePosition.x += oldCameraPosX - this.camera.x;
+                this.g.gridsSpr[this.zoomLevel].tilePosition.y += oldCameraPosY - this.camera.y;
             }
-    }
-    /*setScale: function(child){
-    	console.log();
 
-    	//child.scale.set(0.5);
-    	if(child != this.UI.toolbar){
-    		child.scale.set(this.worldScale);
-    	}
-    }*/
+            //Make the new grid visible
+            this.g.gridsSpr[this.zoomLevel].revive();
+
+            //Acutally scale all scalable objects
+            this.gameObjects.scale.set(this.worldScale);
+            this.gen.layer1.scale.set(this.worldScale);
+
+            if (this.holdingBuilding) {
+                this.holdingBuilding.scale.set(this.worldScale / 2);
+            }
+        }
+    }
 };

@@ -1,8 +1,5 @@
 'use strict';
 
-var gameOverMusic;
-var gameOverMusic2;
-
 var GameOver = function(game) {
     this.game = game;
 };
@@ -12,8 +9,6 @@ GameOver.prototype = {
         this.load.path = ('assets/img/');
         this.load.image('gameover', 'gameover.png');
         this.load.path = ('assets/audio/');
-        this.load.audio('powerDown', 'gameover.wav');
-        this.load.audio('angryMob', 'gameover2.wav');
         console.log('GameOver: preload()');
     },
     create: function() {
@@ -25,26 +20,25 @@ GameOver.prototype = {
             wordWrap: false
         };
 
-        this.titleText = this.game.add.text(265, 100, 'Game Over', style);
+        this.titleText = this.add.text(265, 100, 'Game Over', style);
 
         style.font = '24px Arial Black';
 
-        this.subText = this.game.add.text(240, 175, 'Press Space to try again', style);
+        this.subText = this.add.text(240, 175, 'Press Space to try again', style);
 
         //plays powering down and angry mob music
         this.allowMultiple = true;
-        gameOverMusic = this.game.add.audio('powerDown');
-        gameOverMusic2 = this.game.add.audio('angryMob');
-        gameOverMusic.play();
-        gameOverMusic2.play();
+
+        this.game.gameOverMusic.play();
+        this.game.gameOverMusic2.play();
 
         console.log('GameOver: create()');
     },
     update: function() {
         //checks for the space keypress
-        if (this.game.input.keyboard.justPressed(Phaser.Keyboard.SPACEBAR)) {
-        	gameOverMusic.stop();
-        	gameOverMusic2.stop();
+        if (this.input.keyboard.justPressed(Phaser.Keyboard.SPACEBAR)) {
+            this.game.gameOverMusic.stop();
+            this.game.gameOverMusic2.stop();
             this.state.start('Play');
         }
     }
