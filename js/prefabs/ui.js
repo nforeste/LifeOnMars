@@ -1,30 +1,57 @@
 function UserInterface(_game, camera) {
+	// The New UI has a height 187 (not including the tabs)
+	this.toolbarTabHeight = 69;
+	this.toolbarBarHeight = 187;
+	this.toolbarBarWidth = 621;
+	this.toolbarBarStart = 156;
+	this.toolbarBarEnd = 777;
+	this.toolbarPanelStart = 166;
+	this.toolbarPannelEnd = 211;
+
     //Phaser.Group.call(_game);
     this._game = _game;
     this.camera = camera;
+
+    this.sprWidth = 32;
 
     this.buttonBuilding = null;
 
     // Determines whether or not the user's cursor is hovering over the toolbar. Hovering determines whether or not
     // the user is hovering over a button.
-    this.canDrag = true;
     this.hovering = false;
 
-    // Creates the visual toolbar located at the bottom of the screen.
-    this.toolbar = this._game.add.sprite(0, this.camera.y + this.camera.height, 'buildings', 'Toolbar1');
-    //this.toolbar.alpha = 0.7;
-    this.toolbar.scale.y = .7;
-    this.toolbar.anchor.setTo(.5, 1);
-    this.toolbar.inputEnabled = true;
+    // Boolean that instructs whether the user can drag an icon.
+    this.canDrag = true;
 
+    this.rotateButton = this._game.add.button(0, 0, 'rotateButton');
+    //this.rotateButton.fontSize = 19;
+    this.rotateButton.inputEnabled = true;
+    this.rotateButton.anchor.setTo(0, .9);
+    this.rotateButton.scale.setTo(.7, .7);
+    this.rotateButton.events.onInputDown.add(this.rotBuilding, this);
+
+    this.cancelButton = this._game.add.button(0, 0, 'cancelButton');
+    //this.cancelButton.fontSize = 19;
+    this.cancelButton.inputEnabled = true;
+    this.cancelButton.anchor.setTo(1, .9);
+    this.cancelButton.scale.setTo(.7, .7);
+    this.cancelButton.events.onInputDown.add(this.canBuilding, this);
+
+    // Creates the visual toolbar located at the bottom of the screen.
+    this.toolbar = this._game.add.sprite(0, this.camera.y + this.camera.height, 'toolbar');
+    this.toolbar.anchor.setTo(.5, 1);
+    this.toolbar.scale.y = .8;
+    this.toolbar.inputEnabled = true;
     this._game.UIObjects.add(this.toolbar);
 
+    // This controls how many icons are on screen at once.
     this.toolbarLength = 3;
 
     // Refers to position of toolbar on screen. DisplaceDef is the default value.
-    this.yDisplaceDef = this.toolbar.height; //4 * (this.toolbar.height / 5);
+    this.yDisplaceDef = this.toolbar.height - this.toolbarTabHeight*this.toolbar.scale.y; //4 * (this.toolbar.height / 5);
     this.yDisplace = this.yDisplaceDef;
 
+    // These correspond to the left/right tweens.
     this.xDisplace = 0;
     this.xTween = null;
 
@@ -32,15 +59,15 @@ function UserInterface(_game, camera) {
     this.toolbar.y += this.yDisplace;
 
     // These are the sections of the UI that pertain to walkways.
-    this.toolbarWalkway = this._game.add.sprite(0, this.toolbar.y - this.yDisplace, 'buildings', 'ToolbarTabs');
-    this.toolbarWalkway.anchor.setTo(.5, 1);
-    this.toolbarWalkway.scale.y = .75;
-
-    this._game.UIObjects.add(this.toolbarWalkway);
+    // this.toolbarWalkway = this._game.add.sprite(0, this.toolbar.y - this.yDisplace, 'buildings', 'ToolbarTabs');
+    // this.toolbarWalkway.anchor.setTo(.5, 1);
+    // this.toolbarWalkway.scale.y = .75;
+	//this._game.UIObjects.add(this.toolbarWalkway);
 
     // Boolean to test whether or not the player has the toolbar enabled.
     this.menuActive = false;
 
+    // An array of buildings and their variables.
     this.buildings = {
         'WalkwayStraight': ['Walkway', 1, 1],
         'WalkwayCorner': ['Walkway', 1, 1],
@@ -59,24 +86,27 @@ function UserInterface(_game, camera) {
         'LandingPad3x3': ['LandingPad3x3', 3, 3]
     };
 
+    // An array that holds the frame names of the buildings.
     this.buildingArray = ['BrickMine2x2', 'IceMine2x2', 'Habitation1x1Down', 'Habitation2x1LeftRight', 'Habitation2x2',
         'Storage1x1Down', 'Storage2x2', 'Hydroponics2x2', 'WaterTank2x1', 'WaterRecycler2x1LeftRight',
         'SolarPanel1x1', 'PowerStorage2x1LeftRight', 'LandingPad3x3'
     ];
+
+    // This instantiates the icons that users can click.
     this.icons = this._game.add.group();
     this.icons.classType = Phaser.Button;
+    this.icons.x = this.camera.x + this.toolbarBarStart + this.toolbarBarWidth/2;
+    this.icons.y = this.camera.y + this.camera.height + this.toolbar.height + (this.toolbarTabHeight*this.toolbar.scale.y); //this.camera.y + this.camera.height - this.yDisplaceDef;
 
+    // This displays the name of the buildings under the icons.
     this.iconsText = this._game.add.group();
     this.iconsText.classType = Phaser.Text;
-
-    this.icons.x = this.camera.x + this.camera.width / 2;
-    this.icons.y = this.toolbar.y + this.toolbar.height / 3; //this.camera.y + this.camera.height - this.yDisplaceDef;
-
     this.iconsText.x = this.icons.x;
     this.iconsText.y = this.icons.y;
 
+    // The text displayed above the UI toolbar.
     this.iconsTextStyle = {
-        font: '17px Arial',
+        font: '13px Arial',
         fontWeight: 'bold',
         fill: '#01060f',
         align: 'center',
@@ -91,18 +121,20 @@ function UserInterface(_game, camera) {
     this.closeTag = 'Press E to close Inventory';
     this.tag = this.openTag;
 
-    this.WalkwayLeft = this._game.add.button(0, this.toolbarWalkway.y, 'buildings');
+    // The icon for the straight walkway.
+    this.WalkwayLeft = this._game.add.button(0, this.toolbar.y - this.yDisplace, 'buildings');
     this.WalkwayLeft.frameName = 'WalkwayStraight';
     this.WalkwayLeft.anchor.setTo(.5, .5);
-    this.WalkwayLeft.scale.setTo(.6, .6);
+    this.WalkwayLeft.scale.setTo(.65, .65);
     this.WalkwayLeft.onInputOver.add(this.hoverOver, this, 0, this.WalkwayLeft, this.tag);
     this.WalkwayLeft.onInputOut.add(this.hoverOut, this, 0, this.WalkwayLeft, this.tag);
     this.WalkwayLeft.onInputDown.add(this.makeBuilding, this, 0, this.WalkwayLeft);
 
-    this.WalkwayRight = this._game.add.button(0, this.toolbarWalkway.y, 'buildings');
+    // The icon for the corner walkway.
+    this.WalkwayRight = this._game.add.button(0, this.toolbar.y - this.yDisplace, 'buildings');
     this.WalkwayRight.frameName = 'WalkwayCorner';
     this.WalkwayRight.anchor.setTo(.5, .5);
-    this.WalkwayRight.scale.setTo(.6, .6);
+    this.WalkwayRight.scale.setTo(.63, .63);
     this.WalkwayRight.onInputOver.add(this.hoverOver, this, 0, this.WalkwayRight, this.tag);
     this.WalkwayRight.onInputOut.add(this.hoverOut, this, 0, this.WalkwayRight, this.tag);
     this.WalkwayRight.onInputDown.add(this.makeBuilding, this, 0, this.WalkwayRight);
@@ -117,45 +149,37 @@ function UserInterface(_game, camera) {
     this.instructText.addColor('#01060f', 0);
     this.instructText.fontSize = 19;
 
-    this.rotateText = this._game.add.text(0, 0, 'Rotate');
-    this.rotateText.fontSize = 19;
-    this.rotateText.inputEnabled = true;
-    this.rotateText.events.onInputDown.add(this.rotBuilding, this);
-
-    this.cancelText = this._game.add.text(0, 0, 'Cancel');
-    this.cancelText.fontSize = 19;
-    this.cancelText.inputEnabled = true;
-    this.cancelText.anchor.setTo(1, 0);
-    this.cancelText.events.onInputDown.add(this.canBuilding, this);
-
     this.rightArrow = this._game.add.button(0, 0, 'arrow');
     this.rightArrow.anchor.setTo(.5, .5);
-    this.rightArrow.scale.setTo(-.7, 1.1);
+    this.rightArrow.scale.setTo(-.5, .9);
     this.rightArrow.onInputDown.add(this.scroll, this, 0, 'right');
 
     this.leftArrow = this._game.add.button(0, 0, 'arrow');
     this.leftArrow.anchor.setTo(.5, .5);
-    this.leftArrow.scale.setTo(.7, 1.1);
+    this.leftArrow.scale.setTo(.5, .9);
     this.leftArrow.onInputDown.add(this.scroll, this, 0, 'left');
 
     for (let i = 0; i < this.buildingArray.length; i++) {
-        let indivIcon = this.icons.create(2 * (i - Math.floor(this.toolbarLength / 2)) * (this.camera.width /
+        let indivIcon = this.icons.create(2 * (i - Math.floor(this.toolbarLength / 2)) * (this.toolbarBarWidth /
             (this.toolbarLength * 2)), 0, 'buildings');
         indivIcon.frameName = this.buildingArray[i];
         indivIcon.y += (this.toolbar.height * this.toolbar.scale.y) / 2;
         indivIcon.anchor.setTo(.5, .5);
-        indivIcon.scale.x = (this.toolbar.height * this.toolbar.scale.y) / (indivIcon.width * 1.5);
+        indivIcon.scale.x = (this.toolbar.height * this.toolbar.scale.y) / (indivIcon.width * 2.3);
         indivIcon.scale.y = indivIcon.scale.x;
 
-        let indivIconText = this.iconsText.create(Math.round(indivIcon.x), Math.round(indivIcon.y), indivIcon.frameName,
-            this.iconsTextStyle);
-        indivIconText.setTextBounds(-indivIcon.width / 2, this.toolbar.height / 4, indivIcon.width, indivIcon.height);
+
+        let indivIconText = this.iconsText.create(Math.round(indivIcon.x), Math.round(indivIcon.y), indivIcon.frameName, this.iconsTextStyle);
+        indivIconText.setTextBounds(-indivIcon.width/2, this.toolbar.height/5, indivIcon.width, indivIcon.height);
         indivIconText.wordWrapWidth = this.camera.width / (this.toolbarLength * 3);
 
         indivIcon.onInputDown.add(this.makeBuilding, this, 0, indivIcon);
         indivIcon.onInputOver.add(this.hoverOver, this, 0, indivIcon);
         indivIcon.onInputOut.add(this.hoverOut, this, 0, indivIcon);
     }
+
+    // This is how big the icons get once you hover over them.
+    this.scaleFactor = 1.15;
 }
 
 UserInterface.prototype.display = function() {
@@ -173,60 +197,68 @@ UserInterface.prototype.display = function() {
         this.scroll(null, null, 'right');
     }
 
-    this.icons.x = this.camera.x + this.camera.width / 2 + this.xDisplace;
-    this.icons.y = this.camera.y + this.camera.height - (this.yDisplaceDef - this.yDisplace) + this.toolbar.height /
-        8;
+	if(this._game.holdingBuilding){
+		if(this.buttonBuilding?this.buttonBuilding instanceof RotatableBuilding:falses){
+			this.rotateButton.visible = true;
+		} else {
+			this.rotateButton.visible = false;
+		}
+		this.cancelButton.visible = true;
+	} else {
+		this.rotateButton.visible = false;
+		this.cancelButton.visible = false;
+	}
+
+	// Setting the toolbar and instruction text in the correct locations.
+	this.toolbar.x = this.camera.x + this.camera.width/2;
+	this.toolbar.y = this.camera.y + this.camera.height + this.yDisplace;
+
+	this.rotateButton.position.x = Math.round(this.camera.x + this.toolbarPanelStart);
+	this.rotateButton.position.y = Math.round(this.toolbar.y - this.toolbarBarHeight*this.toolbar.scale.y);
+
+	this.cancelButton.position.x = Math.round(this.camera.x + this.camera.width - this.toolbarPanelStart);
+	this.cancelButton.position.y = Math.round(this.rotateButton.y);
+
+	this.instructText.x = Math.round(this.toolbar.x);
+	this.instructText.y = Math.round(this.toolbar.y - this.toolbarBarHeight*this.toolbar.scale.y);
+
+	// When the menu is active, the yDisplace var is 0.
+    this.icons.x = this.camera.x + this.toolbarBarStart + this.toolbarBarWidth/2 + this.xDisplace;
+    this.icons.y = this.toolbar.y - (this.toolbar.height*this.toolbar.scale.y);
 
     this.iconsText.x = Math.round(this.icons.x);
     this.iconsText.y = Math.round(this.icons.y);
 
-    // Setting the toolbar and instruction text in the correct locations.
-    this.toolbar.x = this.camera.x + this.camera.width / 2;
-    this.toolbar.y = this.camera.y + this.camera.height + this.yDisplace;
-    this.toolbarWalkway.x = this.toolbar.x;
-    this.toolbarWalkway.y = this.toolbar.y - this.toolbar.height;
-    this.instructText.x = Math.round(this.toolbar.x);
-    this.instructText.y = Math.round(this.toolbar.y - this.toolbar.height);
+	this.leftArrow.x = this.camera.x + this.toolbarBarStart + .05*this.toolbarBarWidth;
+	this.leftArrow.y = this.toolbar.y - (this.toolbarBarHeight*this.toolbar.scale.y)/2;
+	this.rightArrow.x = this.camera.x + this.toolbarBarStart + .95*this.toolbarBarWidth;
+	this.rightArrow.y = this.leftArrow.y;
 
-    this.leftArrow.x = this.toolbar.x - .45 * (this.camera.width);
-    this.leftArrow.y = this.toolbar.y - this.toolbar.height / 2;
-    this.rightArrow.x = this.toolbar.x + .45 * (this.camera.width);
-    this.rightArrow.y = this.toolbar.y - this.toolbar.height / 2;
+	this.WalkwayLeft.x = this.toolbar.x - .43*this.camera.width; // The number is somewhat arbitrary, but it works.
+	this.WalkwayRight.x = this.toolbar.x + .43*this.camera.width;
+	this.WalkwayLeft.y = this.camera.y + this.camera.height - this.toolbar.scale.y*(this.toolbarBarHeight+.45*this.toolbarTabHeight) + this.yDisplace;
+	this.WalkwayRight.y = this.WalkwayLeft.y;
+	
+	if(this.toolbar.input.pointerOver()){
+		this.canDrag = false;
+		this.hovering = true;
+	} else {
+		this.hovering = false;
+		this.canDrag = true;
+	}
 
-    this.WalkwayLeft.x = this.toolbarWalkway.x - 10.25 * (this.camera.width / 25); // The number is somewhat arbitrary, but it works.
-    this.WalkwayRight.x = this.toolbarWalkway.x + 10.25 * (this.camera.width / 25);
-    this.WalkwayLeft.y = this.toolbarWalkway.y - .55 * this.WalkwayLeft.height;
-    this.WalkwayRight.y = this.toolbarWalkway.y - .55 * this.WalkwayRight.height;
 
-    if (this.toolbar.input.pointerOver()) {
-        this.canDrag = false;
-        this.hovering = true;
-    } else {
-        this.hovering = false;
-        this.canDrag = true;
-    }
-
-    this.rotateText.position.x = Math.round(this.camera.x + 4.5 * (this.camera.width / 7));
-    this.rotateText.position.y = Math.round(this.camera.y + 15.75 * (this.camera.height / 20));
-
-    this.cancelText.position.x = Math.round(this.camera.x + 2.5 * (this.camera.width / 7));
-    this.cancelText.position.y = Math.round(this.rotateText.y);
-
-    if (this.yTween) {
-        if (this.yTween.isRunning || !this.menuActive) {
-            this.rotateText.visible = false;
-            this.cancelText.visible = false;
-        } else {
-            this.rotateText.visible = true;
-            this.cancelText.visible = true;
-        }
-    } else if (this.menuActive) {
-        this.rotateText.visible = true;
-        this.cancelText.visible = true;
-    } else {
-        this.rotateText.visible = false;
-        this.cancelText.visible = false;
-    }
+	for(let j=0; j<this.icons.children.length; j++){
+		if( (this.icons.children[j].world.x < (this.camera.x + this.toolbarBarStart + this.icons.children[j].width)) || (this.icons.children[j].world.x > (this.camera.x + this.toolbarBarEnd - this.icons.children[j].width))){
+			this.icons.children[j].alpha = 0;
+			this.icons.children[j].inputEnabled = false;
+			this.iconsText.children[j].alpha = 0;
+		} else {
+			this.icons.children[j].alpha = 1;
+			this.icons.children[j].inputEnabled = true;
+			this.iconsText.children[j].alpha = 1;
+		}
+	}
 };
 
 UserInterface.prototype.makeBuilding = function(indivIcon) {
@@ -326,25 +358,22 @@ UserInterface.prototype.canBuilding = function() {
     }
 };
 
-UserInterface.prototype.scroll = function(button, pointer, dir) {
-    if (dir == 'left') {
-        this.targetSign = 1;
-        this.boundsBool = this.xDisplace < 0;
-    } else if (dir == 'right') {
-        this.targetSign = -1;
-        this.boundsBool = (this.xDisplace > -((this.buildingArray.length - this.toolbarLength) * this.camera.width) /
-            this.toolbarLength);
-    } else {
-        this.targetSign = 0;
-        this.boundsBool = false;
-    }
+UserInterface.prototype.scroll = function(button, pointer, dir){
+	if(dir == 'left'){
+		this.targetSign = 1;
+		this.boundsBool = this.xDisplace < 0;
+	} else if(dir == 'right'){
+		this.targetSign = -1;
+		this.boundsBool = (this.xDisplace > -((this.buildingArray.length - this.toolbarLength) * this.toolbarBarWidth) / this.toolbarLength);
+	} else {
+		this.targetSign = 0;
+		this.boundsBool = false;
+	}
 
 
-    if (this.menuActive && this.boundsBool) {
-        if (this.xTween == null ? true : !this.xTween.isRunning) {
-            this.xTween = this._game.add.tween(this).to({
-                xDisplace: this.xDisplace + this.targetSign * (this.camera.width / this.toolbarLength)
-            }, 215, Phaser.Easing.Quadratic.InOut, true);
+	if (this.menuActive && this.boundsBool) {
+        if ( this.xTween==null ? true : !this.xTween.isRunning) {
+        	this.xTween = this._game.add.tween(this).to( {xDisplace: this.xDisplace + this.targetSign*(this.toolbarBarWidth / this.toolbarLength)} , 215, Phaser.Easing.Quadratic.InOut, true);
         }
     }
 };

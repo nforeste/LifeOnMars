@@ -24,6 +24,9 @@ Play.prototype = {
         this.load.atlas('buildings', 'inProgressAtlas.png', 'inProgressAtlas.json');
         this.load.image('toolbarTabs', 'ToolbarTabs.png');
         this.load.image('arrow', 'Arrow_Left.png');
+        this.load.image('toolbar', 'New_UI.png');
+        this.load.image('rotateButton', 'RotateButton.png');
+        this.load.image('cancelButton', 'CancelButton.png');
 
         console.log('Play: preload()');
     },
