@@ -96,8 +96,15 @@ Play.prototype = {
             var yPos = this.rnd.integerInRange(500, this.world.height - 500);
             yPos -= yPos % 32;
 
-            var cell = this.g.cells[xPos / 32][yPos / 32];
-        } while (cell.tile === 'water' || cell.tile === 'iron');
+            var goodPlacement = true;
+            for (let i = (xPos / 32) - 1; i < (xPos / 32) + 4; i++) {
+                for (let j = (yPos / 32) - 1; j < (yPos / 32) + 4; j++) {
+                    if (this.g.cells[i][j].tile === 'water' || this.g.cells[i][j].tile === 'iron') {
+                        goodPlacement = false;
+                    }
+                }
+            }
+        } while (!goodPlacement);
 
         //build the starting command center and place it on the location
         let commandCenter = new CommandCenter(this, 3, 3, 'buildings', 'CommandCenter3x3');
@@ -122,13 +129,11 @@ Play.prototype = {
 
         //move the camera as the mouse goes to the sides of the screen
         //also scroll the background grid at the same frequency
-        if (this.input.activePointer.withinGame) {
-            //if the user is holding down the mouse
-            if (this.holdingBuilding) {
-                this.panCam();
-            } else if (this.UI.canDrag) {
-                this.dragCam();
-            }
+        //if the user is holding down the mouse
+        if (this.holdingBuilding) {
+            this.panCam();
+        } else if (this.UI.canDrag) {
+            this.dragCam();
         }
 
         this.g.gridsSpr[this.zoomLevel].tilePosition.x += oldCameraPosX - this.camera.x;

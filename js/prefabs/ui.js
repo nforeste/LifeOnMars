@@ -1,12 +1,12 @@
 function UserInterface(_game, camera) {
-	// The New UI has a height 187 (not including the tabs)
-	this.toolbarTabHeight = 69;
-	this.toolbarBarHeight = 187;
-	this.toolbarBarWidth = 621;
-	this.toolbarBarStart = 156;
-	this.toolbarBarEnd = 777;
-	this.toolbarPanelStart = 166;
-	this.toolbarPannelEnd = 211;
+    // The New UI has a height 187 (not including the tabs)
+    this.toolbarTabHeight = 69;
+    this.toolbarBarHeight = 187;
+    this.toolbarBarWidth = 621;
+    this.toolbarBarStart = 156;
+    this.toolbarBarEnd = 777;
+    this.toolbarPanelStart = 166;
+    this.toolbarPannelEnd = 211;
 
     //Phaser.Group.call(_game);
     this._game = _game;
@@ -48,7 +48,7 @@ function UserInterface(_game, camera) {
     this.toolbarLength = 3;
 
     // Refers to position of toolbar on screen. DisplaceDef is the default value.
-    this.yDisplaceDef = this.toolbar.height - this.toolbarTabHeight*this.toolbar.scale.y; //4 * (this.toolbar.height / 5);
+    this.yDisplaceDef = this.toolbar.height - this.toolbarTabHeight * this.toolbar.scale.y;
     this.yDisplace = this.yDisplaceDef;
 
     // These correspond to the left/right tweens.
@@ -62,7 +62,6 @@ function UserInterface(_game, camera) {
     // this.toolbarWalkway = this._game.add.sprite(0, this.toolbar.y - this.yDisplace, 'buildings', 'ToolbarTabs');
     // this.toolbarWalkway.anchor.setTo(.5, 1);
     // this.toolbarWalkway.scale.y = .75;
-	//this._game.UIObjects.add(this.toolbarWalkway);
 
     // Boolean to test whether or not the player has the toolbar enabled.
     this.menuActive = false;
@@ -95,8 +94,9 @@ function UserInterface(_game, camera) {
     // This instantiates the icons that users can click.
     this.icons = this._game.add.group();
     this.icons.classType = Phaser.Button;
-    this.icons.x = this.camera.x + this.toolbarBarStart + this.toolbarBarWidth/2;
-    this.icons.y = this.camera.y + this.camera.height + this.toolbar.height + (this.toolbarTabHeight*this.toolbar.scale.y); //this.camera.y + this.camera.height - this.yDisplaceDef;
+    this.icons.x = this.camera.x + this.toolbarBarStart + this.toolbarBarWidth / 2;
+    this.icons.y = this.camera.y + this.camera.height + this.toolbar.height +
+        (this.toolbarTabHeight * this.toolbar.scale.y);
 
     // This displays the name of the buildings under the icons.
     this.iconsText = this._game.add.group();
@@ -167,10 +167,10 @@ function UserInterface(_game, camera) {
         indivIcon.anchor.setTo(.5, .5);
         indivIcon.scale.x = (this.toolbar.height * this.toolbar.scale.y) / (indivIcon.width * 2.3);
         indivIcon.scale.y = indivIcon.scale.x;
-
-
-        let indivIconText = this.iconsText.create(Math.round(indivIcon.x), Math.round(indivIcon.y), indivIcon.frameName, this.iconsTextStyle);
-        indivIconText.setTextBounds(-indivIcon.width/2, this.toolbar.height/5, indivIcon.width, indivIcon.height);
+      
+        let indivIconText = this.iconsText.create(Math.round(indivIcon.x), Math.round(indivIcon.y),
+            indivIcon.frameName, this.iconsTextStyle);
+        indivIconText.setTextBounds(-indivIcon.width / 2, this.toolbar.height / 5, indivIcon.width, indivIcon.height);
         indivIconText.wordWrapWidth = this.camera.width / (this.toolbarLength * 3);
 
         indivIcon.onInputDown.add(this.makeBuilding, this, 0, indivIcon);
@@ -197,68 +197,70 @@ UserInterface.prototype.display = function() {
         this.scroll(null, null, 'right');
     }
 
-	if(this._game.holdingBuilding){
-		if(this.buttonBuilding?this.buttonBuilding instanceof RotatableBuilding:falses){
-			this.rotateButton.visible = true;
-		} else {
-			this.rotateButton.visible = false;
-		}
-		this.cancelButton.visible = true;
-	} else {
-		this.rotateButton.visible = false;
-		this.cancelButton.visible = false;
-	}
+    if (this._game.holdingBuilding) {
+        if (this.buttonBuilding ? this.buttonBuilding instanceof RotatableBuilding : false) {
+            this.rotateButton.visible = true;
+        } else {
+            this.rotateButton.visible = false;
+        }
+        this.cancelButton.visible = true;
+    } else {
+        this.rotateButton.visible = false;
+        this.cancelButton.visible = false;
+    }
 
-	// Setting the toolbar and instruction text in the correct locations.
-	this.toolbar.x = this.camera.x + this.camera.width/2;
-	this.toolbar.y = this.camera.y + this.camera.height + this.yDisplace;
+    // Setting the toolbar and instruction text in the correct locations.
+    this.toolbar.x = this.camera.x + this.camera.width / 2;
+    this.toolbar.y = this.camera.y + this.camera.height + this.yDisplace;
 
-	this.rotateButton.position.x = Math.round(this.camera.x + this.toolbarPanelStart);
-	this.rotateButton.position.y = Math.round(this.toolbar.y - this.toolbarBarHeight*this.toolbar.scale.y);
+    this.rotateButton.position.x = Math.round(this.camera.x + this.toolbarPanelStart);
+    this.rotateButton.position.y = Math.round(this.toolbar.y - this.toolbarBarHeight * this.toolbar.scale.y);
 
-	this.cancelButton.position.x = Math.round(this.camera.x + this.camera.width - this.toolbarPanelStart);
-	this.cancelButton.position.y = Math.round(this.rotateButton.y);
+    this.cancelButton.position.x = Math.round(this.camera.x + this.camera.width - this.toolbarPanelStart);
+    this.cancelButton.position.y = Math.round(this.rotateButton.y);
 
-	this.instructText.x = Math.round(this.toolbar.x);
-	this.instructText.y = Math.round(this.toolbar.y - this.toolbarBarHeight*this.toolbar.scale.y);
+    this.instructText.x = Math.round(this.toolbar.x);
+    this.instructText.y = Math.round(this.toolbar.y - this.toolbarBarHeight * this.toolbar.scale.y);
 
-	// When the menu is active, the yDisplace var is 0.
-    this.icons.x = this.camera.x + this.toolbarBarStart + this.toolbarBarWidth/2 + this.xDisplace;
-    this.icons.y = this.toolbar.y - (this.toolbar.height*this.toolbar.scale.y);
+    // When the menu is active, the yDisplace var is 0.
+    this.icons.x = this.camera.x + this.toolbarBarStart + this.toolbarBarWidth / 2 + this.xDisplace;
+    this.icons.y = this.toolbar.y - (this.toolbar.height * this.toolbar.scale.y);
 
     this.iconsText.x = Math.round(this.icons.x);
     this.iconsText.y = Math.round(this.icons.y);
 
-	this.leftArrow.x = this.camera.x + this.toolbarBarStart + .05*this.toolbarBarWidth;
-	this.leftArrow.y = this.toolbar.y - (this.toolbarBarHeight*this.toolbar.scale.y)/2;
-	this.rightArrow.x = this.camera.x + this.toolbarBarStart + .95*this.toolbarBarWidth;
-	this.rightArrow.y = this.leftArrow.y;
+    this.leftArrow.x = this.camera.x + this.toolbarBarStart + .05 * this.toolbarBarWidth;
+    this.leftArrow.y = this.toolbar.y - (this.toolbarBarHeight * this.toolbar.scale.y) / 2;
+    this.rightArrow.x = this.camera.x + this.toolbarBarStart + .95 * this.toolbarBarWidth;
+    this.rightArrow.y = this.leftArrow.y;
 
-	this.WalkwayLeft.x = this.toolbar.x - .43*this.camera.width; // The number is somewhat arbitrary, but it works.
-	this.WalkwayRight.x = this.toolbar.x + .43*this.camera.width;
-	this.WalkwayLeft.y = this.camera.y + this.camera.height - this.toolbar.scale.y*(this.toolbarBarHeight+.45*this.toolbarTabHeight) + this.yDisplace;
-	this.WalkwayRight.y = this.WalkwayLeft.y;
-	
-	if(this.toolbar.input.pointerOver()){
-		this.canDrag = false;
-		this.hovering = true;
-	} else {
-		this.hovering = false;
-		this.canDrag = true;
-	}
+    this.WalkwayLeft.x = this.toolbar.x - .43 * this.camera.width; // The number is somewhat arbitrary, but it works.
+    this.WalkwayRight.x = this.toolbar.x + .43 * this.camera.width;
+    this.WalkwayLeft.y = this.camera.y + this.camera.height - this.toolbar.scale.y *
+        (this.toolbarBarHeight + .45 * this.toolbarTabHeight) + this.yDisplace;
+    this.WalkwayRight.y = this.WalkwayLeft.y;
+
+    if (this.toolbar.input.pointerOver()) {
+        this.canDrag = false;
+        this.hovering = true;
+    } else {
+        this.hovering = false;
+        this.canDrag = true;
+    }
 
 
-	for(let j=0; j<this.icons.children.length; j++){
-		if( (this.icons.children[j].world.x < (this.camera.x + this.toolbarBarStart + this.icons.children[j].width)) || (this.icons.children[j].world.x > (this.camera.x + this.toolbarBarEnd - this.icons.children[j].width))){
-			this.icons.children[j].alpha = 0;
-			this.icons.children[j].inputEnabled = false;
-			this.iconsText.children[j].alpha = 0;
-		} else {
-			this.icons.children[j].alpha = 1;
-			this.icons.children[j].inputEnabled = true;
-			this.iconsText.children[j].alpha = 1;
-		}
-	}
+    for (let j = 0; j < this.icons.children.length; j++) {
+        if ((this.icons.children[j].world.x < (this.camera.x + this.toolbarBarStart + this.icons.children[j].width)) ||
+            (this.icons.children[j].world.x > (this.camera.x + this.toolbarBarEnd - this.icons.children[j].width))) {
+            this.icons.children[j].alpha = 0;
+            this.icons.children[j].inputEnabled = false;
+            this.iconsText.children[j].alpha = 0;
+        } else {
+            this.icons.children[j].alpha = 1;
+            this.icons.children[j].inputEnabled = true;
+            this.iconsText.children[j].alpha = 1;
+        }
+    }
 };
 
 UserInterface.prototype.makeBuilding = function(indivIcon) {
@@ -353,27 +355,30 @@ UserInterface.prototype.rotBuilding = function() {
 };
 
 UserInterface.prototype.canBuilding = function() {
-    if (this._game.holdingBuilding && this.buttonBuilding != null && this.menuActive) {
+    if (this._game.holdingBuilding && this.buttonBuilding && this.menuActive) {
         this.buttonBuilding.cancelPlacement();
     }
 };
 
-UserInterface.prototype.scroll = function(button, pointer, dir){
-	if(dir == 'left'){
-		this.targetSign = 1;
-		this.boundsBool = this.xDisplace < 0;
-	} else if(dir == 'right'){
-		this.targetSign = -1;
-		this.boundsBool = (this.xDisplace > -((this.buildingArray.length - this.toolbarLength) * this.toolbarBarWidth) / this.toolbarLength);
-	} else {
-		this.targetSign = 0;
-		this.boundsBool = false;
-	}
+UserInterface.prototype.scroll = function(button, pointer, dir) {
+    if (dir === 'left') {
+        this.targetSign = 1;
+        this.boundsBool = this.xDisplace < 0;
+    } else if (dir === 'right') {
+        this.targetSign = -1;
+        this.boundsBool = (this.xDisplace > -((this.buildingArray.length - this.toolbarLength) * this.toolbarBarWidth) /
+            this.toolbarLength);
+    } else {
+        this.targetSign = 0;
+        this.boundsBool = false;
+    }
 
 
-	if (this.menuActive && this.boundsBool) {
-        if ( this.xTween==null ? true : !this.xTween.isRunning) {
-        	this.xTween = this._game.add.tween(this).to( {xDisplace: this.xDisplace + this.targetSign*(this.toolbarBarWidth / this.toolbarLength)} , 215, Phaser.Easing.Quadratic.InOut, true);
+    if (this.menuActive && this.boundsBool) {
+        if (!this.xTween ? true : !this.xTween.isRunning) {
+            this.xTween = this._game.add.tween(this).to({
+                xDisplace: this.xDisplace + this.targetSign * (this.toolbarBarWidth / this.toolbarLength)
+            }, 215, Phaser.Easing.Quadratic.InOut, true);
         }
     }
 };
