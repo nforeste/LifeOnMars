@@ -13,8 +13,18 @@ Menu.prototype = {
         this.load.path = 'assets/audio/';
         this.load.audio('backgroundmusic', 'spacemusic.mp3');
         this.load.audio('backgroundmusic2', 'spacemusic2.mp3');
-        this.load.audio('powerDown', 'gameover.wav');
-        this.load.audio('angryMob', 'gameover2.wav');
+        this.load.audio('powerDown', 'gameover.mp3');
+        this.load.audio('angryMob', 'gameover2.mp3');
+        this.load.audio('construction', 'construction.mp3');
+        this.load.audio('construction2', 'construction2.mp3');
+        this.load.audio('construction3', 'construction3.mp3');
+        this.load.audio('peopleArrive', 'peoplearrive.mp3');
+        this.load.audio('place', 'place.mp3');
+        this.load.audio('placeFail', 'placefail.mp3');
+        this.load.audio('purchase', 'purchase.mp3');
+        this.load.audio('rotate', 'rotate.mp3');
+        this.load.audio('win', 'win.mp3');
+        this.load.audio('zoom', 'zoom.mp3');
         console.log('Menu: preload()');
     },
     create: function() {
@@ -32,11 +42,23 @@ Menu.prototype = {
 
         this.subText = this.add.text(50, 110, 'Press Enter to begin', style);
 
-        //load background music
+        //load music
         this.game.backMusic = this.add.audio('backgroundmusic');
         this.game.backMusic2 = this.add.audio('backgroundmusic2');
         this.game.gameOverMusic = this.add.audio('powerDown');
         this.game.gameOverMusic2 = this.add.audio('angryMob');
+        this.game.buildMusic = this.add.audio('construction');
+        this.game.buildMusic2 = this.add.audio('construction2');
+        this.game.buildMusic3 = this.add.audio('construction3');
+        this.game.arriveMusic = this.add.audio('peopleArrive');
+        this.game.placeMusic = this.add.audio('place');
+        this.game.placeFailMusic = this.add.audio('placeFail');
+        this.game.buyMusic = this.add.audio('purchase');
+        this.game.rotateMusic = this.add.audio('rotate');
+        this.game.winMusic = this.add.audio('win');
+        this.game.zoomMusic = this.add.audio('zoom');
+
+        this.game.allowMultiple = true;
 
         //play menu theme
         this.game.backMusic.play('', 0, 1, true, true);

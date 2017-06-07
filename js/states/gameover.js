@@ -26,9 +26,6 @@ GameOver.prototype = {
 
         this.subText = this.add.text(240, 175, 'Press Space to try again', style);
 
-        //plays powering down and angry mob music
-        this.allowMultiple = true;
-
         this.game.gameOverMusic.play();
         this.game.gameOverMusic2.play();
 
@@ -39,7 +36,7 @@ GameOver.prototype = {
         if (this.input.keyboard.justPressed(Phaser.Keyboard.SPACEBAR)) {
             this.game.gameOverMusic.stop();
             this.game.gameOverMusic2.stop();
-            this.state.start('Play');
+            this.state.start('Menu');
         }
     }
 };

@@ -75,8 +75,10 @@ Play.prototype = {
 
             //wheelDelta is 1 for wheel up and -1 for wheel down
             if (this.input.mouse.wheelDelta === Phaser.Mouse.WHEEL_UP) {
+                this.game.zoomMusic.play();
                 this.zoomIn();
             } else {
+                this.game.zoomMusic.play();
                 this.zoomOut();
             }
         }.bind(this);
@@ -180,6 +182,8 @@ Play.prototype = {
         //add more people
         this.resources.house.add(this.newPeople);
         this.newPeople *= 2;
+        this.game.arriveMusic.play();
+        this.game.arriveMusic.fadeOut(5000);
 
         //destroy the text (delete it)
         this.time.events.add(3000, function() {
