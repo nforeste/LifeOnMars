@@ -14,7 +14,10 @@ Play.prototype = {
     scrollSpeed: 4,
     worldSize: 4032,
     holdingBuilding: null,
+    hasLandingPad: false,
     newPeople: 5,
+    waterDecayRate: 0,
+    foodDecayRate: 0,
 
     preload: function() {
         //temporary... move to Load state
@@ -83,11 +86,23 @@ Play.prototype = {
             }
         }.bind(this);
 
+        //When the player presses 'F' (or a button on the UI)
+        //the camera should focus on the command center
+        let focus = this.input.keyboard.addKey(Phaser.Keyboard.F);
+        focus.onDown.add(() => {
+            this.focusOnCommand();
+        }, this);
+
         //game loop that decreases food and water over time based on population
         //delay is arbitrary right now ... needs testing
-        this.time.events.loop(5000 / Math.log(this.resources.house.currentAmount), function() {
-            this.resources.food.subtract(1);
+        this.waterDecayRate = 3500;
+        this.time.events.loop(this.waterDecayRate / Math.log(this.resources.house.currentAmount), function() {
             this.resources.water.subtract(1);
+        }, this);
+
+        this.foodDecayRate = 5000;
+        this.time.events.loop(this.foodDecayRate / Math.log(this.resources.house.currentAmount), function() {
+            this.resources.food.subtract(1);
         }, this);
 
         //get the x and y position to place the starting command center
@@ -109,19 +124,11 @@ Play.prototype = {
         } while (!goodPlacement);
 
         //build the starting command center and place it on the location
-        let commandCenter = new CommandCenter(this, 3, 3, 'buildings', 'CommandCenter3x3');
-        commandCenter.x = xPos;
-        commandCenter.y = yPos;
-        commandCenter.place(xPos / 32, yPos / 32);
+        this.commandCenter = new CommandCenter(this, 3, 3, 'buildings', 'CommandCenter3x3');
+        this.commandCenter.place(xPos / 32, yPos / 32);
 
-        //store the old camera position and move the camera to focus on the command center
-        let oldCameraPosX = this.camera.x;
-        let oldCameraPosY = this.camera.y;
-        this.camera.focusOnXY(xPos + 48, yPos + 48);
-
-        //move the grid tileSprite so that it stays correct with the adjusted camera
-        this.g.gridsSpr[this.zoomLevel].tilePosition.x += oldCameraPosX - this.camera.x;
-        this.g.gridsSpr[this.zoomLevel].tilePosition.y += oldCameraPosY - this.camera.y;
+        this.commandPos = this.commandCenter.position.clone();
+        this.focusOnCommand(1);
     },
     update: function() {
 
@@ -159,8 +166,8 @@ Play.prototype = {
         };
 
         //create text, centered and fixed to camera, at 1/4 scale
-        let text = this.add.text(this.camera.width / 2, 100, this.newPeople + ' more people arriving',
-            style);
+        let text = this.add.text(this.camera.width / 2, 100, this.newPeople +
+            ' more people arriving', style);
         text.fixedToCamera = true;
         text.anchor.set(.5);
         text.scale.set(.25);
@@ -173,14 +180,21 @@ Play.prototype = {
 
         //check to make sure the player has enough housing to support the new people
         if (this.resources.house.storage < this.resources.house.currentAmount + this.newPeople) {
-            console.log('YOU LOSE BITCH');
             this.game.backMusic2.stop();
             this.state.start('GameOver');
             //Do game over stuff here?
         }
 
-        //add more people
+        //add more people and resources
         this.resources.house.add(this.newPeople);
+
+        if (this.hasLandingPad) {
+            this.resources.mat.add(Math.max(this.newPeople * 2, 20));
+            this.resources.water.add(Math.ceil(this.newPeople / 2));
+            this.resources.food.add(Math.ceil(this.newPeople / 2));
+        } else {
+            this.resources.mat.add(Math.max(this.newPeople, 20));
+        }
         this.newPeople *= 2;
         this.game.arriveMusic.play();
         this.game.arriveMusic.fadeOut(5000);
@@ -189,6 +203,32 @@ Play.prototype = {
         this.time.events.add(3000, function() {
             text.destroy();
         });
+    },
+    focusOnCommand: function(frames) {
+        let distToCommandX = (this.commandPos.x + 48) - this.camera.view.centerX;
+        let distToCommandY = (this.commandPos.y + 48) - this.camera.view.centerY;
+
+        let farther = Math.max(Math.abs(distToCommandX), Math.abs(distToCommandY));
+        frames = frames || Math.round(farther / (100 * this.worldScale));
+
+        if (frames < 1) {
+            return;
+        }
+
+        let travelFrameX = Math.round(distToCommandX / frames);
+        let travelFrameY = Math.round(distToCommandY / frames);
+
+        this.time.events.repeat(10, frames, () => {
+            let oldCameraPosX = this.camera.x;
+            let oldCameraPosY = this.camera.y;
+
+            this.camera.x += travelFrameX;
+            this.camera.y += travelFrameY;
+
+            //move the grid tileSprite so that it stays correct with the adjusted camera
+            this.g.gridsSpr[this.zoomLevel].tilePosition.x += oldCameraPosX - this.camera.x;
+            this.g.gridsSpr[this.zoomLevel].tilePosition.y += oldCameraPosY - this.camera.y;
+        }, this);
     },
     dragCam: function() {
         if (this.input.activePointer.isDown) {
@@ -256,10 +296,8 @@ Play.prototype = {
                 (this.camera.view.centerY + offsetY) * focalMult);
 
             //Move the grid by the amount the camera moved in the opposite direction
-            if (oldCameraPosX !== this.camera.x || oldCameraPosY !== this.camera.y) {
-                this.g.gridsSpr[this.zoomLevel].tilePosition.x += oldCameraPosX - this.camera.x;
-                this.g.gridsSpr[this.zoomLevel].tilePosition.y += oldCameraPosY - this.camera.y;
-            }
+            this.g.gridsSpr[this.zoomLevel].tilePosition.x += oldCameraPosX - this.camera.x;
+            this.g.gridsSpr[this.zoomLevel].tilePosition.y += oldCameraPosY - this.camera.y;
 
             //move to the next zoom level and copy the tile position to the next grid
             this.zoomLevel++;
@@ -275,6 +313,10 @@ Play.prototype = {
             if (this.holdingBuilding) {
                 this.holdingBuilding.scale.set(this.worldScale / 2);
             }
+
+            //update the command center's position
+            this.commandPos.x = this.commandCenter.x * this.worldScale;
+            this.commandPos.y = this.commandCenter.y * this.worldScale;
         }
     },
     zoomOut: function() {
@@ -300,10 +342,8 @@ Play.prototype = {
                 focalMult);
 
             //move the grid by the amount the camera moved in the opposite direction
-            if (oldCameraPosX !== this.camera.x || oldCameraPosY !== this.camera.y) {
-                this.g.gridsSpr[this.zoomLevel].tilePosition.x += oldCameraPosX - this.camera.x;
-                this.g.gridsSpr[this.zoomLevel].tilePosition.y += oldCameraPosY - this.camera.y;
-            }
+            this.g.gridsSpr[this.zoomLevel].tilePosition.x += oldCameraPosX - this.camera.x;
+            this.g.gridsSpr[this.zoomLevel].tilePosition.y += oldCameraPosY - this.camera.y;
 
             //Make the new grid visible
             this.g.gridsSpr[this.zoomLevel].revive();
@@ -315,6 +355,10 @@ Play.prototype = {
             if (this.holdingBuilding) {
                 this.holdingBuilding.scale.set(this.worldScale / 2);
             }
+
+            //update the command center's position
+            this.commandPos.x = this.commandCenter.x * this.worldScale;
+            this.commandPos.y = this.commandCenter.y * this.worldScale;
         }
     }
 };

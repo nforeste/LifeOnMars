@@ -167,7 +167,7 @@ function UserInterface(_game, camera) {
         indivIcon.anchor.setTo(.5, .5);
         indivIcon.scale.x = (this.toolbar.height * this.toolbar.scale.y) / (indivIcon.width * 2.3);
         indivIcon.scale.y = indivIcon.scale.x;
-      
+
         let indivIconText = this.iconsText.create(Math.round(indivIcon.x), Math.round(indivIcon.y),
             indivIcon.frameName, this.iconsTextStyle);
         indivIconText.setTextBounds(-indivIcon.width / 2, this.toolbar.height / 5, indivIcon.width, indivIcon.height);
@@ -278,13 +278,16 @@ UserInterface.prototype.makeBuilding = function(indivIcon) {
             var buildingParams = building.slice(3, building.length);
         }
 
+        //Landing Pads can only be created once
+        if (name === 'LandingPad3x3' && this._game.hasLandingPad) {
+            return;
+        }
+
         //call the building constructor directly through the window (only works on browsers)
         this.buttonBuilding = new window[name](this._game, width, height, 'buildings', frame, buildingParams);
 
         //if the player has enough resources, purchase the building
         if (this.buttonBuilding && this.buttonBuilding.hasResources()) {
-            this.buttonBuilding.x = this._game.input.mousePointer.x;
-            this.buttonBuilding.y = this._game.input.mousePointer.y;
             this.buttonBuilding.purchased();
         } else {
             this.buttonBuilding.destroy();
