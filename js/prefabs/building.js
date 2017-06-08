@@ -7,19 +7,21 @@
  * @param {string} key -- the cached key of the building sprite
  * @param {string} frame -- (optional) image frame in a texture atlas/spritesheet
  */
-
-var style1 = {
-    font: '32px Helvetica Neue',
-    fill: '#009900',
-    wordWrap: false,
-    fontWeight: 'bold'
-};
-var style2 = {
-    font: '18px Helvetica Neue',
-    fill: '#ff0000',
-    wordWrap: false,
-    fontWeight: 'bold'
-};
+var buildCount=[//new
+        0, //[0]-Command
+        0, //[1]-habitation 2x2
+        0, //[2]-habitation 2x1
+        0, //[3]-habitation 1x1
+        0, //[4]-Water tank
+        0, //[5]-water recycle
+        0, //[6]-power storage
+        0, //[7]-solar pannel
+        0, //[8]-hydroponics
+        0, //[9]-storage 1x1
+        0, //[10]-storage 2x2
+        0, //[11]-brickmine
+        0  //[12]-icemine
+    ];
 
 function Building(_game, w, h, key, frame) {
     Phaser.Sprite.call(this, _game.game, 0, 0, key, frame);
@@ -595,6 +597,7 @@ function CommandCenter(_game, w, h, key, frame) {
     this.connections.push([1, 2, this.DOWN]);
     this.connections.push([0, 1, this.LEFT]);
     this.cost = {};
+    buildCount[0]+=1;
 }
 
 CommandCenter.prototype = Object.create(Building.prototype);
@@ -637,6 +640,7 @@ function Habitation2x2(_game, w, h, key, frame) {
         mat: 25,
         power: 4
     };
+    buildCount[1]+=1;
 }
 
 Habitation2x2.prototype = Object.create(Building.prototype);
@@ -668,6 +672,7 @@ function Habitation2x1(_game, w, h, key, frame, otherFrames) {
         mat: 15,
         power: 2
     };
+    buildCount[2]+=1;
 }
 
 Habitation2x1.prototype = Object.create(RotatableBuilding.prototype);
@@ -710,6 +715,7 @@ function Habitation1x1(_game, w, h, key, frame, otherFrames) {
         mat: 8,
         power: 1
     };
+    buildCount[3]+=1;
 }
 
 Habitation1x1.prototype = Object.create(RotatableBuilding.prototype);
@@ -751,6 +757,7 @@ function WaterTank2x1(_game, w, h, key, frame) {
         mat: 15,
         power: 2
     };
+    buildCount[4]+=1;
 }
 
 WaterTank2x1.prototype = Object.create(RotatableBuilding.prototype);
@@ -805,6 +812,7 @@ function WaterRecycler2x1(_game, w, h, key, frame, otherFrames) {
         mat: 15,
         power: 2
     };
+    buildCount[5]+=1;
 }
 
 WaterRecycler2x1.prototype = Object.create(RotatableBuilding.prototype);
@@ -838,6 +846,7 @@ function PowerStorage2x1(_game, w, h, key, frame, otherFrames) {
     this.cost = {
         mat: 15,
     };
+    buildCount[6]+=1;
 }
 
 PowerStorage2x1.prototype = Object.create(RotatableBuilding.prototype);
@@ -877,6 +886,7 @@ function SolarPanel1x1(_game, w, h, key, frame) {
     this.cost = {
         mat: 8,
     };
+    buildCount[7]+=1;
 }
 
 SolarPanel1x1.prototype = Object.create(RotatableBuilding.prototype);
@@ -933,6 +943,7 @@ function Hydroponics2x2(_game, w, h, key, frame) {
         mat: 25,
         power: 4
     };
+    buildCount[8]+=1;
 }
 
 Hydroponics2x2.prototype = Object.create(Building.prototype);
@@ -960,6 +971,7 @@ function Storage1x1(_game, w, h, key, frame, otherFrames) {
         mat: 8,
         power: 1
     };
+    buildCount[9]+=1;
 }
 
 Storage1x1.prototype = Object.create(RotatableBuilding.prototype);
@@ -1008,6 +1020,7 @@ function Storage2x2(_game, w, h, key, frame) {
         mat: 25,
         power: 2
     };
+    buildCount[10]+=1;
 }
 
 Storage2x2.prototype = Object.create(Building.prototype);
@@ -1055,6 +1068,7 @@ function BrickMine2x2(_game, w, h, key, frame) {
         mat: 25,
         power: 6
     };
+    buildCount[11]+=1;
 }
 
 BrickMine2x2.prototype = Object.create(Building.prototype);
@@ -1100,6 +1114,7 @@ function IceMine2x2(_game, w, h, key, frame) {
         mat: 25,
         power: 6
     };
+    buildCount[12]+=1;
 }
 
 IceMine2x2.prototype = Object.create(RotatableBuilding.prototype);
