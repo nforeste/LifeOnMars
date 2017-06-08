@@ -52,7 +52,7 @@ Building.prototype.constructor = Building;
 Building.prototype.purchased = function() {
     this.alpha = .75;
     this.held = true;
-    this.game.buyMusic.play();
+    this.game.buyMusic.play("", 0, 0.6, false, true);
     this._game.holdingBuilding = this;
     this._game.UIObjects.bringToTop(this);
     this.anchor.set(.5);
@@ -71,14 +71,14 @@ Building.prototype.place = function(xPosition, yPosition) {
     }
     this.held = false;
 
-    this.game.placeMusic.play();
+    this.game.placeMusic.play("", 0, 0.5, false, true);
     this.randBuild = Math.random();
     if (this.randBuild <= 0.33) {
-        this.game.buildMusic.play();
+        this.game.buildMusic.play("", 0, 0.35, false, true);
     } else if (this.randBuild <= 0.66) {
-        this.game.buildMusic2.play();
+        this.game.buildMusic2.play("", 0, 0.35, false, true);
     } else if (this.randBuild > 0.66) {
-        this.game.buildMusic3.play();
+        this.game.buildMusic3.play("", 0, 0.35, false, true);
     }
 
     //update the resources for each building (or start the loop to do so)
@@ -160,7 +160,7 @@ Building.prototype.cancelPlacement = function() {
     //no longer holding a building, clear the grid highlights
     this._game.holdingBuilding = false;
     this._game.g.bmdOverlay.clear();
-    this.game.placeFailMusic.play();
+    this.game.placeFailMusic.play("", 0, 0.5, false, true);
 
     //destroy the building sprite (not kill, which only changes visibility)
     this.held = false;

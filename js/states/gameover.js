@@ -26,8 +26,10 @@ GameOver.prototype = {
 
         this.subText = this.add.text(240, 175, 'Press Space to try again', style);
 
-        this.game.gameOverMusic.play();
-        this.game.gameOverMusic2.play();
+        this.game.gameOverMusic.play("", 0, 0.6, false, true);
+        this.game.gameOverMusic.fadeOut(5000);
+        this.game.gameOverMusic2.play("", 0, 0.6, false, true);
+        this.game.gameOverMusic2.fadeOut(5000);
 
         console.log('GameOver: create()');
     },

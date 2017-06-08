@@ -78,10 +78,10 @@ Play.prototype = {
 
             //wheelDelta is 1 for wheel up and -1 for wheel down
             if (this.input.mouse.wheelDelta === Phaser.Mouse.WHEEL_UP) {
-                this.game.zoomMusic.play();
+                this.game.zoomMusic.play("", 0, 0.5, false, true);
                 this.zoomIn();
             } else {
-                this.game.zoomMusic.play();
+                this.game.zoomMusic.play("", 0, 0.5, false, true);
                 this.zoomOut();
             }
         }.bind(this);
@@ -196,7 +196,7 @@ Play.prototype = {
             this.resources.mat.add(Math.max(this.newPeople, 20));
         }
         this.newPeople *= 2;
-        this.game.arriveMusic.play();
+        this.game.arriveMusic.play("", 0, 0.5, false, true);
         this.game.arriveMusic.fadeOut(5000);
 
         //destroy the text (delete it)
