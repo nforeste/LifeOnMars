@@ -58,6 +58,22 @@ Play.prototype = {
         this.allObjects.add(this.gameObjects);
         this.allObjects.add(this.UIObjects);
 
+        this.game.buildCount = [
+            0, //[0]-Command
+            0, //[1]-habitation 2x2
+            0, //[2]-habitation 2x1
+            0, //[3]-habitation 1x1
+            0, //[4]-Water tank
+            0, //[5]-water recycle
+            0, //[6]-power storage
+            0, //[7]-solar pannel
+            0, //[8]-hydroponics
+            0, //[9]-storage 1x1
+            0, //[10]-storage 2x2
+            0, //[11]-brickmine
+            0 //[12]-icemine
+        ];
+
         this.resources = {
             water: new Resource(this, 50, 50, 350, 32, 'buildings', 'WaterIcon'),
             food: new Resource(this, 50, 50, 445, 32, 'buildings', 'FoodIcon'),
