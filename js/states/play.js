@@ -25,11 +25,11 @@ Play.prototype = {
         this.load.tilemap('test', 'test.json', null, Phaser.Tilemap.TILED_JSON);
         this.load.image('terrain', 'terrain.png');
         this.load.atlas('buildings', 'inProgressAtlas.png', 'inProgressAtlas.json');
-        this.load.image('toolbarTabs', 'ToolbarTabs.png');
         this.load.image('arrow', 'Arrow_Left.png');
         this.load.image('toolbar', 'New_UI.png');
         this.load.image('rotateButton', 'RotateButton.png');
         this.load.image('cancelButton', 'CancelButton.png');
+        this.load.image('topBar', 'New_Top.png');
 
         console.log('Play: preload()');
     },
@@ -74,16 +74,16 @@ Play.prototype = {
             0 //[12]-icemine
         ];
 
+        //initiates the UI
+        this.UI = new UserInterface(this, this.camera);
+
         this.resources = {
             water: new Resource(this, 50, 50, 350, 32, 'buildings', 'WaterIcon'),
             food: new Resource(this, 50, 50, 445, 32, 'buildings', 'FoodIcon'),
             house: new Resource(this, 5, 5, 540, 32, 'buildings', 'HousingIcon'),
-            power: new Resource(this, 5, 5, 635, 32, 'buildings', 'PowerIcon'),
+            power: new Resource(this, 10, 10, 635, 32, 'buildings', 'PowerIcon'),
             mat: new Resource(this, 150, 150, 730, 32, 'buildings', 'BrickIcon')
         };
-
-        //initiates the UI
-        this.UI = new UserInterface(this, this.camera);
 
         //initiates the population update timer
         this.gameTimer = new Timer(this, 0, 0, 24, 32, 'buildings', 'WaterIcon');
@@ -94,10 +94,8 @@ Play.prototype = {
 
             //wheelDelta is 1 for wheel up and -1 for wheel down
             if (this.input.mouse.wheelDelta === Phaser.Mouse.WHEEL_UP) {
-                this.game.zoomMusic.play("", 0, 0.5, false, true);
                 this.zoomIn();
             } else {
-                this.game.zoomMusic.play("", 0, 0.5, false, true);
                 this.zoomOut();
             }
         }.bind(this);
@@ -147,7 +145,6 @@ Play.prototype = {
         this.focusOnCommand(1);
     },
     update: function() {
-
         //Move the camera by dragging the game world
         var oldCameraPosX = this.camera.x;
         var oldCameraPosY = this.camera.y;
@@ -155,10 +152,12 @@ Play.prototype = {
         //move the camera as the mouse goes to the sides of the screen
         //also scroll the background grid at the same frequency
         //if the user is holding down the mouse
-        if (this.holdingBuilding) {
-            this.panCam();
-        } else if (this.UI.canDrag) {
-            this.dragCam();
+        if (this.input.activePointer.withinGame) {
+            if (this.holdingBuilding) {
+                this.panCam();
+            } else if (this.UI.canDrag) {
+                this.dragCam();
+            }
         }
 
         this.g.gridsSpr[this.zoomLevel].tilePosition.x += oldCameraPosX - this.camera.x;
@@ -271,21 +270,44 @@ Play.prototype = {
             this.panDistance = 100;
         }
 
-        if (this.input.x > this.camera.view.width - this.panDistance) {
-            this.camera.x += this.scrollSpeed;
+        if (this.input.x > this.camera.view.width - this.panDistance){
+            if(this.UI.buttonBuilding ? this.UI.buttonBuilding instanceof Walkway : false){
+                if(this.input.y < this.camera.view.height - this.panDistance){
+                    this.camera.x += this.scrollSpeed;
+                }
+            } else {
+                this.camera.x += this.scrollSpeed;
+            }
         }
-        if (this.input.x < this.panDistance) {
-            this.camera.x -= this.scrollSpeed;
+
+        if (this.input.x < this.panDistance){
+            if(this.UI.buttonBuilding ? this.UI.buttonBuilding instanceof Walkway : false){
+                if(this.input.y < this.camera.view.height - this.panDistance){
+                    this.camera.x -= this.scrollSpeed;
+                }
+            } else {
+                this.camera.x -= this.scrollSpeed;
+            }
         }
-        if (this.input.y > this.camera.view.height - this.panDistance && !this.UI.hovering) {
-            this.camera.y += this.scrollSpeed;
+
+        if (this.input.y > this.camera.view.height - this.panDistance && this.UI.canScroll){
+            if(this.UI.buttonBuilding ? this.UI.buttonBuilding instanceof Walkway : false){
+                if(!(this.input.x < this.panDistance) && !(this.input.x > this.camera.view.width - this.panDistance)){
+                    this.camera.y += this.scrollSpeed;
+                }
+            } else {
+                this.camera.y += this.scrollSpeed;
+            }
         }
-        if (this.input.y < 100) {
+
+        if (this.input.y < this.panDistance) {
             this.camera.y -= this.scrollSpeed;
         }
     },
     zoomIn: function() {
         if (this.worldScale < 2) {
+            this.game.zoomMusic.play('', 0, 0.5, false, true);
+
             //store the current camera position
             var oldCameraPosX = this.camera.x;
             var oldCameraPosY = this.camera.y;
@@ -337,6 +359,7 @@ Play.prototype = {
     },
     zoomOut: function() {
         if (this.worldScale > 1) {
+            this.game.zoomMusic.play('', 0, 0.5, false, true);
             //store the current camera position
             var oldCameraPosX = this.camera.x;
             var oldCameraPosY = this.camera.y;

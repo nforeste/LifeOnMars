@@ -38,7 +38,7 @@ Building.prototype.constructor = Building;
 Building.prototype.purchased = function() {
     this.alpha = .75;
     this.held = true;
-    this.game.buyMusic.play('', 0, 0.6, false, true);
+    this.game.buyMusic.play('', 0, 0.35, false, true);
     this._game.holdingBuilding = this;
     this._game.UIObjects.bringToTop(this);
     this.anchor.set(.5);
@@ -125,6 +125,15 @@ Building.prototype.place = function(xPosition, yPosition) {
         let y = this.connections[i][1];
 
         this._game.g.cells[x + xPos][y + yPos].connect.push(this.connections[i][2]);
+    }
+
+    if (this instanceof Walkway && this.hasResources()) {
+        let walkway = new Walkway(this._game, 1, 1, 'buildings', this.frameName);
+        walkway.purchased();
+        for (let i = 0; i < this.angle % 360; i += 90) {
+            walkway.rotate();
+        }
+        this._game.UI.buttonBuilding = walkway;
     }
 
     this.changeForm(xPos, yPos);
@@ -263,6 +272,10 @@ Building.prototype.update = function() {
                     if (this.connections[i][2] === this.UP) {
                         let tmp = this._game.g.cells[x + xPos][y + yPos - 1];
 
+                        if (!tmp) {
+                            continue;
+                        }
+
                         if (solar && tmp.occupied && !(tmp.occupied instanceof PowerStorage2x1)) {
                             continue;
                         }
@@ -280,6 +293,10 @@ Building.prototype.update = function() {
                         }, this);
                     } else if (this.connections[i][2] === this.DOWN) {
                         let tmp = this._game.g.cells[x + xPos][y + yPos + 1];
+
+                        if (!tmp) {
+                            continue;
+                        }
 
                         if (solar && tmp.occupied && !(tmp.occupied instanceof PowerStorage2x1)) {
                             continue;
@@ -299,6 +316,10 @@ Building.prototype.update = function() {
                     } else if (this.connections[i][2] === this.LEFT) {
                         let tmp = this._game.g.cells[x + xPos - 1][y + yPos];
 
+                        if (!tmp) {
+                            continue;
+                        }
+
                         if (solar && tmp.occupied && !(tmp.occupied instanceof PowerStorage2x1)) {
                             continue;
                         }
@@ -316,6 +337,10 @@ Building.prototype.update = function() {
                         }, this);
                     } else {
                         let tmp = this._game.g.cells[x + xPos + 1][y + yPos];
+
+                        if (!tmp) {
+                            continue;
+                        }
 
                         if (solar && tmp.occupied && !(tmp.occupied instanceof PowerStorage2x1)) {
                             continue;
@@ -458,6 +483,10 @@ Walkway.prototype.changeForm = function(xPos, yPos) {
         if (this.openPoints[i] === this.UP) {
             let tmp = this._game.g.cells[xPos][yPos - 1];
 
+            if (!tmp) {
+                continue;
+            }
+
             tmp.connect.forEach(c => {
                 if (c === this.DOWN) {
                     this.closedPoints.push([this.UP, true]);
@@ -467,6 +496,10 @@ Walkway.prototype.changeForm = function(xPos, yPos) {
             }, this);
         } else if (this.openPoints[i] === this.RIGHT) {
             let tmp = this._game.g.cells[xPos + 1][yPos];
+
+            if (!tmp) {
+                continue;
+            }
 
             tmp.connect.forEach(c => {
                 if (c === this.LEFT) {
@@ -478,6 +511,10 @@ Walkway.prototype.changeForm = function(xPos, yPos) {
         } else if (this.openPoints[i] === this.DOWN) {
             let tmp = this._game.g.cells[xPos][yPos + 1];
 
+            if (!tmp) {
+                continue;
+            }
+
             tmp.connect.forEach(c => {
                 if (c === this.UP) {
                     this.closedPoints.push([this.DOWN, true]);
@@ -487,6 +524,11 @@ Walkway.prototype.changeForm = function(xPos, yPos) {
             }, this);
         } else {
             let tmp = this._game.g.cells[xPos - 1][yPos];
+
+            if (!tmp) {
+                continue;
+            }
+
             tmp.connect.forEach(c => {
                 if (c === this.RIGHT) {
                     this.closedPoints.push([this.LEFT, true]);
@@ -507,6 +549,10 @@ Walkway.prototype.changeForm = function(xPos, yPos) {
         if (this.closedPoints[i][1] && this.closedPoints[i][0] === this.UP) {
             let tmp = this._game.g.cells[xPos][yPos - 1];
 
+            if (!tmp) {
+                continue;
+            }
+
             if (tmp.occupied && tmp.occupied instanceof Walkway) {
                 tmp.occupied.openPoints.forEach(c => {
                     if (c === this.DOWN) {
@@ -516,6 +562,10 @@ Walkway.prototype.changeForm = function(xPos, yPos) {
             }
         } else if (this.closedPoints[i][1] && this.closedPoints[i][0] === this.RIGHT) {
             let tmp = this._game.g.cells[xPos + 1][yPos];
+
+            if (!tmp) {
+                continue;
+            }
 
             if (tmp.occupied && tmp.occupied instanceof Walkway) {
                 tmp.occupied.openPoints.forEach(c => {
@@ -527,6 +577,10 @@ Walkway.prototype.changeForm = function(xPos, yPos) {
         } else if (this.closedPoints[i][1] && this.closedPoints[i][0] === this.DOWN) {
             let tmp = this._game.g.cells[xPos][yPos + 1];
 
+            if (!tmp) {
+                continue;
+            }
+
             if (tmp.occupied && tmp.occupied instanceof Walkway) {
                 tmp.occupied.openPoints.forEach(c => {
                     if (c === this.UP) {
@@ -536,6 +590,10 @@ Walkway.prototype.changeForm = function(xPos, yPos) {
             }
         } else if (this.closedPoints[i][1] && this.closedPoints[i][0] === this.LEFT) {
             let tmp = this._game.g.cells[xPos - 1][yPos];
+
+            if (!tmp) {
+                continue;
+            }
 
             if (tmp.occupied && tmp.occupied instanceof Walkway) {
                 tmp.occupied.openPoints.forEach(c => {

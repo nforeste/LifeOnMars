@@ -8,6 +8,8 @@ function UserInterface(_game, camera) {
     this.toolbarPanelStart = 166;
     this.toolbarPannelEnd = 211;
 
+    this.canScroll = true;
+
     //Phaser.Group.call(_game);
     this._game = _game;
     this.camera = camera;
@@ -28,14 +30,18 @@ function UserInterface(_game, camera) {
     this.rotateButton.inputEnabled = true;
     this.rotateButton.anchor.setTo(0, .9);
     this.rotateButton.scale.setTo(.7, .7);
-    this.rotateButton.events.onInputDown.add(this.rotBuilding, this);
+    this.rotateButton.onInputDown.add(this.rotBuilding, this);
+    this.rotateButton.onInputOver.add(this.stopScroll, this);
+    this.rotateButton.onInputOut.add(this.startScroll, this);
 
     this.cancelButton = this._game.add.button(0, 0, 'cancelButton');
     //this.cancelButton.fontSize = 19;
     this.cancelButton.inputEnabled = true;
     this.cancelButton.anchor.setTo(1, .9);
     this.cancelButton.scale.setTo(.7, .7);
-    this.cancelButton.events.onInputDown.add(this.canBuilding, this);
+    this.cancelButton.onInputDown.add(this.canBuilding, this);
+    this.cancelButton.onInputOver.add(this.stopScroll, this);
+    this.cancelButton.onInputOut.add(this.startScroll, this);
 
     // Creates the visual toolbar located at the bottom of the screen.
     this.toolbar = this._game.add.sprite(0, this.camera.y + this.camera.height, 'toolbar');
@@ -57,11 +63,6 @@ function UserInterface(_game, camera) {
 
     // Setting the toolbar in the correct position.
     this.toolbar.y += this.yDisplace;
-
-    // These are the sections of the UI that pertain to walkways.
-    // this.toolbarWalkway = this._game.add.sprite(0, this.toolbar.y - this.yDisplace, 'buildings', 'ToolbarTabs');
-    // this.toolbarWalkway.anchor.setTo(.5, 1);
-    // this.toolbarWalkway.scale.y = .75;
 
     // Boolean to test whether or not the player has the toolbar enabled.
     this.menuActive = false;
@@ -95,8 +96,7 @@ function UserInterface(_game, camera) {
     this.icons = this._game.add.group();
     this.icons.classType = Phaser.Button;
     this.icons.x = this.camera.x + this.toolbarBarStart + this.toolbarBarWidth / 2;
-    this.icons.y = this.camera.y + this.camera.height + this.toolbar.height +
-        (this.toolbarTabHeight * this.toolbar.scale.y);
+	this.icons.y = this.camera.y + this.camera.height - (this.toolbarBarHeight * this.toolbar.scale.y)/2;
 
     // This displays the name of the buildings under the icons.
     this.iconsText = this._game.add.group();
@@ -134,7 +134,7 @@ function UserInterface(_game, camera) {
     this.WalkwayRight = this._game.add.button(0, this.toolbar.y - this.yDisplace, 'buildings');
     this.WalkwayRight.frameName = 'WalkwayCorner';
     this.WalkwayRight.anchor.setTo(.5, .5);
-    this.WalkwayRight.scale.setTo(.63, .63);
+    this.WalkwayRight.scale.setTo(.65, .65);
     this.WalkwayRight.onInputOver.add(this.hoverOver, this, 0, this.WalkwayRight, this.tag);
     this.WalkwayRight.onInputOut.add(this.hoverOut, this, 0, this.WalkwayRight, this.tag);
     this.WalkwayRight.onInputDown.add(this.makeBuilding, this, 0, this.WalkwayRight);
@@ -165,13 +165,25 @@ function UserInterface(_game, camera) {
         indivIcon.frameName = this.buildingArray[i];
         indivIcon.y += (this.toolbar.height * this.toolbar.scale.y) / 2;
         indivIcon.anchor.setTo(.5, .5);
-        indivIcon.scale.x = (this.toolbar.height * this.toolbar.scale.y) / (indivIcon.width * 2.3);
+        indivIcon.scale.x = (this.toolbar.height * this.toolbar.scale.y) / (indivIcon.width * 2.5);
         indivIcon.scale.y = indivIcon.scale.x;
 
+        let indivBuildingName = this.buildings[indivIcon.frameName][0];
+        let indivBuilding = new window[indivBuildingName](this._game, this.buildings[indivIcon.frameName][1], this.buildings[indivIcon.frameName][2],
+        											'buildings', indivIcon.frameName, null);
+
         let indivIconText = this.iconsText.create(Math.round(indivIcon.x), Math.round(indivIcon.y),
-            indivIcon.frameName, this.iconsTextStyle);
+            indivBuildingName, this.iconsTextStyle);
         indivIconText.setTextBounds(-indivIcon.width / 2, this.toolbar.height / 5, indivIcon.width, indivIcon.height);
         indivIconText.wordWrapWidth = this.camera.width / (this.toolbarLength * 3);
+        indivIconText.text = indivBuildingName + '\n' + 
+        	(indivBuilding.cost.power==undefined?'':'P: ' + indivBuilding.cost.power) + (indivBuilding.cost.mat==undefined?'':' M: ' + indivBuilding.cost.mat);
+        indivIconText.lineSpacing = -indivIconText.fontSize/2;
+        
+        /*let pIconPos = indivIconText.text.search('P');
+        let indivPoint = new Phaser.Point(indivIconText.x, indivIconText.y);
+        console.log(indivIconText.toGlobal(indivPoint));
+        let indivPic = this.iconsPic.add(0, 0, indivPoint.x, indivPoint.y, 'buildings', 'PowerIcon');*/
 
         indivIcon.onInputDown.add(this.makeBuilding, this, 0, indivIcon);
         indivIcon.onInputOver.add(this.hoverOver, this, 0, indivIcon);
@@ -180,9 +192,19 @@ function UserInterface(_game, camera) {
 
     // This is how big the icons get once you hover over them.
     this.scaleFactor = 1.15;
+
+    this.topBar = this._game.add.sprite(0, 0, 'topBar');
+    this.topBar.scale.y = .83;
+    this.topBar.alpha = .85;
+
+    this.toolbar.alpha = .85;
 }
 
 UserInterface.prototype.display = function() {
+	/*if (this.icons.pivot.y != this.icons.height/2){
+		this.icons.pivot.y = this.icons.height/2;
+	}*/
+
     if (this._game.input.keyboard.justPressed(Phaser.Keyboard.E)) {
         this.openMenu();
     }
@@ -224,7 +246,7 @@ UserInterface.prototype.display = function() {
 
     // When the menu is active, the yDisplace var is 0.
     this.icons.x = this.camera.x + this.toolbarBarStart + this.toolbarBarWidth / 2 + this.xDisplace;
-    this.icons.y = this.toolbar.y - (this.toolbar.height * this.toolbar.scale.y);
+    this.icons.y = this.toolbar.y - (this.toolbar.height * this.toolbar.scale.y * 1.09);//- this.toolbarBarHeight*this.toolbar.scale.y; //- (this.toolbarBarHeight * this.toolbar.scale.y)/2;
 
     this.iconsText.x = Math.round(this.icons.x);
     this.iconsText.y = Math.round(this.icons.y);
@@ -248,7 +270,6 @@ UserInterface.prototype.display = function() {
         this.canDrag = true;
     }
 
-
     for (let j = 0; j < this.icons.children.length; j++) {
         if ((this.icons.children[j].world.x < (this.camera.x + this.toolbarBarStart + this.icons.children[j].width)) ||
             (this.icons.children[j].world.x > (this.camera.x + this.toolbarBarEnd - this.icons.children[j].width))) {
@@ -261,6 +282,9 @@ UserInterface.prototype.display = function() {
             this.iconsText.children[j].alpha = 1;
         }
     }
+
+    this.topBar.x = this.camera.x;
+    this.topBar.y = this.camera.y;
 };
 
 UserInterface.prototype.makeBuilding = function(indivIcon) {
@@ -352,13 +376,13 @@ UserInterface.prototype.openMenu = function() {
 };
 
 UserInterface.prototype.rotBuilding = function() {
-    if (this._game.holdingBuilding && this.buttonBuilding && this.menuActive && (this.buttonBuilding instanceof RotatableBuilding)) {
+    if (this._game.holdingBuilding && this.buttonBuilding && (this.buttonBuilding instanceof RotatableBuilding)) {
         this.buttonBuilding.rotate();
     }
 };
 
 UserInterface.prototype.canBuilding = function() {
-    if (this._game.holdingBuilding && this.buttonBuilding && this.menuActive) {
+    if (this._game.holdingBuilding && this.buttonBuilding) {
         this.buttonBuilding.cancelPlacement();
     }
 };
@@ -384,4 +408,12 @@ UserInterface.prototype.scroll = function(button, pointer, dir) {
             }, 215, Phaser.Easing.Quadratic.InOut, true);
         }
     }
+};
+
+UserInterface.prototype.stopScroll = function(){
+	this.canScroll = false;
+};
+
+UserInterface.prototype.startScroll = function(){
+	this.canScroll = true;
 };

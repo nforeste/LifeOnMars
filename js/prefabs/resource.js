@@ -108,7 +108,7 @@ Resource.prototype.toolTips = function(frame) { //all new
         });
     }, this);
 
-    timer.delay = 60000;
+    timer.delay = 5000;
 };
 
 Resource.prototype.update = function() {
