@@ -100,6 +100,9 @@ Resource.prototype.toolTips = function(frame) { //all new
         let context = new Phaser.Text(this._game.game, 5, 5, textIn + '\n' + textOut, style);
         this.tooltip = new Phasetips(this._game.game, {
             targetObject: this,
+            ////////////////////////////////////////////////////
+            font: 'Helvetica Neue',
+            backgroundColor: 0x558388,
             context: context,
             fixedToCamera: true,
             padding: 10,
@@ -120,11 +123,15 @@ Resource.prototype.add = function(amount) {
     this.currentAmount = Phaser.Math.clamp(this.currentAmount, 0, this.storage);
     this.text.setText(this.currentAmount + '/' + this.storage);
 
-    let text2 = this._game.add.text(this.xPos + 30, this.yPos, '+' + amount, style1); //new
-    text2.alpha = 1;
+    let text2 = this._game.add.text(this.xPos + 45, this.yPos-2, '+' + amount, style1); //new
+    text2.fixedToCamera=true;
+    text2.anchor.set(.5,.5);                               
     this._game.add.tween(text2).to({
-        alpha: 0
+        angle: 20
     }, 500, Phaser.Easing.Linear.None, true);
+    this._game.add.tween(text2.cameraOffset).to({
+        y: this.yPos-10
+    }, 500, Phaser.Easing.Linear.None, true);  
     this._game.time.events.add(600, function() {
         text2.destroy();
     });
@@ -138,11 +145,15 @@ Resource.prototype.increaseStorage = function(amount) {
     this.storage += amount;
     this.text.setText(this.currentAmount + '/' + this.storage);
 
-    let text2 = this._game.add.text(this.xPos + 60, this.yPos, '+' + amount, style3); //new
-    text2.alpha = 1;
-    this._game.add.tween(text2).to({
-        alpha: 0
+    let text2 = this._game.add.text(this.xPos + 60, this.yPos-2, '+' + amount, style3); //new
+    text2.fixedToCamera=true;
+    text2.anchor.set(.5,.5); 
+    this._game.add.tween(text2.cameraOffset).to({
+        y: this.yPos-10
     }, 500, Phaser.Easing.Linear.None, true);
+    this._game.add.tween(text2).to({
+        angle: 20
+    }, 700, Phaser.Easing.Linear.None, true);
     this._game.time.events.add(600, function() {
         text2.destroy();
     });
@@ -153,10 +164,15 @@ Resource.prototype.subtract = function(amount) {
     this.currentAmount = Phaser.Math.clamp(this.currentAmount, 0, this.storage);
     this.text.setText(this.currentAmount + '/' + this.storage);
 
-    let text2 = this._game.add.text(this.xPos + 30, this.yPos, '+' + amount, style2); //new
+    let text2 = this._game.add.text(this.xPos + 45, this.yPos+6, '-' + amount, style2); //new
     text2.alpha = 1;
+    text2.anchor.set(.5,.5);
+    text2.fixedToCamera=true;
     this._game.add.tween(text2).to({
-        y: this.yPos - 32
+        angle: 20
+    }, 700, Phaser.Easing.Linear.None, true);
+    this._game.add.tween(text2.cameraOffset).to({
+        y: this.yPos+16
     }, 500, Phaser.Easing.Linear.None, true);
     this._game.time.events.add(600, function() {
         text2.destroy();
