@@ -32,12 +32,23 @@ Play.prototype = {
         this.load.image('mars', 'TimerMars.png');
         this.load.image('earth', 'TimerEarth.png');
         this.load.image('rocket', 'TimerShip.png');
+        this.load.image('stopwatch', 'Stopwatch.png');
         this.load.image('topBar', 'New_Top.png');
+        this.load.image('conBar', 'ConstructionBar.png');
         console.log('Play: preload()');
     },
     create: function() {
         console.log('Play: create()');
         this.world.setBounds(0, 0, 4032, 4032);
+
+        //set all of the play state variables
+        this.newPeople = 5;
+        this.holdingBuilding = null;
+        this.hasLandingPad = false;
+        this.worldScale = 1;
+        this.worldSize = 4032;
+        this.zoomLevel = 0;
+        this.scrollSpeed = 4;
 
         //orangish brown
         this.stage.backgroundColor = '#b66a14';
@@ -83,23 +94,12 @@ Play.prototype = {
             water: new Resource(this, 50, 50, 350, 32, 'buildings', 'WaterIcon'),
             food: new Resource(this, 50, 50, 445, 32, 'buildings', 'FoodIcon'),
             house: new Resource(this, 5, 5, 540, 32, 'buildings', 'HousingIcon'),
-            power: new Resource(this, 10, 10, 635, 32, 'buildings', 'PowerIcon'),
+            power: new Resource(this, 20, 20, 635, 32, 'buildings', 'PowerIcon'),
             mat: new Resource(this, 150, 150, 730, 32, 'buildings', 'BrickIcon')
         };
 
-
-        this.mTimer=this.add.sprite(100,16,'mars');
-        this.mTimer.fixedToCamera=true;
-        this.eTimer=this.add.sprite(290,16,'earth');
-        this.eTimer.fixedToCamera=true;
-        this.rTimer=this.add.sprite(255,3,'rocket');
-        this.rTimer.fixedToCamera=true;
-
-        //initiates the UI
-        this.UI = new UserInterface(this, this.camera);
-
         //initiates the population update timer
-        this.gameTimer = new Timer(this, 0, 0, 24, 32, 'buildings', 'WaterIcon');
+        this.gameTimer = new Timer(this, 0, 0, 24, 32, 'stopwatch');
 
         //.bind(this) used to access 'this' scope within callback
         this.input.mouse.mouseWheelCallback = function(event) {
@@ -122,12 +122,12 @@ Play.prototype = {
 
         //game loop that decreases food and water over time based on population
         //delay is arbitrary right now ... needs testing
-        this.waterDecayRate = 3500;
+        this.waterDecayRate = 2000;
         this.time.events.loop(this.waterDecayRate / Math.log(this.resources.house.currentAmount), function() {
             this.resources.water.subtract(1);
         }, this);
 
-        this.foodDecayRate = 5000;
+        this.foodDecayRate = 3000;
         this.time.events.loop(this.foodDecayRate / Math.log(this.resources.house.currentAmount), function() {
             this.resources.food.subtract(1);
         }, this);
@@ -158,10 +158,6 @@ Play.prototype = {
         this.focusOnCommand(1);
     },
     update: function() {
-    	//this moves the rocket, couldn't get it to tween so... hard coded
-    	if(this.rTimer.cameraOffset.x<111){this.rTimer.cameraOffset.x=255;}
-		else{this.rTimer.cameraOffset.x-=.02;}
-
         //Move the camera by dragging the game world
         var oldCameraPosX = this.camera.x;
         var oldCameraPosY = this.camera.y;
@@ -190,6 +186,7 @@ Play.prototype = {
         //game.debug.cameraInfo(this.camera, 2, 14, '#ffffff');
         //game.time.advancedTiming=true;
         //game.debug.text(game.time.fps || '--',2,14,'#ffffff');
+        //game.debug.geom(rect, 'rgba(255,0,0,1)');
     },
     peopleArrive: function() {
         let style = {
@@ -210,6 +207,8 @@ Play.prototype = {
             y: 1
         }, 1500, 'Linear', true, 0, -1, true);
 
+        console.log(this.newPeople);
+
         //check to make sure the player has enough housing to support the new people
         if (this.resources.house.storage < this.resources.house.currentAmount + this.newPeople) {
             this.game.backMusic2.stop();
@@ -228,7 +227,7 @@ Play.prototype = {
             this.resources.mat.add(Math.max(this.newPeople, 20));
         }
         this.newPeople *= 2;
-        this.game.arriveMusic.play("", 0, 0.5, false, true);
+        this.game.arriveMusic.play('', 0, 0.5, false, true);
         this.game.arriveMusic.fadeOut(5000);
 
         //destroy the text (delete it)
@@ -287,9 +286,9 @@ Play.prototype = {
             this.panDistance = 100;
         }
 
-        if (this.input.x > this.camera.view.width - this.panDistance){
-            if(this.UI.buttonBuilding ? this.UI.buttonBuilding instanceof Walkway : false){
-                if(this.input.y < this.camera.view.height - this.panDistance){
+        if (this.input.x > this.camera.view.width - this.panDistance) {
+            if (this.UI.buttonBuilding ? this.UI.buttonBuilding instanceof Walkway : false) {
+                if (this.input.y < this.camera.view.height - this.panDistance) {
                     this.camera.x += this.scrollSpeed;
                 }
             } else {
@@ -297,9 +296,9 @@ Play.prototype = {
             }
         }
 
-        if (this.input.x < this.panDistance){
-            if(this.UI.buttonBuilding ? this.UI.buttonBuilding instanceof Walkway : false){
-                if(this.input.y < this.camera.view.height - this.panDistance){
+        if (this.input.x < this.panDistance) {
+            if (this.UI.buttonBuilding ? this.UI.buttonBuilding instanceof Walkway : false) {
+                if (this.input.y < this.camera.view.height - this.panDistance) {
                     this.camera.x -= this.scrollSpeed;
                 }
             } else {
@@ -307,9 +306,9 @@ Play.prototype = {
             }
         }
 
-        if (this.input.y > this.camera.view.height - this.panDistance && this.UI.canScroll){
-            if(this.UI.buttonBuilding ? this.UI.buttonBuilding instanceof Walkway : false){
-                if(!(this.input.x < this.panDistance) && !(this.input.x > this.camera.view.width - this.panDistance)){
+        if (this.input.y > this.camera.view.height - this.panDistance && this.UI.canScroll) {
+            if (this.UI.buttonBuilding ? this.UI.buttonBuilding instanceof Walkway : false) {
+                if (!(this.input.x < this.panDistance) && !(this.input.x > this.camera.view.width - this.panDistance)) {
                     this.camera.y += this.scrollSpeed;
                 }
             } else {
@@ -321,7 +320,7 @@ Play.prototype = {
             this.camera.y -= this.scrollSpeed;
         }
     },
-    zoomIn: function() {
+    zoomIn: function(zoomButton) {
         if (this.worldScale < 2) {
             this.game.zoomMusic.play('', 0, 0.5, false, true);
 
@@ -340,15 +339,21 @@ Play.prototype = {
             this.g.gridsSpr[this.zoomLevel].kill();
 
             //move the camera slightly towards the mouse from the center of the screen
-            var offsetX = Math.round((this.input.x - (this.camera.width / 2)) / (this.camera.width /
-                250));
-            var offsetY = Math.round((this.input.y - (this.camera.height / 2)) / (this.camera.height /
-                250));
+            var offsetX = Math.round((this.input.x - (this.camera.width / 2)) /
+                (this.camera.width / 250));
+            var offsetY = Math.round((this.input.y - (this.camera.height / 2)) /
+                (this.camera.height / 250));
 
             //arbitrary, looks pretty good though
             var focalMult = this.worldScale === 1.5 ? 1.5 : 1.35;
-            this.camera.focusOnXY((this.camera.view.centerX + offsetX) * focalMult,
-                (this.camera.view.centerY + offsetY) * focalMult);
+
+            if (zoomButton) {
+                this.camera.focusOnXY(this.camera.view.centerX * focalMult,
+                    this.camera.view.centerY * focalMult);
+            } else {
+                this.camera.focusOnXY((this.camera.view.centerX + offsetX) * focalMult,
+                    (this.camera.view.centerY + offsetY) * focalMult);
+            }
 
             //Move the grid by the amount the camera moved in the opposite direction
             this.g.gridsSpr[this.zoomLevel].tilePosition.x += oldCameraPosX - this.camera.x;

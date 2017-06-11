@@ -96,7 +96,7 @@ function UserInterface(_game, camera) {
     this.icons = this._game.add.group();
     this.icons.classType = Phaser.Button;
     this.icons.x = this.camera.x + this.toolbarBarStart + this.toolbarBarWidth / 2;
-	this.icons.y = this.camera.y + this.camera.height - (this.toolbarBarHeight * this.toolbar.scale.y)/2;
+    this.icons.y = this.camera.y + this.camera.height - (this.toolbarBarHeight * this.toolbar.scale.y) / 2;
 
     // This displays the name of the buildings under the icons.
     this.iconsText = this._game.add.group();
@@ -169,17 +169,20 @@ function UserInterface(_game, camera) {
         indivIcon.scale.y = indivIcon.scale.x;
 
         let indivBuildingName = this.buildings[indivIcon.frameName][0];
-        let indivBuilding = new window[indivBuildingName](this._game, this.buildings[indivIcon.frameName][1], this.buildings[indivIcon.frameName][2],
-        											'buildings', indivIcon.frameName, null);
+        let indivBuilding = new window[indivBuildingName](this._game, this.buildings[indivIcon.frameName][1], this.buildings[
+            indivIcon.frameName][2], 'buildings', indivIcon.frameName, null);
 
         let indivIconText = this.iconsText.create(Math.round(indivIcon.x), Math.round(indivIcon.y),
             indivBuildingName, this.iconsTextStyle);
         indivIconText.setTextBounds(-indivIcon.width / 2, this.toolbar.height / 5, indivIcon.width, indivIcon.height);
         indivIconText.wordWrapWidth = this.camera.width / (this.toolbarLength * 3);
-        indivIconText.text = indivBuildingName + '\n' + 
-        	(indivBuilding.cost.power==undefined?'':'P: ' + indivBuilding.cost.power) + (indivBuilding.cost.mat==undefined?'':' M: ' + indivBuilding.cost.mat);
-        indivIconText.lineSpacing = -indivIconText.fontSize/2;
-        
+        indivIconText.text = indivBuildingName + '\n' +
+            (!indivBuilding.cost.power ? '' : 'P: ' + indivBuilding.cost.power) +
+            (!indivBuilding.cost.mat ? '' : ' M: ' + indivBuilding.cost.mat);
+        indivIconText.lineSpacing = -indivIconText.fontSize / 2;
+
+        indivBuilding.destroy();
+
         /*let pIconPos = indivIconText.text.search('P');
         let indivPoint = new Phaser.Point(indivIconText.x, indivIconText.y);
         console.log(indivIconText.toGlobal(indivPoint));
@@ -201,9 +204,9 @@ function UserInterface(_game, camera) {
 }
 
 UserInterface.prototype.display = function() {
-	/*if (this.icons.pivot.y != this.icons.height/2){
-		this.icons.pivot.y = this.icons.height/2;
-	}*/
+    /*if (this.icons.pivot.y != this.icons.height/2){
+    	this.icons.pivot.y = this.icons.height/2;
+    }*/
 
     if (this._game.input.keyboard.justPressed(Phaser.Keyboard.E)) {
         this.openMenu();
@@ -246,7 +249,7 @@ UserInterface.prototype.display = function() {
 
     // When the menu is active, the yDisplace var is 0.
     this.icons.x = this.camera.x + this.toolbarBarStart + this.toolbarBarWidth / 2 + this.xDisplace;
-    this.icons.y = this.toolbar.y - (this.toolbar.height * this.toolbar.scale.y * 1.09);//- this.toolbarBarHeight*this.toolbar.scale.y; //- (this.toolbarBarHeight * this.toolbar.scale.y)/2;
+    this.icons.y = this.toolbar.y - (this.toolbar.height * this.toolbar.scale.y * 1.09); //- this.toolbarBarHeight*this.toolbar.scale.y; //- (this.toolbarBarHeight * this.toolbar.scale.y)/2;
 
     this.iconsText.x = Math.round(this.icons.x);
     this.iconsText.y = Math.round(this.icons.y);
@@ -410,10 +413,10 @@ UserInterface.prototype.scroll = function(button, pointer, dir) {
     }
 };
 
-UserInterface.prototype.stopScroll = function(){
-	this.canScroll = false;
+UserInterface.prototype.stopScroll = function() {
+    this.canScroll = false;
 };
 
-UserInterface.prototype.startScroll = function(){
-	this.canScroll = true;
+UserInterface.prototype.startScroll = function() {
+    this.canScroll = true;
 };

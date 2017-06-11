@@ -123,15 +123,15 @@ Resource.prototype.add = function(amount) {
     this.currentAmount = Phaser.Math.clamp(this.currentAmount, 0, this.storage);
     this.text.setText(this.currentAmount + '/' + this.storage);
 
-    let text2 = this._game.add.text(this.xPos + 45, this.yPos-2, '+' + amount, style1); //new
-    text2.fixedToCamera=true;
-    text2.anchor.set(.5,.5);                               
+    let text2 = this._game.add.text(this.xPos + 45, this.yPos - 2, '+' + amount, style1); //new
+    text2.fixedToCamera = true;
+    text2.anchor.set(.5, .5);
     this._game.add.tween(text2).to({
         angle: 20
     }, 500, Phaser.Easing.Linear.None, true);
     this._game.add.tween(text2.cameraOffset).to({
-        y: this.yPos-10
-    }, 500, Phaser.Easing.Linear.None, true);  
+        y: this.yPos - 10
+    }, 500, Phaser.Easing.Linear.None, true);
     this._game.time.events.add(600, function() {
         text2.destroy();
     });
@@ -145,11 +145,11 @@ Resource.prototype.increaseStorage = function(amount) {
     this.storage += amount;
     this.text.setText(this.currentAmount + '/' + this.storage);
 
-    let text2 = this._game.add.text(this.xPos + 60, this.yPos-2, '+' + amount, style3); //new
-    text2.fixedToCamera=true;
-    text2.anchor.set(.5,.5); 
+    let text2 = this._game.add.text(this.xPos + 60, this.yPos - 2, '+' + amount, style3); //new
+    text2.fixedToCamera = true;
+    text2.anchor.set(.5, .5);
     this._game.add.tween(text2.cameraOffset).to({
-        y: this.yPos-10
+        y: this.yPos - 10
     }, 500, Phaser.Easing.Linear.None, true);
     this._game.add.tween(text2).to({
         angle: 20
@@ -164,15 +164,22 @@ Resource.prototype.subtract = function(amount) {
     this.currentAmount = Phaser.Math.clamp(this.currentAmount, 0, this.storage);
     this.text.setText(this.currentAmount + '/' + this.storage);
 
-    let text2 = this._game.add.text(this.xPos + 45, this.yPos+6, '-' + amount, style2); //new
+    let text2 = this._game.add.text(this.xPos + 45, this.yPos + 6, '-' + amount, style2); //new
+
+    //player has run out of food or water
+    if ((this.frameName === 'WaterIcon' || this.frameName === 'FoodIcon') && this.currentAmount === 0) {
+        this._game.game.backMusic2.stop();
+        this._game.state.start('GameOver');
+    }
+
     text2.alpha = 1;
-    text2.anchor.set(.5,.5);
-    text2.fixedToCamera=true;
+    text2.anchor.set(.5, .5);
+    text2.fixedToCamera = true;
     this._game.add.tween(text2).to({
         angle: 20
     }, 700, Phaser.Easing.Linear.None, true);
     this._game.add.tween(text2.cameraOffset).to({
-        y: this.yPos+16
+        y: this.yPos + 16
     }, 500, Phaser.Easing.Linear.None, true);
     this._game.time.events.add(600, function() {
         text2.destroy();

@@ -30,6 +30,12 @@ function Building(_game, w, h, key, frame) {
 
     //give the sprite button functionality
     this.inputEnabled = true;
+
+    //cost of the building
+    this.cost = {};
+
+    //construction time of building (in milliseconds)
+    this.delay = 0;
 }
 
 Building.prototype = Object.create(Phaser.Sprite.prototype);
@@ -67,38 +73,8 @@ Building.prototype.place = function(xPosition, yPosition) {
         this.game.buildMusic3.play('', 0, 0.35, false, true);
     }
 
-    this._game.game.buildCount[this.id]++;
-
-    //update the resources for each building (or start the loop to do so)
-    this.updateResources();
-
-    this._game.UIObjects.remove(this);
-
-    //check to see if the building is a storage container with animated frames
-    if (this instanceof WaterTank2x1 || this instanceof Storage2x2) {
-        this._game.storageBuildings.add(this);
-        this.updateFrame();
-        this.angle = 0;
-
-        if (this.orient) {
-            this.orient.x = 0;
-            this.orient.y = 0;
-        }
-    } else {
-        this._game.gameObjects.add(this);
-    }
-
-    //this.orient only applies to buildings that 
-    //rotate without new frames, otherwise it should set to 0
-    if (this.orient) {
-        this.anchor.x = this.orient.x;
-        this.anchor.y = this.orient.y;
-    } else {
-        this.anchor.set(0);
-    }
-
     this.scale.set(.5);
-    this.alpha = 1;
+    this.alpha = 0;
     this._game.holdingBuilding = null;
 
     //Once an object is placed, remove the resources
@@ -119,14 +95,6 @@ Building.prototype.place = function(xPosition, yPosition) {
         }
     }
 
-    //update the grid with the available connection points
-    for (let i = 0; i < this.connections.length; i++) {
-        let x = this.connections[i][0];
-        let y = this.connections[i][1];
-
-        this._game.g.cells[x + xPos][y + yPos].connect.push(this.connections[i][2]);
-    }
-
     if (this instanceof Walkway && this.hasResources()) {
         let walkway = new Walkway(this._game, 1, 1, 'buildings', this.frameName);
         walkway.purchased();
@@ -134,6 +102,61 @@ Building.prototype.place = function(xPosition, yPosition) {
             walkway.rotate();
         }
         this._game.UI.buttonBuilding = walkway;
+    }
+
+    if (this instanceof LandingPad3x3) {
+        this._game.hasLandingPad = true;
+    }
+
+    this._game.g.bmdOverlay.clear();
+
+    if (this.delay > 0) {
+        var loadingBar = this._game.add.sprite(this.x, this.y + this.height / 2, 'conBar');
+        loadingBar.anchor.set(0, .5);
+        loadingBar.scale.set(.5 * this.w, .5 * this.h);
+        loadingBar.width = 0;
+        this._game.gameObjects.add(loadingBar);
+
+        this._game.add.tween(loadingBar).to({
+            width: this.width
+        }, this.delay, Phaser.Easing.Linear.None, true);
+    }
+
+    this.game.time.events.add(this.delay, function() {
+        if (loadingBar) {
+            loadingBar.destroy();
+        }
+        this.built(xPos, yPos);
+    }, this);
+};
+
+Building.prototype.built = function(xPos, yPos) {
+    this.alpha = 1;
+
+    //update the resources for each building (or start the loop to do so)
+    this.updateResources();
+
+    this._game.UIObjects.remove(this);
+    //check to see if the building is a storage container with animated frames
+    if (this instanceof WaterTank2x1 || this instanceof Storage2x2) {
+        this._game.storageBuildings.add(this);
+        this.updateFrame();
+        this.angle = 0;
+
+        if (this.orient) {
+            this.orient.x = 0;
+            this.orient.y = 0;
+        }
+    } else {
+        this._game.gameObjects.add(this);
+    }
+
+    //update the grid with the available connection points
+    for (let i = 0; i < this.connections.length; i++) {
+        let x = this.connections[i][0];
+        let y = this.connections[i][1];
+
+        this._game.g.cells[x + xPos][y + yPos].connect.push(this.connections[i][2]);
     }
 
     this.changeForm(xPos, yPos);
@@ -145,8 +168,16 @@ Building.prototype.place = function(xPosition, yPosition) {
         this._gridDelete[0].connect.splice(this._gridDelete[1], 1);
     }
 
-    this._game.g.bmdOverlay.clear();
-    this.events.onInputDown.addOnce(Building.prototype.getInfo, this);
+    //this.orient only applies to buildings that 
+    //rotate without new frames, otherwise it should set to 0
+    if (this.orient) {
+        this.anchor.x = this.orient.x;
+        this.anchor.y = this.orient.y;
+    } else {
+        this.anchor.set(0);
+    }
+
+    this.events.onInputDown.add(Building.prototype.getInfo, this);
 };
 
 Building.prototype.getInfo = function() {
@@ -437,6 +468,8 @@ function Walkway(_game, w, h, key, frame) {
 
     this.rotAngle = 0;
 
+    this.delay = 250;
+
     this.connections.push([0, 0, this.DOWN]);
     this.connections.push([0, 0, this.UP]);
     this.connections.push([0, 0, this.LEFT]);
@@ -669,6 +702,7 @@ function Habitation2x2(_game, w, h, key, frame) {
         power: 4
     };
     this.id = 1;
+    this.delay = 12000;
 }
 
 Habitation2x2.prototype = Object.create(Building.prototype);
@@ -692,6 +726,7 @@ function Habitation2x1(_game, w, h, key, frame, otherFrames) {
         power: 2
     };
     this.id = 2;
+    this.delay = 9000;
 }
 
 Habitation2x1.prototype = Object.create(RotatableBuilding.prototype);
@@ -726,6 +761,7 @@ function Habitation1x1(_game, w, h, key, frame, otherFrames) {
         power: 1
     };
     this.id = 3;
+    this.delay = 5000;
 }
 
 Habitation1x1.prototype = Object.create(RotatableBuilding.prototype);
@@ -759,6 +795,7 @@ function WaterTank2x1(_game, w, h, key, frame) {
         power: 2
     };
     this.id = 4;
+    this.delay = 9000;
 }
 
 WaterTank2x1.prototype = Object.create(RotatableBuilding.prototype);
@@ -805,6 +842,7 @@ function WaterRecycler2x1(_game, w, h, key, frame, otherFrames) {
         power: 2
     };
     this.id = 5;
+    this.delay = 9000;
 }
 
 WaterRecycler2x1.prototype = Object.create(RotatableBuilding.prototype);
@@ -839,13 +877,14 @@ function PowerStorage2x1(_game, w, h, key, frame, otherFrames) {
         mat: 15,
     };
     this.id = 6;
+    this.delay = 6000;
 }
 
 PowerStorage2x1.prototype = Object.create(RotatableBuilding.prototype);
 PowerStorage2x1.prototype.constructor = PowerStorage2x1;
 
 PowerStorage2x1.prototype.updateResources = function() {
-    this._game.resources.power.increaseStorage(10);
+    this._game.resources.power.increaseStorage(20);
 };
 
 PowerStorage2x1.prototype.rotate = function() {
@@ -870,13 +909,14 @@ function SolarPanel1x1(_game, w, h, key, frame) {
         mat: 8,
     };
     this.id = 7;
+    this.delay = 3000;
 }
 
 SolarPanel1x1.prototype = Object.create(RotatableBuilding.prototype);
 SolarPanel1x1.prototype.constructor = SolarPanel1x1;
 
 SolarPanel1x1.prototype.updateResources = function() {
-    this._game.resources.power.add(2);
+    this._game.resources.power.add(4);
 };
 
 
@@ -901,7 +941,7 @@ function LandingPad3x3(_game, w, h, key, frame) {
     this.cost = {
         mat: 50
     };
-    _game.hasLandingPad = true;
+    this.delay = 20000;
 }
 
 LandingPad3x3.prototype = Object.create(Building.prototype);
@@ -918,6 +958,7 @@ function Hydroponics2x2(_game, w, h, key, frame) {
         power: 4
     };
     this.id = 8;
+    this.delay = 12000;
 }
 
 Hydroponics2x2.prototype = Object.create(Building.prototype);
@@ -937,6 +978,7 @@ function Storage1x1(_game, w, h, key, frame, otherFrames) {
         power: 1
     };
     this.id = 9;
+    this.delay = 5000;
 }
 
 Storage1x1.prototype = Object.create(RotatableBuilding.prototype);
@@ -968,6 +1010,7 @@ function Storage2x2(_game, w, h, key, frame) {
         power: 2
     };
     this.id = 10;
+    this.delay = 12000;
 }
 
 Storage2x2.prototype = Object.create(Building.prototype);
@@ -998,6 +1041,7 @@ function BrickMine2x2(_game, w, h, key, frame) {
         power: 6
     };
     this.id = 11;
+    this.delay = 12000;
 }
 
 BrickMine2x2.prototype = Object.create(Building.prototype);
@@ -1035,6 +1079,7 @@ function IceMine2x2(_game, w, h, key, frame) {
         power: 6
     };
     this.id = 12;
+    this.delay = 12000;
 }
 
 IceMine2x2.prototype = Object.create(RotatableBuilding.prototype);

@@ -24,6 +24,22 @@ function Timer(_game, min, sec, xpos, ypos, key, frame) {
 
     //anchor the sprite at the center
     this.anchor.set(.5);
+    this.scale.set(.5);
+
+    let mars = _game.add.image(100, 9, 'mars');
+    mars.fixedToCamera = true;
+    mars.scale.set(.7);
+
+    let earth = _game.add.image(260, 9, 'earth');
+    earth.fixedToCamera = true;
+    earth.scale.set(.7);
+
+    let rocket = _game.add.sprite(earth.x, earth.y - 5, 'rocket');
+    rocket.fixedToCamera = true;
+
+    this._game.add.tween(rocket.cameraOffset).to({
+        x: mars.x
+    }, this.resourceInterval * 1000, 'Linear', true, 0, -1, false);
 
     _game.add.existing(this);
 
