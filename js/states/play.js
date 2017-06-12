@@ -35,10 +35,15 @@ Play.prototype = {
         this.load.image('stopwatch', 'Stopwatch.png');
         this.load.image('topBar', 'New_Top.png');
         this.load.image('conBar', 'ConstructionBar.png');
-        console.log('Play: preload()');
+
+        this.menuImage = this.add.image(0, 0, 'menuimage');
+        this.loadText = this.add.text(30, 40, 'Loading...', {
+            font: '64px Impact',
+            fill: 'black',
+            wordWrap: false
+        });
     },
     create: function() {
-        console.log('Play: create()');
         this.world.setBounds(0, 0, 4032, 4032);
 
         //set all of the play state variables
@@ -55,6 +60,9 @@ Play.prototype = {
 
         this.gen = new Generate(this);
         this.gen.run();
+
+        this.menuImage.destroy();
+        this.loadText.destroy();
 
         this.g = new Grid(this, 32, 32, 'black');
         this.g.makeGrid();
@@ -123,14 +131,16 @@ Play.prototype = {
         //game loop that decreases food and water over time based on population
         //delay is arbitrary right now ... needs testing
         this.waterDecayRate = 3500;
-        this.time.events.loop(this.waterDecayRate / Math.log(this.resources.house.currentAmount), function() {
-            this.resources.water.subtract(1);
-        }, this);
+        this.waterDecayLoop = this.time.events.loop(this.waterDecayRate / Math.log(this.resources.house.currentAmount),
+            function() {
+                this.resources.water.subtract(1);
+            }, this);
 
         this.foodDecayRate = 4500;
-        this.time.events.loop(this.foodDecayRate / Math.log(this.resources.house.currentAmount), function() {
-            this.resources.food.subtract(1);
-        }, this);
+        this.foodDecayLoop = this.time.events.loop(this.foodDecayRate / Math.log(this.resources.house.currentAmount),
+            function() {
+                this.resources.food.subtract(1);
+            }, this);
 
         //get the x and y position to place the starting command center
         //they will be random at least 500 px from the world edge
@@ -271,7 +281,7 @@ Play.prototype = {
         } else {
             this.resources.mat.add(Math.max(this.newPeople, 20));
         }
-        this.newPeople *= 2;
+        this.newPeople = this.newPeople < 40 ? this.newPeople * 2 : this.newPeople + 20;
         this.game.arriveMusic.play('', 0, 0.5, false, true);
         this.game.arriveMusic.fadeOut(5000);
 
@@ -279,6 +289,9 @@ Play.prototype = {
         this.time.events.add(3000, function() {
             text.destroy();
         });
+
+        this.waterDecayLoop.delay = this.waterDecayRate / Math.log(this.resources.house.currentAmount);
+        this.foodDecayLoop.delay = this.foodDecayRate / Math.log(this.resources.house.currentAmount);
     },
     focusOnCommand: function(frames) {
         let distToCommandX = (this.commandPos.x + 48) - this.camera.view.centerX;

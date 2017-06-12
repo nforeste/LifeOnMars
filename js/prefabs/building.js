@@ -818,6 +818,7 @@ WaterTank2x1.prototype.updateFrame = function() {
     var waterMax = this._game.resources.water.storage;
     this.ratio = waterCurrent / waterMax;
     this.ratio = Math.floor(this.ratio * 9);
+    this.ratio = Math.clamp(this.ratio, 0, 8);
     this.frameName = (this.rotated > 0 ? 'WaterTankLeftRight' : 'WaterTankUpDown') + this.ratio;
 };
 
@@ -856,6 +857,7 @@ WaterRecycler2x1.prototype.constructor = WaterRecycler2x1;
 
 WaterRecycler2x1.prototype.updateResources = function() {
     this._game.waterDecayRate += 500;
+    this._game.waterDecayLoop.decay = this._game.waterDecayRate / Math.log(this._game.resources.house.currentAmount);
 };
 
 WaterRecycler2x1.prototype.rotate = function() {
@@ -1032,6 +1034,7 @@ Storage2x2.prototype.updateFrame = function() {
     var storageMax = this._game.resources.food.storage + this._game.resources.mat.storage;
     this.ratio = storageCurrent / storageMax;
     this.ratio = Math.floor(this.ratio * 17);
+    this.ratio = Math.clamp(this.ratio, 0, 16);
     this.frameName = 'Storage' + this.ratio;
 };
 

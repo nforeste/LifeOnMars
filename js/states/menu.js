@@ -6,6 +6,10 @@ var Menu = function(game) {
 
 Menu.prototype = {
 
+    init: function() {
+        this.stage.disableVisibilityChange = true;
+    },
+
     preload: function() {
         //loads image (not in spritesheet) and audio
         this.load.image('menuimage', 'assets/img/menuimage.png');
@@ -19,7 +23,7 @@ Menu.prototype = {
         this.load.audio('construction2', 'construction2.mp3');
         this.load.audio('construction3', 'construction3.mp3');
         this.load.audio('construction4', 'construction4.mp3');
-        this.load.audio('construction5', 'construction5.mp3');        
+        this.load.audio('construction5', 'construction5.mp3');
         this.load.audio('peopleArrive', 'peoplearrive.mp3');
         this.load.audio('place', 'place.mp3');
         this.load.audio('placeFail', 'placefail.mp3');
@@ -27,7 +31,6 @@ Menu.prototype = {
         this.load.audio('rotate', 'rotate.mp3');
         this.load.audio('win', 'win.mp3');
         this.load.audio('zoom', 'zoom.mp3');
-        console.log('Menu: preload()');
     },
     create: function() {
         this.add.sprite(0, 0, 'menuimage');
@@ -66,8 +69,6 @@ Menu.prototype = {
 
         //play menu theme
         this.game.backMusic.play('', 0, 1, true, true);
-
-        console.log('Menu: create()');
     },
     update: function() {
         //checks for the enter keypress
