@@ -122,12 +122,12 @@ Play.prototype = {
 
         //game loop that decreases food and water over time based on population
         //delay is arbitrary right now ... needs testing
-        this.waterDecayRate = 2000;
+        this.waterDecayRate = 3500;
         this.time.events.loop(this.waterDecayRate / Math.log(this.resources.house.currentAmount), function() {
             this.resources.water.subtract(1);
         }, this);
 
-        this.foodDecayRate = 3000;
+        this.foodDecayRate = 4500;
         this.time.events.loop(this.foodDecayRate / Math.log(this.resources.house.currentAmount), function() {
             this.resources.food.subtract(1);
         }, this);
@@ -156,6 +156,53 @@ Play.prototype = {
 
         this.commandPos = this.commandCenter.position.clone();
         this.focusOnCommand(1);
+
+        let c = this.g.cells;
+
+        //pick a random tile to place water on near the command center (keep searching until clean square)
+        do {
+            var waterPosX = Math.round(Math.random()) ? this.rnd.integerInRange((xPos / 32) - 11, xPos / 32 - 5) :
+                this.rnd.integerInRange((xPos / 32) + 4, (xPos / 32) + 10);
+
+            var waterPosY = Math.round(Math.random()) ? this.rnd.integerInRange((yPos / 32) - 9, (yPos / 32) -
+                4) : this.rnd.integerInRange((yPos / 32) + 4, (yPos / 32) + 7);
+        } while (c[waterPosX + 1][waterPosY].tile || c[waterPosX][waterPosY + 1].tile ||
+            c[waterPosX + 2][waterPosY + 1].tile || c[waterPosX + 1][waterPosY + 2].tile);
+
+        //pick a random tile to place bricks on near the command center (keep searching until clean square)
+        do {
+            var brickPosX = Math.round(Math.random()) ? this.rnd.integerInRange((xPos / 32) - 11, xPos / 32 - 5) :
+                this.rnd.integerInRange((xPos / 32) + 4, (xPos / 32) + 10);
+
+            var brickPosY = Math.round(Math.random()) ? this.rnd.integerInRange((yPos / 32) - 9, (yPos / 32) -
+                4) : this.rnd.integerInRange((yPos / 32) + 4, (yPos / 32) + 7);
+        } while (c[brickPosX][brickPosY].tile || c[brickPosX][brickPosY + 1].tile ||
+            c[brickPosX + 2][brickPosY + 1].tile || c[brickPosX + 1][brickPosY + 2].tile);
+
+        //populate the 3x3 square around the tile with water
+        for (let i = waterPosX; i < waterPosX + 3; i++) {
+            for (let j = waterPosY; j < waterPosY + 3; j++) {
+                let random = Math.floor(Math.random() * (this.gen.waterTiles.length + 1));
+                if (random < this.gen.waterTiles.length) {
+                    if (this.g.cells[i][j].tile) {
+                        continue;
+                    }
+                    this.gen.tilemap.putTile(this.gen.waterTiles[random], i, j, this.gen.layer1);
+                    this.g.cells[i][j].tile = 'water';
+                }
+            }
+        }
+
+        //populate the 3x3 square around the tile with bricks
+        for (let i = brickPosX; i < brickPosX + 3; i++) {
+            for (let j = brickPosY; j < brickPosY + 3; j++) {
+                let random = Math.floor(Math.random() * (this.gen.ironTiles.length + 1));
+                if (random < this.gen.ironTiles.length) {
+                    this.gen.tilemap.putTile(this.gen.ironTiles[random], i, j, this.gen.layer1);
+                    this.g.cells[i][j].tile = 'iron';
+                }
+            }
+        }
     },
     update: function() {
         //Move the camera by dragging the game world

@@ -685,9 +685,9 @@ CommandCenter.prototype = Object.create(Building.prototype);
 CommandCenter.prototype.constructor = CommandCenter;
 
 CommandCenter.prototype.updateResources = function() {
-    this._game.time.events.loop(5000, function() {
-        this._game.resources.food.add(1);
-        this._game.resources.water.add(1);
+    this._game.time.events.loop(4000, function() {
+        this._game.resources.food.add(2);
+        this._game.resources.water.add(2);
     }, this);
 };
 
@@ -881,7 +881,7 @@ function PowerStorage2x1(_game, w, h, key, frame, otherFrames) {
         mat: 15,
     };
     this.id = 6;
-    this.delay = 6000;
+    this.delay = 4000;
 }
 
 PowerStorage2x1.prototype = Object.create(RotatableBuilding.prototype);

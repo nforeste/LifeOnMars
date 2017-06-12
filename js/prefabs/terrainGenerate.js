@@ -33,31 +33,31 @@ Generate.prototype.run = function() {
         }
     }
 
-    let tilemap = this._game.add.tilemap('test');
-    this.layer1 = tilemap.create('Tile Layer 1', 126, 126, 32, 32);
+    this.tilemap = this._game.add.tilemap('test');
+    this.layer1 = this.tilemap.create('Tile Layer 1', 126, 126, 32, 32);
 
-    tilemap.addTilesetImage('terrain');
+    this.tilemap.addTilesetImage('terrain');
 
-    let waterTiles = [3, 5, 9];
-    let normalTiles = [1, 2, 4, 6, 10];
-    let ironTiles = [7, 8, 11];
+    this.waterTiles = [3, 5, 9];
+    this.normalTiles = [1, 2, 4, 6, 10];
+    this.ironTiles = [7, 8, 11];
     for (let i = 0; i < 126; i++) {
         for (let j = 0; j < 126; j++) {
             if (perlinNoise[i][j] < .25) {
-                let random = Math.floor(Math.random() * (waterTiles.length + 1));
-                if (random < waterTiles.length) {
-                    tilemap.putTile(waterTiles[random], i, j, this.layer1);
+                let random = Math.floor(Math.random() * (this.waterTiles.length + 1));
+                if (random < this.waterTiles.length) {
+                    this.tilemap.putTile(this.waterTiles[random], i, j, this.layer1);
                     this.tiles[i][j] = 'water';
                 }
             } else if (perlinNoise[i][j] < .75) {
-                let random = Math.floor(Math.random() * (normalTiles.length + 5));
-                if (random < normalTiles.length) {
-                    tilemap.putTile(normalTiles[random], i, j, this.layer1);
+                let random = Math.floor(Math.random() * (this.normalTiles.length + 5));
+                if (random < this.normalTiles.length) {
+                    this.tilemap.putTile(this.normalTiles[random], i, j, this.layer1);
                 }
             } else {
-                let random = Math.floor(Math.random() * (ironTiles.length + 1));
-                if (random < ironTiles.length) {
-                    tilemap.putTile(ironTiles[random], i, j, this.layer1);
+                let random = Math.floor(Math.random() * (this.ironTiles.length + 1));
+                if (random < this.ironTiles.length) {
+                    this.tilemap.putTile(this.ironTiles[random], i, j, this.layer1);
                     this.tiles[i][j] = 'iron';
                 }
             }
