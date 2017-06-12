@@ -44,7 +44,7 @@ Building.prototype.constructor = Building;
 Building.prototype.purchased = function() {
     this.alpha = .75;
     this.held = true;
-    this.game.buyMusic.play('', 0, 0.35, false, true);
+    this.game.buyMusic.play('', 0, 0.30, false, true);
     this._game.holdingBuilding = this;
     this._game.UIObjects.bringToTop(this);
     this.anchor.set(.5);
@@ -65,12 +65,16 @@ Building.prototype.place = function(xPosition, yPosition) {
 
     this.game.placeMusic.play('', 0, 0.5, false, true);
     this.randBuild = Math.random();
-    if (this.randBuild <= 0.33) {
-        this.game.buildMusic.play('', 0, 0.35, false, true);
-    } else if (this.randBuild <= 0.66) {
-        this.game.buildMusic2.play('', 0, 0.35, false, true);
-    } else if (this.randBuild > 0.66) {
-        this.game.buildMusic3.play('', 0, 0.35, false, true);
+    if (this.randBuild <= 0.20) {
+        this.game.buildMusic.play('', 0, 0.25, false, true);
+    } else if (this.randBuild <= 0.40) {
+        this.game.buildMusic2.play('', 0, 0.25, false, true);
+    } else if (this.randBuild <= 0.60) {
+        this.game.buildMusic3.play('', 0, 0.25, false, true);
+    } else if (this.randBuild <= 0.80) {
+        this.game.buildMusic4.play('', 0, 0.25, false, true);
+    } else if (this.randBuild > 0.80) {
+        this.game.buildMusic5.play('', 0, 0.25, false, true);
     }
 
     this.scale.set(.5);

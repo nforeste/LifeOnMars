@@ -18,6 +18,8 @@ Menu.prototype = {
         this.load.audio('construction', 'construction.mp3');
         this.load.audio('construction2', 'construction2.mp3');
         this.load.audio('construction3', 'construction3.mp3');
+        this.load.audio('construction4', 'construction4.mp3');
+        this.load.audio('construction5', 'construction5.mp3');        
         this.load.audio('peopleArrive', 'peoplearrive.mp3');
         this.load.audio('place', 'place.mp3');
         this.load.audio('placeFail', 'placefail.mp3');
@@ -50,6 +52,8 @@ Menu.prototype = {
         this.game.buildMusic = this.add.audio('construction');
         this.game.buildMusic2 = this.add.audio('construction2');
         this.game.buildMusic3 = this.add.audio('construction3');
+        this.game.buildMusic4 = this.add.audio('construction4');
+        this.game.buildMusic5 = this.add.audio('construction5');
         this.game.arriveMusic = this.add.audio('peopleArrive');
         this.game.placeMusic = this.add.audio('place');
         this.game.placeFailMusic = this.add.audio('placeFail');
