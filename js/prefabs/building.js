@@ -140,6 +140,8 @@ Building.prototype.built = function(xPos, yPos) {
     //update the resources for each building (or start the loop to do so)
     this.updateResources();
 
+    this._game.game.buildCount[this.id]++;
+
     this._game.UIObjects.remove(this);
     //check to see if the building is a storage container with animated frames
     if (this instanceof WaterTank2x1 || this instanceof Storage2x2) {
@@ -686,8 +688,8 @@ CommandCenter.prototype.constructor = CommandCenter;
 
 CommandCenter.prototype.updateResources = function() {
     this._game.time.events.loop(4000, function() {
-        this._game.resources.food.add(2);
-        this._game.resources.water.add(2);
+        this._game.resources.food.add(1);
+        this._game.resources.water.add(1);
     }, this);
 };
 

@@ -254,8 +254,6 @@ Play.prototype = {
             y: 1
         }, 1500, 'Linear', true, 0, -1, true);
 
-        console.log(this.newPeople);
-
         //check to make sure the player has enough housing to support the new people
         if (this.resources.house.storage < this.resources.house.currentAmount + this.newPeople) {
             this.game.backMusic2.stop();

@@ -46,7 +46,7 @@ function Resource(_game, currentAmount, storage, xpos, ypos, key, frame) {
     this.text = _game.add.text(this.xPos + 30, this.yPos - 8, this.currentAmount + '/' + this.storage, style);
     this.text.anchor.set(.5, 0);
     this.text.fixedToCamera = true;
-
+    this.tooltipHover = false;
     this.toolTips(frame);
 }
 
@@ -84,7 +84,7 @@ Resource.prototype.toolTips = function(frame) { //all new
             textOut = '';
         } else if (frame === 'PowerIcon') {
             textIn = 'Generation\n' + '  + ' + this._game.game.buildCount[6] * 10 + ' from Power Storage\n' +
-                '  + ' + this._game.game.buildCount[7] * 2 + ' from Solar Pannels';
+                '  + ' + this._game.game.buildCount[7] * 2 + ' from Solar Panels';
             textOut = '';
         } else if (frame === 'BrickIcon') {
             textIn = 'Per minute\n' + '  + ' + this._game.game.buildCount[11] * 40 + ' from Brick mining\n' +
@@ -107,11 +107,21 @@ Resource.prototype.toolTips = function(frame) { //all new
             fixedToCamera: true,
             padding: 10,
             x: this.xPos - (this.width / 2) - (context.width / 2),
-            y: this.yPos + (this.height / 2) + 10
+            y: this.yPos + (this.height / 2) + 10,
+            onHoverCallback: function() {
+                this.tooltipHover = true;
+            }.bind(this),
+            onOutCallback: function() {
+                this.tooltipHover = false;
+            }.bind(this)
         });
+
+        if (this.tooltipHover) {
+            this.tooltip.showTooltip();
+        }
     }, this);
 
-    timer.delay = 5000;
+    timer.delay = 10000;
 };
 
 Resource.prototype.update = function() {
