@@ -29,12 +29,14 @@ Play.prototype = {
         this.load.image('toolbar', 'New_UI.png');
         this.load.image('rotateButton', 'RotateButton.png');
         this.load.image('cancelButton', 'CancelButton.png');
+        this.load.image('topBar', 'New_Top.png');
+        this.load.image('conBar', 'ConstructionBar.png');
         this.load.image('mars', 'TimerMars.png');
         this.load.image('earth', 'TimerEarth.png');
         this.load.image('rocket', 'TimerShip.png');
-        this.load.image('stopwatch', 'Stopwatch.png');
         this.load.image('topBar', 'New_Top.png');
-        this.load.image('conBar', 'ConstructionBar.png');
+        this.load.image('stopwatch', 'Stopwatch.png');
+
 
         this.menuImage = this.add.image(0, 0, 'menuimage');
         this.loadText = this.add.text(30, 40, 'Loading...', {
@@ -105,6 +107,7 @@ Play.prototype = {
             power: new Resource(this, 20, 20, 635, 32, 'buildings', 'PowerIcon'),
             mat: new Resource(this, 150, 150, 730, 32, 'buildings', 'BrickIcon')
         };
+
 
         //initiates the population update timer
         this.gameTimer = new Timer(this, 0, 0, 24, 32, 'stopwatch');
@@ -215,6 +218,7 @@ Play.prototype = {
         }
     },
     update: function() {
+
         //Move the camera by dragging the game world
         var oldCameraPosX = this.camera.x;
         var oldCameraPosY = this.camera.y;

@@ -68,14 +68,14 @@ Resource.prototype.toolTips = function(frame) { //all new
                 ' from Command Center\n' + '  + ' + this._game.game.buildCount[12] * 20 +
                 ' from Ice mining\n' + 'Maximum\n' + '  + ' + this._game.game.buildCount[4] * 15 +
                 ' from Water Tank';
-            textOut = 'Per minute\n' + '  + ' + ' water decay here';
+            textOut = 'Per minute\n' + '  - ' + ' '+ Math.floor(60/(Phaser.Math.floorTo(this._game.waterDecayRate/Math.log(this._game.resources.house.currentAmount),2,10)/1000));
         } else if (frame === 'FoodIcon') {
             textIn = 'Per minute\n' + '  + ' + this._game.game.buildCount[0] * 12 +
                 ' from Command Center\n' + '  + ' + this._game.game.buildCount[8] * 30 +
                 ' from Hydroponics\n' + 'Maximum\n' + '  + ' + this._game.game.buildCount[9] * 5 +
                 ' from Storage 1x1\n' + '  + ' + this._game.game.buildCount[10] * 20 +
                 ' from Storage 2x2';
-            textOut = 'decay here';
+            textOut = 'Per minute\n' + '  - ' + ' ' + Math.floor(60/(Phaser.Math.floorTo(this._game.foodDecayRate/Math.log(this._game.resources.house.currentAmount),2,10)/1000));
         } else if (frame === 'HousingIcon') {
             textIn = 'Maximum\n' + '  +5 from Command Center\n' + '  + ' + this._game.game.buildCount[1] *
                 25 + ' from Habitation 2x2\n' + '  + ' + this._game.game.buildCount[2] * 12 +
@@ -141,7 +141,7 @@ Resource.prototype.add = function(amount) {
     }, 500, Phaser.Easing.Linear.None, true);
     this._game.add.tween(text2.cameraOffset).to({
         y: this.yPos - 10
-    }, 500, Phaser.Easing.Linear.None, true);
+    }, 500, Phaser.Easing.Linear.None, true);  
     this._game.time.events.add(600, function() {
         text2.destroy();
     });
@@ -181,7 +181,6 @@ Resource.prototype.subtract = function(amount) {
         this._game.game.backMusic2.stop();
         this._game.state.start('GameOver');
     }
-
     text2.alpha = 1;
     text2.anchor.set(.5, .5);
     text2.fixedToCamera = true;
