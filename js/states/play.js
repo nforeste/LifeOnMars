@@ -275,6 +275,15 @@ Play.prototype = {
             //Do game over stuff here?
         }
 
+        if (this.resources.house.currentAmount + this.newPeople == 160) {
+            this.game.winMusic.play();
+            this.winText = this.game.add.text(this.camera.width / 2, 150, 'You win!', { fontSize: '64px', fill: '#fff' });
+            this.winText.fixedToCamera = true;
+            this.time.events.add(3000, function() {
+                winText.destroy();
+            });
+        }
+
         //add more people and resources
         this.resources.house.add(this.newPeople);
 
