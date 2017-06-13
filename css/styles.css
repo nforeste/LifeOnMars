@@ -1,0 +1,24 @@
+body {
+	background-color: #655b5b;
+}
+
+canvas {
+	display: block;
+	margin: auto;
+	border: 5px solid #131c1b;
+}
+
+div.centered {
+	margin: auto;
+	text-align: center;
+	color: silver;
+	font-family: 'Helvetica Neue', Helvetica, serif;
+}
+
+h1, h4 {
+	margin: 8px;
+}
+
+p {
+	margin: 10px;
+}
