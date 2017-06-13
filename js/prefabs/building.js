@@ -1096,7 +1096,7 @@ IceMine2x2.prototype.constructor = IceMine2x2;
 
 IceMine2x2.prototype.updateResources = function() {
     this._game.time.events.loop(6000, function() {
-        this._game.resources.water.add(2);
+        this._game.resources.water.add(1);
     }, this);
 };
 
