@@ -62,7 +62,7 @@ function Timer(_game, min, sec, xpos, ypos, key, frame) {
     style.font = '18px Helvetica Neue';
 
     //displays additional timer information
-    this.timerText = _game.add.text(this.x - 5, this.y + 15, 'Resource Update in ' +
+    this.timerText = _game.add.text(this.x - 5, this.y + 15, this._game.newPeople + ' people arriving in ' +
         (this.resourceInterval * 60) + ' seconds', style);
     this.timerText.alpha = 0;
     this.timerText.fixedToCamera = true;
@@ -96,7 +96,7 @@ Timer.prototype.increaseTimer = function() {
 
     //set the secondary timer every second
     let remaining = this.resourceInterval - this.sec;
-    this.timerText.setText('Resource Update in ' + remaining + ' second' + (sec === 59 ? '' : 's'));
+    this.timerText.setText(this._game.newPeople + ' people arriving in ' + remaining + ' second' + (sec === 59 ? '' : 's'));
 };
 
 Timer.prototype.hover = function() {

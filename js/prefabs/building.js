@@ -58,6 +58,8 @@ Building.prototype.purchased = function() {
  * @param  {number} yPosition -- (optional) y position to put the building
  */
 Building.prototype.place = function(xPosition, yPosition) {
+    this.constructing = true;
+
     if (this._game.UI.hovering) {
         return false;
     }
@@ -135,6 +137,7 @@ Building.prototype.place = function(xPosition, yPosition) {
 };
 
 Building.prototype.built = function(xPos, yPos) {
+    this.constructing = false;
     this.alpha = 1;
 
     //update the resources for each building (or start the loop to do so)

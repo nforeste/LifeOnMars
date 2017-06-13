@@ -35,8 +35,13 @@ Play.prototype = {
         this.load.image('earth', 'TimerEarth.png');
         this.load.image('rocket', 'TimerShip.png');
         this.load.image('topBar', 'New_Top.png');
+        this.load.image('conBar', 'ConstructionBar.png');
+        this.load.image('muskHappy', 'Elon Musk_Happy_Pixel.png');
+        this.load.image('muskSad', 'Elon Musk_Confused_Pixel.png');
+        this.load.image('muskConstruct', 'ElonMusk_Construction_Pixel.png');
+        this.load.image('commCenterButton', 'CommandCenterButton.png')
+        console.log('Play: preload()');
         this.load.image('stopwatch', 'Stopwatch.png');
-
 
         this.menuImage = this.add.image(0, 0, 'menuimage');
         this.loadText = this.add.text(30, 40, 'Loading...', {

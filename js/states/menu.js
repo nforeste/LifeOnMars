@@ -31,6 +31,10 @@ Menu.prototype = {
         this.load.audio('rotate', 'rotate.mp3');
         this.load.audio('win', 'win.mp3');
         this.load.audio('zoom', 'zoom.mp3');
+        this.load.audio('menuOpen', 'menuopen.mp3');
+        this.load.audio('menuClose', 'menuclose.mp3');
+        this.load.audio('menuClick', 'click.mp3');
+        console.log('Menu: preload()');
     },
     create: function() {
         this.add.sprite(0, 0, 'menuimage');
@@ -64,6 +68,9 @@ Menu.prototype = {
         this.game.rotateMusic = this.add.audio('rotate');
         this.game.winMusic = this.add.audio('win');
         this.game.zoomMusic = this.add.audio('zoom');
+        this.game.menuOpen = this.add.audio('menuOpen');
+        this.game.menuClose = this.add.audio('menuClose');
+        this.game.menuClick = this.add.audio('menuClick');
 
         this.game.allowMultiple = true;
 
