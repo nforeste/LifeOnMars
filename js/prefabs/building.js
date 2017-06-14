@@ -210,23 +210,40 @@ Building.prototype.cancelPlacement = function() {
 Building.prototype.changeForm = function(xPos, yPos) {
     this.connections.forEach(c => {
         if (c[2] === this.UP) {
+            if (c[1] + yPos - 1 < 0) {
+                return;
+            }
+
             let tmp = this._game.g.cells[c[0] + xPos][c[1] + yPos - 1];
 
             if (tmp.occupied && tmp.occupied instanceof Walkway) {
                 tmp.occupied.changeForm(c[0] + xPos, c[1] + yPos - 1);
             }
         } else if (c[2] === this.RIGHT) {
+            if (c[0] + xPos + 1 >= this._game.world.width / 32) {
+                return;
+            }
+
             let tmp = this._game.g.cells[c[0] + xPos + 1][c[1] + yPos];
+
             if (tmp.occupied && tmp.occupied instanceof Walkway) {
                 tmp.occupied.changeForm(c[0] + xPos + 1, c[1] + yPos);
             }
         } else if (c[2] === this.DOWN) {
+            if (c[1] + yPos + 1 >= this._game.world.height / 32) {
+                return;
+            }
+
             let tmp = this._game.g.cells[c[0] + xPos][c[1] + yPos + 1];
 
             if (tmp.occupied && tmp.occupied instanceof Walkway) {
                 tmp.occupied.changeForm(c[0] + xPos, c[1] + yPos + 1);
             }
         } else {
+            if (c[0] + xPos - 1 < 0) {
+                return;
+            }
+
             let tmp = this._game.g.cells[c[0] + xPos - 1][c[1] + yPos];
 
             if (tmp.occupied && tmp.occupied instanceof Walkway) {
@@ -310,11 +327,11 @@ Building.prototype.update = function() {
                     let y = this.connections[i][1];
 
                     if (this.connections[i][2] === this.UP) {
-                        let tmp = this._game.g.cells[x + xPos][y + yPos - 1];
-
-                        if (!tmp) {
+                        if (y + yPos - 1 < 0) {
                             continue;
                         }
+
+                        let tmp = this._game.g.cells[x + xPos][y + yPos - 1];
 
                         if (solar && tmp.occupied && !(tmp.occupied instanceof PowerStorage2x1)) {
                             continue;
@@ -332,11 +349,11 @@ Building.prototype.update = function() {
                             }
                         }, this);
                     } else if (this.connections[i][2] === this.DOWN) {
-                        let tmp = this._game.g.cells[x + xPos][y + yPos + 1];
-
-                        if (!tmp) {
+                        if (y + yPos + 1 >= this._game.world.height / 32) {
                             continue;
                         }
+
+                        let tmp = this._game.g.cells[x + xPos][y + yPos + 1];
 
                         if (solar && tmp.occupied && !(tmp.occupied instanceof PowerStorage2x1)) {
                             continue;
@@ -354,11 +371,11 @@ Building.prototype.update = function() {
                             }
                         }, this);
                     } else if (this.connections[i][2] === this.LEFT) {
-                        let tmp = this._game.g.cells[x + xPos - 1][y + yPos];
-
-                        if (!tmp) {
+                        if (x + xPos - 1 < 0) {
                             continue;
                         }
+
+                        let tmp = this._game.g.cells[x + xPos - 1][y + yPos];
 
                         if (solar && tmp.occupied && !(tmp.occupied instanceof PowerStorage2x1)) {
                             continue;
@@ -376,11 +393,11 @@ Building.prototype.update = function() {
                             }
                         }, this);
                     } else {
-                        let tmp = this._game.g.cells[x + xPos + 1][y + yPos];
-
-                        if (!tmp) {
+                        if (x + xPos + 1 >= this._game.world.width / 32) {
                             continue;
                         }
+
+                        let tmp = this._game.g.cells[x + xPos + 1][y + yPos];
 
                         if (solar && tmp.occupied && !(tmp.occupied instanceof PowerStorage2x1)) {
                             continue;
