@@ -268,7 +268,7 @@ Building.prototype.update = function() {
         var blocked = false;
         this.events.onInputDown.active = true;
 
-        if (xPos && yPos) {
+        if (xPos && xPos < this._game.world.width / 32 && yPos && yPos < this._game.world.height / 32) {
             //check to see if the building is hovering over
             //any occupied squares, and if so mark it as blocked
             //also make sure nothing can be placed on water/iron except the mines
